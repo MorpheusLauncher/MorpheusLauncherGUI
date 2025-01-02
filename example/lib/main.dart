@@ -165,6 +165,11 @@ class MyAppBodyState extends State<MyAppBody> {
       print(e);
     }
     try {
+      Globals.optiforgeVersions = await VersionUtils.getOptiForge();
+    } catch (e) {
+      print(e);
+    }
+    try {
       Globals.optifineVersions = await VersionUtils.getOptifine();
     } catch (e) {
       print(e);

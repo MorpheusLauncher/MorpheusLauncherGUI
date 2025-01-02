@@ -990,7 +990,7 @@ class _MainPageState extends State<MainPage> {
           for (var version in Globals.optifineVersions) buildVanillaItem("Optifine", version.split("-")[0], "", VersionUtils.isCompatible("Optifine", version.split("-")[0])),
         ],
 
-        /** Lista dei forge installabili */
+        /** Lista dei forge optifine installabili */
         if (Globals.forgeVersions != null) ...[
           Padding(
             padding: EdgeInsets.symmetric(vertical: 5),
@@ -1004,7 +1004,7 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
           ),
-          for (var version in Globals.forgeVersions) buildVanillaItem("OptiForge", version.split("-")[0], "", VersionUtils.isCompatible("OptiForge", version.split("-")[0])),
+          for (var version in Globals.optiforgeVersions) buildVanillaItem("OptiForge", version.split("-")[0], "", VersionUtils.isCompatible("OptiForge", version.split("-")[0])),
         ],
 
         /** Lista dei forge installabili */

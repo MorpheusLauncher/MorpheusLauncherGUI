@@ -14,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_theme/system_theme.dart';
 
 class Globals {
-  static final buildVersion = "Ver 2.2.1";
+  static final buildVersion = "Ver 2.2.2";
   static final windowTitle = "Morpheus Launcher";
   static final borderRadius = 14.0;
 
@@ -54,6 +54,9 @@ class Globals {
 
   /** Forge */
   static late var forgeVersions = null;
+
+  /** OptiForge */
+  static late var optiforgeVersions = null;
 
   /** Optifine */
   static late var optifineVersions = null;
@@ -494,6 +497,28 @@ class VersionUtils {
         var parts = value.last.split('-');
         if (parts.length >= 2) {
           if (keys.indexOf(key) >= keys.indexOf("1.6.4") && keys.indexOf(key) <= keys.indexOf("1.12.2")) resultList.add("${parts[0]}-forge-${parts[1]}");
+        }
+      }
+    });
+
+    return resultList.reversed.toList();
+  }
+
+  static Future<List<String>> getOptiForge() async {
+    final forgeGameResponse = await http.get(
+      Uri.parse(Urls.forgeVersionsURL),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+    var parsedData = jsonDecode(forgeGameResponse.body);
+    var keys = parsedData.keys.toList();
+    List<String> resultList = [];
+    parsedData.forEach((key, value) {
+      if (value.isNotEmpty) {
+        var parts = value.last.split('-');
+        if (parts.length >= 2) {
+          if (keys.indexOf(key) >= keys.indexOf("1.8.9") && keys.indexOf(key) <= keys.indexOf("1.12.2")) resultList.add("${parts[0]}-forge-${parts[1]}");
         }
       }
     });
