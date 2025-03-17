@@ -74,5 +74,6 @@
   "console_exit_msg1": "Sind Sie sicher, dass Sie die Konsole schließen möchten?",
   "console_exit_msg2": "Wenn Sie die Konsole schließen, können Sie nicht mehr lesen, was das Spiel tut",
   "console_exit_kill": "Spiel beenden und verlassen",
-  "console_exit_only": "Verlassen"
+  "console_exit_only": "Verlassen",
+  "console_crash_msg": "Es scheint, dass Minecraft abgestürzt ist! Möchtest du das Absturzprotokoll analysieren?"
 }

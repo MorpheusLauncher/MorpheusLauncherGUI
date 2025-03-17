@@ -74,5 +74,6 @@
   "console_exit_msg1": "Are you sure you want to close console?",
   "console_exit_msg2": "if you close the console you can't read what the game does anymore",
   "console_exit_kill": "Kill game and Exit",
-  "console_exit_only": "Exit"
+  "console_exit_only": "Exit",
+  "console_crash_msg": "Seems that minecraft has crashed! do you want to analyze the crashlog?"
 }

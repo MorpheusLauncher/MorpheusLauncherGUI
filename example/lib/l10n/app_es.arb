@@ -74,5 +74,6 @@
   "console_exit_msg1": "¿Estás seguro de que quieres cerrar la consola?",
   "console_exit_msg2": "Si lo haces, ¡no podrás entender lo que está haciendo el juego!",
   "console_exit_kill": "Terminar el juego y cerrar",
-  "console_exit_only": "Cerrar"
+  "console_exit_only": "Cerrar",
+  "console_crash_msg": "¡Parece que Minecraft se ha bloqueado! ¿Quieres analizar el registro de fallos?"
 }

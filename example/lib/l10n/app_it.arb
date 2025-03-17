@@ -74,5 +74,6 @@
   "console_exit_msg1": "Sei sicuro di voler chiudere la console?",
   "console_exit_msg2": "se lo farai non potrai più capire cosa sta facendo il gioco!",
   "console_exit_kill": "Termina il gioco e Chiudi",
-  "console_exit_only": "Chiudi"
+  "console_exit_only": "Chiudi",
+  "console_crash_msg": "Sembra che Minecraft sia andato in crash! Vuoi analizzare i crashlog?"
 }

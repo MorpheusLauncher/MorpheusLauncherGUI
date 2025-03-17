@@ -74,5 +74,6 @@
   "console_exit_msg1": "Êtes-vous sûr de vouloir fermer la console ?",
   "console_exit_msg2": "Si vous fermez la console, vous ne pourrez plus lire ce que le jeu fait",
   "console_exit_kill": "Arrêter le jeu et quitter",
-  "console_exit_only": "Quitter"
+  "console_exit_only": "Quitter",
+  "console_crash_msg": "Il semble que Minecraft ait planté! Voulez-vous analyser le journal de crash?"
 }

@@ -910,6 +910,48 @@ class _MainPageState extends State<MainPage> {
                           }
                           int exitCode = await process.exitCode;
                           Globals.consolecontroller.text += "[LAUNCHER]: exit code $exitCode";
+                          // check if minecraft has crashed and isn't manually stopped by the user
+                          if (exitCode != 0 && exitCode != 143) {
+                            WidgetUtils.showPopup(
+                              context,
+                              AppLocalizations.of(context)!.generic_error_msg,
+                              <Widget>[
+                                Text(
+                                  AppLocalizations.of(context)!.console_crash_msg,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontFamily: 'Comfortaa',
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                              <Widget>[
+                                TextButton(
+                                  child: const Text(
+                                    "OK",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontFamily: 'Comfortaa',
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                  onPressed: () => {},
+                                ),
+                                TextButton(
+                                  child: Text(
+                                    AppLocalizations.of(context)!.generic_cancel,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontFamily: 'Comfortaa',
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                  ),
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                              ],
+                            );
+                          }
                         } catch (error) {
                           WidgetUtils.showMessageDialog(
                             context,

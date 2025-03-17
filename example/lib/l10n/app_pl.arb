@@ -74,5 +74,6 @@
   "console_exit_msg1": "Czy na pewno chcesz zamknąć konsolę?",
   "console_exit_msg2": "Jeśli zamkniesz konsolę, nie będziesz mógł czytać, co robi gra",
   "console_exit_kill": "Zabij grę i zamknij",
-  "console_exit_only": "Zamknij"
+  "console_exit_only": "Zamknij",
+  "console_crash_msg": "Wygląda na to, że Minecraft uległ awarii! Czy chcesz przeanalizować dziennik awarii?"
 }
