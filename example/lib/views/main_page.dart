@@ -908,7 +908,8 @@ class _MainPageState extends State<MainPage> {
                             process.stdout.transform(systemEncoding.decoder).forEach((line) {});
                             process.stderr.transform(systemEncoding.decoder).forEach((line) {});
                           }
-                          Globals.consolecontroller.text += "[LAUNCHER]: exit code ${await process.exitCode}";
+                          int exitCode = await process.exitCode;
+                          Globals.consolecontroller.text += "[LAUNCHER]: exit code $exitCode";
                         } catch (error) {
                           WidgetUtils.showMessageDialog(
                             context,
