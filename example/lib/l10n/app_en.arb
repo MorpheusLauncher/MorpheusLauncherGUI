@@ -39,6 +39,9 @@
   "settings_diagnostic_copy": "Copy log",
   "settings_clear_cache": "Clear skin caches",
   "settings_force_classpath": "Force classpath mode",
+  "settings_account_label": "Account management",
+  "settings_account_import": "Import",
+  "settings_account_export": "Export",
 
   "account_skin_buy_game": "buy minecraft",
   "account_skin_error_msg": "Only premium accounts can change skin.\nConsider buying minecraft java edition at minecraft.net",

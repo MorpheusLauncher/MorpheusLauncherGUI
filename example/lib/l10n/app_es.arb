@@ -39,6 +39,9 @@
   "settings_diagnostic_copy": "Copiar registro",
   "settings_clear_cache": "Borrar cachés de skins",
   "settings_force_classpath": "Forzar el uso de classpath",
+  "settings_account_label": "Gestión de la cuenta",
+  "settings_account_import": "Importar",
+  "settings_account_export": "Exportar",
 
   "account_skin_buy_game": "Comprar Minecraft",
   "account_skin_error_msg": "Solo las cuentas premium pueden cambiar la skin.\nConsidera comprar el juego a través de minecraft.net",

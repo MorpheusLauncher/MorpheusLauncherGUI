@@ -221,19 +221,40 @@ class LauncherUtils {
     ];
   }
 
-  static Future<bool> checkJava() async {
-    bool isWorking = false;
+  static Future<Map<String, String>?> checkJava() async {
     try {
-      Process process = await Process.start(Globals.javapathcontroller.text, ['-version']);
+      Process process = await Process.start(
+        Globals.javapathcontroller.text,
+        ['-version'],
+      );
+
+      String? firstLine;
       await for (String line in process.stderr.transform(systemEncoding.decoder)) {
-        if (line.contains("java") || line.contains("jre") || line.contains("jdk")) isWorking = true;
+        firstLine = line.trim();
+        break; // Solo la prima riga
       }
+
       await process.exitCode;
+
+      if (firstLine != null) {
+        // Esempio: openjdk version "21.0.5" 2024-10-15 LTS
+        final regex = RegExp(r'^(?<type>\S+)\s+version\s+"(?<version>[^"]+)"(?:\s+(?<date>\d{4}-\d{2}-\d{2}))?(?:\s+(?<lts>LTS))?');
+        final match = regex.firstMatch(firstLine);
+
+        if (match != null) {
+          return {
+            'type': match.namedGroup('type') ?? 'unknown',
+            'version': match.namedGroup('version') ?? 'unknown',
+            'releaseDate': match.namedGroup('date') ?? '',
+            'lts': match.namedGroup('lts') == 'LTS' ? 'true' : 'false',
+          };
+        }
+      }
     } catch (error) {
-      print(error);
+      print("Errore nel checkJava: $error");
     }
 
-    return isWorking;
+    return null;
   }
 
   /** Installa java automaticamente */

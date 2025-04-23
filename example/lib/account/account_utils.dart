@@ -1,6 +1,7 @@
 library account_utils;
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
@@ -70,4 +71,30 @@ bool isSkinSlim(String username) {
 void saveAccounts() {
   final filePath = "${LauncherUtils.getApplicationFolder("morpheus")}/accounts.json";
   saveAccountListToJson(Globals.accounts, filePath);
+}
+
+List<Account> importAccountListFromJsonPlain(String filePath) {
+  final file = File(filePath);
+
+  if (!file.existsSync()) {
+    return [];
+  }
+
+  final jsonString = file.readAsStringSync();
+  final List<dynamic> jsonList = json.decode(jsonString);
+  final accountList = jsonList.map((json) => Account.fromJson(json)).toList();
+
+  return accountList.cast<Account>();
+}
+
+void exportAccountListToJsonPlain(List<Account> accountList, String filePath) {
+  final List<Map<String, dynamic>> jsonList = accountList.map((account) => account.toJson()).toList();
+  final jsonString = json.encode(jsonList);
+  final file = File(filePath);
+
+  if (!file.existsSync()) {
+    file.createSync(recursive: true);
+  }
+
+  file.writeAsStringSync(jsonString);
 }

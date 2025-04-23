@@ -910,8 +910,8 @@ class _MainPageState extends State<MainPage> {
                           }
                           int exitCode = await process.exitCode;
                           Globals.consolecontroller.text += "[LAUNCHER]: exit code $exitCode";
-                          // check if minecraft has crashed and isn't manually stopped by the user
-                          if (exitCode != 0 && exitCode != 143) {
+                          // check if minecraft isn't manually stopped by the user
+                          if (exitCode != 143) {
                             WidgetUtils.showPopup(
                               context,
                               AppLocalizations.of(context)!.generic_error_msg,
@@ -936,7 +936,11 @@ class _MainPageState extends State<MainPage> {
                                       fontWeight: FontWeight.w300,
                                     ),
                                   ),
-                                  onPressed: () => {},
+                                  onPressed: () async {
+                                    // final lines = Globals.consolecontroller.text.split('\n');
+                                    // final crashlog = lines.skip(lines.length > 40 ? lines.length - 40 : 0).join('\n');
+                                    // print(crashlog);
+                                  },
                                 ),
                                 TextButton(
                                   child: Text(
@@ -1014,7 +1018,8 @@ class _MainPageState extends State<MainPage> {
           ),
 
         /** Lista completa delle versioni moddate istallate */
-        for (var version in VersionUtils.getMinecraftVersions(true)) buildVanillaItem(version["type"], version["id"], "", VersionUtils.isCompatible(version["type"], version["id"])),
+        for (var version in VersionUtils.getMinecraftVersions(true))
+          buildVanillaItem(version["type"], version["id"], "", VersionUtils.isCompatible(version["type"], version["id"])),
 
         /** Lista delle optifine installabili */
         if (Globals.optifineVersions != null) ...[
@@ -1517,23 +1522,36 @@ class _MainPageState extends State<MainPage> {
                                 ColorUtils.dynamicAccentColor,
                                 Colors.white,
                                 () async {
-                                  bool bol = await LauncherUtils.checkJava();
+                                  final result = await LauncherUtils.checkJava();
 
-                                  /** Esito del check della jvm */
-                                  if (bol)
-                                    WidgetUtils.showMessageDialog(
-                                      context,
-                                      AppLocalizations.of(context)!.settings_check_java_title,
-                                      AppLocalizations.of(context)!.settings_check_java_yes,
-                                      () => Navigator.pop(context),
-                                    );
-                                  else
-                                    WidgetUtils.showMessageDialog(
-                                      context,
-                                      AppLocalizations.of(context)!.settings_check_java_title,
-                                      AppLocalizations.of(context)!.settings_check_java_no,
-                                      () => Navigator.pop(context),
-                                    );
+                                  // Titolo fisso localizzato
+                                  final title = AppLocalizations.of(context)!.settings_check_java_title;
+
+                                  // Corpo del messaggio
+                                  String message;
+                                  if (result != null) {
+                                    final type = result['type'];
+                                    final version = result['version'];
+                                    final date = result['releaseDate'];
+                                    final lts = result['lts'] == 'true' ? 'LTS' : '';
+
+                                    // Messaggio positivo + info JVM
+                                    message = AppLocalizations.of(context)!.settings_check_java_yes +
+                                        '\n\n→ JVM: $type\n→ Versione: $version' +
+                                        (date != null && date.isNotEmpty ? '\n→ Data rilascio: $date' : '') +
+                                        (lts.isNotEmpty ? '\n→ Tipo: $lts' : '');
+                                  } else {
+                                    // Messaggio negativo
+                                    message = AppLocalizations.of(context)!.settings_check_java_no;
+                                  }
+
+                                  // Mostra dialog
+                                  WidgetUtils.showMessageDialog(
+                                    context,
+                                    title,
+                                    message,
+                                    () => Navigator.pop(context),
+                                  );
                                 },
                               ),
                             ],
@@ -1716,16 +1734,6 @@ class _MainPageState extends State<MainPage> {
         WidgetUtils.buildSettingContainerItem(
           Row(
             children: [
-              /** Bottone per pulire la cache */
-              WidgetUtils.buildTextButton(
-                Colors.red.withAlpha(160),
-                Colors.white,
-                () async {
-                  await DefaultCacheManager().emptyCache();
-                },
-                AppLocalizations.of(context)!.settings_clear_cache,
-              ),
-
               /** Dati di diagnostica */
               WidgetUtils.buildTextButton(
                 ColorUtils.dynamicSecondaryForegroundColor,
@@ -1737,6 +1745,72 @@ class _MainPageState extends State<MainPage> {
               ),
             ],
           ),
+        ),
+
+        /** Separatore */
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 5),
+          child: TextDivider(
+            color: ColorUtils.secondaryFontColor.withAlpha(80),
+            thickness: 2,
+            text: Text(
+              AppLocalizations.of(context)!.settings_account_label,
+              textAlign: TextAlign.center,
+              style: WidgetUtils.customTextStyle(20, FontWeight.w300, ColorUtils.primaryFontColor),
+            ),
+          ),
+        ),
+
+        /**/
+        WidgetUtils.buildSettingContainerItem(
+          Row(children: [
+            /** Bottone per pulire la cache */
+            WidgetUtils.buildTextButton(
+              Colors.red.withAlpha(160),
+              Colors.white,
+              () async {
+                await DefaultCacheManager().emptyCache();
+              },
+              AppLocalizations.of(context)!.settings_clear_cache,
+            ),
+
+            /** Bottone per importare gli account */
+            WidgetUtils.buildTextButton(
+              ColorUtils.dynamicSecondaryForegroundColor,
+              Colors.white,
+              () async {
+                final result = await FilePicker.platform.pickFiles(
+                  type: FileType.custom,
+                  allowedExtensions: ['json'],
+                );
+                if (result != null && result.files.single.path != null) {
+                  final path = result.files.single.path!;
+                  final importedAccounts = importAccountListFromJsonPlain(path);
+                  Globals.accounts = importedAccounts;
+                  saveAccounts();
+                }
+              },
+              AppLocalizations.of(context)!.settings_account_import,
+            ),
+
+            /** Bottone per esportare gli account */
+            WidgetUtils.buildTextButton(
+              ColorUtils.dynamicSecondaryForegroundColor,
+              Colors.white,
+              () async {
+                final result = await FilePicker.platform.saveFile(
+                  dialogTitle: 'Save accounts as JSON',
+                  fileName: 'accounts_plain.json',
+                  type: FileType.custom,
+                  allowedExtensions: ['json'],
+                );
+                if (result != null) {
+                  exportAccountListToJsonPlain(Globals.accounts, result);
+                }
+              },
+              AppLocalizations.of(context)!.settings_account_export,
+            ),
+          ]),
         ),
 
         /** Separatore */
@@ -1767,7 +1841,29 @@ class _MainPageState extends State<MainPage> {
             },
           ),
         ),
+
+        /** Links vari */
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 5),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              linkIcon(MorpheusIcons.globe, 'https://morpheuslauncher.it'),
+              linkIcon(MorpheusIcons.discord, 'https://discord.gg/aerXnBe'),
+              linkIcon(MorpheusIcons.github_mark, 'https://github.com/MorpheusLauncher'),
+              linkIcon(MorpheusIcons.patreon, 'https://www.patreon.com/c/Lampadina_17'),
+              linkIcon(MorpheusIcons.kofi, 'https://ko-fi.com/lampadina_17'),
+            ],
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget linkIcon(IconData icon, String url) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 5),
+      child: HoverIcon(icon: icon, url: url),
     );
   }
 
@@ -1871,6 +1967,46 @@ class _MainPageState extends State<MainPage> {
                 ],
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class HoverIcon extends StatefulWidget {
+  final IconData icon;
+  final String url;
+
+  const HoverIcon({Key? key, required this.icon, required this.url}) : super(key: key);
+
+  @override
+  _HoverIconState createState() => _HoverIconState();
+}
+
+class _HoverIconState extends State<HoverIcon> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: GestureDetector(
+        onTap: () async {
+          if (!await launchUrl(Uri.parse(widget.url))) {
+            throw 'Unable to open the link: ${widget.url}';
+          }
+        },
+        child: TweenAnimationBuilder<Color?>(
+          duration: Duration(milliseconds: 100),
+          tween: ColorTween(
+            begin: _hovering ? ColorUtils.secondaryFontColor.withAlpha(128) : ColorUtils.secondaryFontColor.withAlpha(255),
+            end: _hovering ? ColorUtils.secondaryFontColor.withAlpha(255) : ColorUtils.secondaryFontColor.withAlpha(128),
+          ),
+          builder: (context, color, child) => Icon(
+            widget.icon,
+            color: color,
           ),
         ),
       ),

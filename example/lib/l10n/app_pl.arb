@@ -39,6 +39,9 @@
   "settings_diagnostic_copy": "Kopiuj log",
   "settings_clear_cache": "Wyczyść pamięć podręczną skórek",
   "settings_force_classpath": "Wymuś użycie classpath",
+  "settings_account_label": "Zarządzanie kontem",
+  "settings_account_import": "Importuj",
+  "settings_account_export": "Eksportuj",
 
   "account_skin_buy_game": "kup Minecraft",
   "account_skin_error_msg": "Zmiana skórki możliwa tylko dla kont premium. Rozważ zakup Minecraft Java Edition na minecraft.net",
