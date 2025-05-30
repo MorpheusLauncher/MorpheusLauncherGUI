@@ -280,18 +280,35 @@ Widget drawTitleCustomBar() {
 }
 
 Future<void> getNews() async {
-  final response = await http.get(
+  final oldResponse = await http.get(
     Uri.parse("${Urls.mojangContentURL}/javaPatchNotes.json"),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
     },
   );
-  var jsonData = json.decode(response.body);
-  List entries = jsonData["entries"];
-  entries.sort((a, b) {
-    return b["version"].compareTo(a["version"]);
-  });
-  Globals.vanillaNewsResponse = entries;
+  final newResponse = await http.get(
+    Uri.parse("${Urls.mojangContentURL}/v2/javaPatchNotes.json"),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+  );
+  final oldJson = json.decode(oldResponse.body);
+  final newJson = json.decode(newResponse.body);
+  final Map<String, dynamic> oldEntriesById = {
+    for (var entry in oldJson["entries"]) entry["id"]: entry,
+  };
+  List<Map<String, dynamic>> mergedEntries = [];
+  for (var entry in oldJson["entries"]) {
+    mergedEntries.add(entry);
+  }
+  for (var newEntry in newJson["entries"]) {
+    if (!oldEntriesById.containsKey(newEntry["id"])) {
+      newEntry["body"] = "${newEntry["shortText"]}";
+      mergedEntries.add(newEntry);
+    }
+  }
+  mergedEntries.sort((a, b) => b["version"].compareTo(a["version"]));
+  Globals.vanillaNewsResponse = mergedEntries;
 }
 
 class WindowButtons extends StatefulWidget {

@@ -910,8 +910,8 @@ class _MainPageState extends State<MainPage> {
                           }
                           int exitCode = await process.exitCode;
                           Globals.consolecontroller.text += "[LAUNCHER]: exit code $exitCode";
-                          // check if minecraft isn't manually stopped by the user
-                          if (exitCode != 143) {
+                          // check if minecraft crashed and isn't crashed manually
+                          if (exitCode != 0 && exitCode != 143) {
                             WidgetUtils.showPopup(
                               context,
                               AppLocalizations.of(context)!.generic_error_msg,
