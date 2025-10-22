@@ -102,12 +102,11 @@ flutter:
   # see https://flutter.dev/custom-fonts/#from-packages
 
   assets:
-    - assets/alex.png
-    - assets/steve.png
     - assets/morpheus.png
     - assets/morpheus-animated.gif
     - assets/alex-raw.png
     - assets/steve-raw.png
+    - assets/pages/elyby_success.html
 
   fonts:
     - family: MorpheusIcons

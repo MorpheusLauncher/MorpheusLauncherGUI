@@ -18,6 +18,7 @@ class Account {
   String refreshToken;
   bool isPremium;
   bool isSlimSkin;
+  bool isElyBy;
 
   Account({
     required this.username,
@@ -26,6 +27,7 @@ class Account {
     required this.refreshToken,
     required this.isPremium,
     required this.isSlimSkin,
+    required this.isElyBy,
   });
 
   Map<String, dynamic> toJson() {
@@ -36,6 +38,7 @@ class Account {
       'refreshToken': refreshToken,
       'isPremium': isPremium,
       'isSlimSkin': isSlimSkin,
+      'isElyBy': isElyBy,
     };
   }
 
@@ -47,6 +50,7 @@ class Account {
       refreshToken: json['refreshToken'],
       isPremium: json['isPremium'],
       isSlimSkin: json['isSlimSkin'] != null ? json['isSlimSkin'] : false,
+      isElyBy: json['isElyBy'] != null ? json['isElyBy'] : false,
     );
   }
 }
@@ -63,7 +67,7 @@ Uuid getOfflinePlayerUuid(String username) {
 }
 
 // Discrimina se la skin SP è steve/alex in base all'uuid
-bool isSkinSlim(String username) {
+bool isOfflineSlimSkin(String username) {
   return (getOfflinePlayerUuid(username).hashCode & 1) == 1;
 }
 

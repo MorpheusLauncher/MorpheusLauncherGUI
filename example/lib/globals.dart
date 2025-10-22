@@ -14,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_theme/system_theme.dart';
 
 class Globals {
-  static final buildVersion = "Ver 2.3.0";
+  static final buildVersion = "Ver 2.4.0";
   static final windowTitle = "Morpheus Launcher";
   static final borderRadius = 14.0;
 
@@ -76,6 +76,10 @@ class Urls {
   static final fabricApiURL = "https://meta.fabricmc.net/";
   static final forgeVersionsURL = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
   static final optifineVersionsURL = "${morpheusBaseURL}/downloads/optifine.json";
+
+  // Roba inerente a ElyBy
+  static final elybyBaseURL = "https://account.ely.by";
+  static final elybySkinsURL = "http://skinsystem.ely.by";
 
   // Roba inerente al changelog mojang e alle vanilla
   static final mojangContentURL = "https://launchercontent.mojang.com";
@@ -416,7 +420,7 @@ class VersionUtils {
     List<String> versionIds = [];
 
     // Iterate through each profile to get the version ID
-    profiles?.forEach((key, value) {
+    profiles.forEach((key, value) {
       if (value is Map<String, dynamic>) {
         String? versionId = value['lastVersionId'];
         if (versionId != null) {
@@ -446,7 +450,7 @@ class VersionUtils {
     // Aggiungere o aggiornare le voci dei profili
     versionIds.forEach((versionId) {
       if (!profiles!.containsKey(versionId)) {
-        profiles![versionId] = {
+        profiles[versionId] = {
           "name": versionId,
           "lastVersionId": versionId,
         };

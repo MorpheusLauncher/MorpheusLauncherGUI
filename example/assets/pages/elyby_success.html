@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Completed</title>
+    <!-- Import Comfortaa -->
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300&display=swap" rel="stylesheet">
+
+    <style>
+        /* Sfondo full-page con overlay scuro */
+        body {
+          margin: 0;
+          padding: 0;
+          height: 100vh;
+          width: 100vw;
+          font-family: 'Comfortaa', cursive;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background: url('https://morpheuslauncher.it/fondo.jpg') no-repeat center center fixed;
+          background-size: cover;
+          position: relative;
+        }
+
+        /* Overlay scuro */
+        body::before {
+          content: "";
+          position: absolute;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background-color: rgba(0, 0, 0, 0.25);
+          z-index: 0;
+        }
+
+        /* Card glassmorphism */
+        .card {
+          position: relative;
+          z-index: 1;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(30px);
+          -webkit-backdrop-filter: blur(30px);
+          border-top: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 1rem;
+          padding: 2rem;
+          max-width: 400px;
+          width: 90%;
+          text-align: center;
+          color: #fff;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+          animation: fadeIn 0.8s ease-out;
+        }
+
+        h1 {
+          margin-bottom: 1rem;
+          font-size: 2rem;
+        }
+
+        p {
+          font-size: 1rem;
+          opacity: 0.9;
+        }
+
+        .button:hover {
+          background: rgba(255,255,255,0.35);
+          transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Login Completed</h1>
+    <p>You can now return to <strong>Morpheus Launcher</strong>.</p>
+</div>
+</body>
+</html>

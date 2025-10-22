@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
+import 'package:http/http.dart' as http;
 
 import 'package:blur/blur.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -307,7 +308,7 @@ class _MainPageState extends State<MainPage> {
                                     <Widget>[
                                       TextButton(
                                         child: const Text(
-                                          "SP",
+                                          "Offline",
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontFamily: 'Comfortaa',
@@ -327,12 +328,47 @@ class _MainPageState extends State<MainPage> {
                                                       accessToken: "0",
                                                       refreshToken: "",
                                                       isPremium: false,
-                                                      isSlimSkin: isSkinSlim(Globals.usernamecontroller.text),
+                                                      isSlimSkin: isOfflineSlimSkin(Globals.usernamecontroller.text),
+                                                      isElyBy: false,
                                                     ),
                                                   );
                                                 saveAccounts();
                                                 Globals.usernamecontroller.text = "";
                                               }),
+                                              rebuild(),
+                                            },
+                                          );
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Text(
+                                          "Offline (Ely.by)",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontFamily: 'Comfortaa',
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          AccountUtils.addElyBy(
+                                            context,
+                                            (username, uuid, accesstoken, refreshtoken, isSlimSkin) => {
+                                              setState(
+                                                () {
+                                                  Globals.accounts.add(
+                                                    new Account(
+                                                      username: username,
+                                                      uuid: uuid,
+                                                      accessToken: accesstoken,
+                                                      refreshToken: refreshtoken,
+                                                      isPremium: false,
+                                                      isSlimSkin: isSlimSkin,
+                                                      isElyBy: true,
+                                                    ),
+                                                  );
+                                                  saveAccounts();
+                                                },
+                                              ),
                                               rebuild(),
                                             },
                                           );
@@ -361,6 +397,7 @@ class _MainPageState extends State<MainPage> {
                                                       refreshToken: refreshtoken,
                                                       isPremium: isPremium,
                                                       isSlimSkin: isSlimSkin,
+                                                      isElyBy: false,
                                                     ),
                                                   );
                                                 },
@@ -432,7 +469,9 @@ class _MainPageState extends State<MainPage> {
           buildNavItem(MorpheusIcons.vanilla, 1),
           buildNavItem(MorpheusIcons.modded, 2),
           buildNavItem(Icons.settings, 3),
+          SizedBox(height: 20),
           buildNavAccountItem(4),
+          SizedBox(height: 20),
         ],
       ),
     );
@@ -461,7 +500,7 @@ class _MainPageState extends State<MainPage> {
               elevation: 10,
               color: Colors.transparent,
               shadowColor: ColorUtils.defaultShadowColor,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.all(Radius.circular(10)),
               child: Icon(
                 icon,
                 color: Globals.NavSelected == index ? ColorUtils.primaryFontColor.withAlpha(255) : ColorUtils.primaryFontColor.withAlpha(128),
@@ -484,29 +523,33 @@ class _MainPageState extends State<MainPage> {
       },
       child: MouseRegion(
         onEnter: (e) => {},
-        child: Container(
-          height: 80,
-          width: 35,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: DecorationImage(
-              opacity: Globals.NavSelected == index ? 1 : 0.5,
-              image: AccountUtils._buildAvatarImageProvider(),
-            ),
-          ),
-          child: Center(
-            child: Material(
-              elevation: 10,
-              color: Colors.transparent,
-              shadowColor: ColorUtils.defaultShadowColor,
-              borderRadius: BorderRadius.circular(10),
-              child: ImageIcon(
-                AccountUtils._buildAvatarImageProvider(),
-                color: Colors.transparent,
-                size: 35,
+        child: FutureBuilder<Uint8List>(
+          future: AccountUtils._loadCroppedSkin(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const SizedBox(
+                height: 80,
+                width: 35,
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            final croppedBytes = snapshot.data!;
+
+            return Container(
+              height: 35,
+              width: 35,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  filterQuality: FilterQuality.none,
+                  opacity: Globals.NavSelected == index ? 1 : 0.5,
+                  image: MemoryImage(croppedBytes),
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
@@ -865,6 +908,10 @@ class _MainPageState extends State<MainPage> {
                         var vmSplit = Globals.javavmcontroller.text.split(" ");
                         if (Globals.javavmcontroller.text.isNotEmpty) args.addAll(vmSplit);
 
+                        if (AccountUtils.getAccount()?.isElyBy == true) {
+                          args.addAll(['-javaagent:${LauncherUtils.getApplicationFolder("morpheus")}/authlib-injector.jar=ely.by']);
+                        }
+
                         // Args normali
                         args.addAll([
                           "-Duser.dir=${Globals.gamefoldercontroller.text}",
@@ -1156,7 +1203,7 @@ class _MainPageState extends State<MainPage> {
                         elevation: 10,
                         color: Colors.transparent,
                         shadowColor: ColorUtils.defaultShadowColor,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
                         child: Icon(
                           Icons.color_lens,
                           color: ColorUtils.primaryFontColor,
@@ -1190,7 +1237,7 @@ class _MainPageState extends State<MainPage> {
                       color: Colors.transparent,
                       shadowColor: Colors.transparent,
                       // Globals.defaultShadowColor,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
                       child: Row(
                         children: [
                           MouseRegion(
@@ -1289,7 +1336,7 @@ class _MainPageState extends State<MainPage> {
                         elevation: 10,
                         color: Colors.transparent,
                         shadowColor: ColorUtils.defaultShadowColor,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
                         child: Icon(
                           Icons.brush,
                           color: ColorUtils.primaryFontColor,
@@ -1885,6 +1932,7 @@ class _MainPageState extends State<MainPage> {
             buildAccountEntry(
               account.username,
               account.isPremium,
+              account.isElyBy,
               Globals.accounts.indexOf(account),
             ),
         ] else ...[
@@ -1902,7 +1950,7 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget buildAccountEntry(String username, bool premium, int index) {
+  Widget buildAccountEntry(String username, bool premium, bool elyby, int index) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
@@ -1942,7 +1990,7 @@ class _MainPageState extends State<MainPage> {
                           style: WidgetUtils.customTextStyle(18, FontWeight.w500, ColorUtils.primaryFontColor),
                         ),
                         Text(
-                          premium ? "Premium" : "Offline",
+                          premium ? "Premium" : (elyby ? "ElyBy" : "Offline"),
                           style: WidgetUtils.customTextStyle(14, FontWeight.w300, ColorUtils.secondaryFontColor),
                         ),
                       ],
@@ -2019,42 +2067,42 @@ class AccountUtils {
   /////// ACCOUNT MANAGER //////////
   //////////////////////////////////
 
-  static ImageProvider _buildSkinModelImageProvider() {
-    if (getAccount() == null) {
-      return AssetImage("assets/alex-raw.png");
-    }
+  static Future<Uint8List> _loadCroppedSkin() async {
+    final rawSkin = await ThreeDimensionalViewer.getImageBytes(AccountUtils._buildSkinModelImageProvider());
+    final img.Image? original = img.decodeImage(rawSkin);
+    if (original == null) return rawSkin;
+    final cropped = img.copyCrop(original, x: 8, y: 8, width: 8, height: 8);
 
-    final isPremium = getAccount()!.isPremium;
-    final isSlimSkin = isSkinSlim(getAccount()!.username);
-
-    if (isPremium) {
-      try {
-        return CachedNetworkImageProvider("${Urls.skinURL}/raw/${AccountUtils.getAccount()?.uuid}");
-      } catch (e) {
-        return AssetImage(isSlimSkin ? "assets/alex-raw.png" : "assets/steve-raw.png");
-      }
-    } else {
-      return AssetImage(isSlimSkin ? "assets/alex-raw.png" : "assets/steve-raw.png");
-    }
+    return Uint8List.fromList(img.encodePng(cropped));
   }
 
-  static ImageProvider _buildAvatarImageProvider() {
-    if (getAccount() == null) {
-      return AssetImage("assets/alex.png");
+  static ImageProvider _buildSkinModelImageProvider() {
+    final account = getAccount();
+    if (account == null) {
+      return const AssetImage("assets/alex-raw.png");
     }
 
-    final isPremium = getAccount()!.isPremium;
-    final isSlimSkin = isSkinSlim(getAccount()!.username);
+    final offlineSkin = AssetImage(
+      account.isSlimSkin ? "assets/alex-raw.png" : "assets/steve-raw.png",
+    );
 
-    if (isPremium) {
+    String? imageUrl;
+
+    if (account.isPremium) {
+      imageUrl = "${Urls.skinURL}/raw/${account.uuid}";
+    } else if (account.isElyBy) {
+      imageUrl = "${Urls.elybySkinsURL}/skins/${account.username}";
+    }
+
+    if (imageUrl != null) {
       try {
-        return CachedNetworkImageProvider("${Urls.skinURL}/avatar/${getAccount()?.username}");
-      } catch (e) {
-        return AssetImage(isSlimSkin ? "assets/alex.png" : "assets/steve.png");
+        return CachedNetworkImageProvider(imageUrl);
+      } catch (_) {
+        return offlineSkin;
       }
-    } else {
-      return AssetImage(isSlimSkin ? "assets/alex.png" : "assets/steve.png");
     }
+
+    return offlineSkin;
   }
 
   static void addSP(dynamic context, Function callback) {
@@ -2067,7 +2115,7 @@ class AccountUtils {
           elevation: 10,
           color: Colors.transparent,
           shadowColor: ColorUtils.defaultShadowColor,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.all(Radius.circular(8)),
           child: WidgetUtils.buildSettingTextItem(
             null,
             Colors.white /* Sfondo della textbox */,
@@ -2095,6 +2143,94 @@ class AccountUtils {
         ),
       ],
     );
+  }
+
+  static Future<void> addElyBy(
+    context,
+    Function(
+      dynamic username,
+      dynamic uuid,
+      dynamic accessToken,
+      dynamic refreshToken,
+      dynamic isSlimSkin,
+    ) callback,
+  ) async {
+    final clientID = "morpheus-launcher3";
+    final redirectUri = "${Urls.morpheusBaseURL}/elyby";
+    final authUrl = "${Urls.elybyBaseURL}/oauth2/v1?client_id=${clientID}"
+        "&redirect_uri=${Uri.encodeComponent(redirectUri)}"
+        "&response_type=code"
+        "&scope=account_email account_info offline_access";
+
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 5100);
+
+    if (Platform.isLinux || Platform.isMacOS) {
+      await Process.run("xdg-open", [authUrl]);
+    } else if (Platform.isWindows) {
+      await Process.run("start", [authUrl], runInShell: true);
+    }
+
+    await for (HttpRequest request in server) {
+      if (request.uri.path == "/callback") {
+        final accessToken = request.uri.queryParameters["accessToken"];
+        final refreshToken = request.uri.queryParameters["refreshToken"];
+
+        if (accessToken == null || refreshToken == null) {
+          request.response
+            ..statusCode = 400
+            ..write("Missing tokens")
+            ..close();
+          continue;
+        }
+
+        final htmlPage = await rootBundle.loadString('assets/pages/elyby_success.html');
+
+        request.response
+          ..statusCode = 200
+          ..headers.contentType = ContentType.html
+          ..write(htmlPage)
+          ..close();
+
+        final userResponse = await http.get(
+          Uri.parse("${Urls.elybyBaseURL}/api/account/v1/info"),
+          headers: {"Authorization": "Bearer $accessToken"},
+        );
+
+        if (userResponse.statusCode == 200) {
+          final userData = jsonDecode(userResponse.body);
+          final username = userData["username"];
+          final uuid = userData["uuid"];
+
+          bool isSlimSkin = false;
+
+          try {
+            final skinUrl = Uri.parse('${Urls.elybySkinsURL}/textures/$username');
+            final skinResponse = await http.get(skinUrl);
+
+            if (skinResponse.statusCode == 200 && skinResponse.body.isNotEmpty) {
+              final data = jsonDecode(skinResponse.body);
+
+              if (data.containsKey('SKIN')) {
+                final skin = data['SKIN'];
+                final model = skin['metadata']?['model'];
+                isSlimSkin = model == 'slim';
+              }
+            }
+          } catch (e) {}
+
+          callback(username, uuid, accessToken, refreshToken, isSlimSkin);
+        }
+
+        await server.close(force: true);
+        Navigator.pop(context);
+        break;
+      } else {
+        request.response
+          ..statusCode = 404
+          ..write("Not found")
+          ..close();
+      }
+    }
   }
 
   static Future<void> refreshPremium(dynamic context) async {
@@ -2302,7 +2438,7 @@ class WidgetUtils {
                         elevation: 10,
                         color: Colors.transparent,
                         shadowColor: ColorUtils.defaultShadowColor,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
                         child: Icon(
                           style.icon,
                           color: style.fontColor,
@@ -2338,7 +2474,7 @@ class WidgetUtils {
                       color: Colors.transparent,
                       shadowColor: Colors.transparent,
                       // Globals.defaultShadowColor,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
                       child: MouseRegion(
                         onEnter: (e) => {},
                         onExit: (e) => {},
@@ -2513,7 +2649,7 @@ class WidgetUtils {
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
           backgroundColor: Colors.white.withAlpha(230) /* colore dello sfondo del popup */,
           shadowColor: Colors.transparent,
