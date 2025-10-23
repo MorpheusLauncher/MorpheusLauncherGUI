@@ -2164,11 +2164,8 @@ class AccountUtils {
 
     final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 5100);
 
-    if (Platform.isLinux || Platform.isMacOS) {
-      await Process.run("xdg-open", [authUrl]);
-    } else if (Platform.isWindows) {
-      await Process.run("start", [authUrl], runInShell: true);
-    }
+    // Lanciatore universale per url
+    await launchUrl(Uri.parse(authUrl));
 
     await for (HttpRequest request in server) {
       if (request.uri.path == "/callback") {
