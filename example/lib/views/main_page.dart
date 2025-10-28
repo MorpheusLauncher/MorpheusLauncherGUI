@@ -805,72 +805,17 @@ class _MainPageState extends State<MainPage> {
                         Globals.consolecontroller.clear();
                         AccountUtils.refreshPremium(context); // refresha il token di minecraft
 
-                        var realGameVersion = gameVersion;
-                        var isModded = false;
-                        List<String> args = [];
-
-                        if (gameType.contains(AppLocalizations.of(context)!.vanilla_release_title)) {
-                          /* When game type is flagged as latest, the launcher will understand to download the latest release */
-                          gameVersion = "latest";
-                        } else if (gameType.contains(AppLocalizations.of(context)!.vanilla_snapshot_title)) {
-                          /* Same as latest but even with snapshot */
-                          gameVersion = "snapshot";
-                        } else if (gameType.toLowerCase().contains("fabric") || gameVersion.toLowerCase().contains("fabric")) {
-                          /* check if fabric is already installed, if not tells to launcher to install fabric */
-                          if (gameVersion.toLowerCase().startsWith("fabric")) {
-                            /* Recognize what minecraft version it is, by parsing version name */
-                            realGameVersion = gameVersion.split("-")[3];
-                          } else {
-                            var fabricVersion = Globals.fabricLoaderVersionsResponse[0]["version"];
-                            gameVersion = "fabric-loader-$fabricVersion-$realGameVersion";
-                          }
-                          isModded = true;
-                        } else if (gameType.toLowerCase().contains("optifine") || gameVersion.toLowerCase().contains("optifine")) {
-                          /* check if the user is trying to install optifine, if yes tell the launcher to install optifine */
-                          if (gameType.toLowerCase().contains("optifine")) {
-                            realGameVersion = gameVersion.toLowerCase(); /* Recognize easily the minecraft version */
-                            for (var version in Globals.optifineVersions) {
-                              if (version.split("-")[0] == realGameVersion) {
-                                /* Find what optifines are available to download */
-                                gameVersion = version;
-                              }
-                            }
-                          } else {
-                            realGameVersion = gameVersion.toLowerCase().split("-")[0]; /* Java installer need always to know what minecraft you are launching */
-                          }
-                          isModded = true;
-                        } else if (gameType.toLowerCase().contains("optiforge") || gameVersion.toLowerCase().contains("optiforge")) {
-                          if (gameType.toLowerCase().contains("optiforge")) {
-                            realGameVersion = gameVersion.toLowerCase();
-                            for (var version in Globals.forgeVersions) {
-                              if (version.split("-")[0] == realGameVersion) {
-                                gameVersion = version.toString().replaceAll("forge", "optiforge");
-                              }
-                            }
-                          } else {
-                            realGameVersion = gameVersion.toLowerCase().split("-")[0];
-                          }
-                          isModded = true;
-                          args.add("-Dfml.ignoreInvalidMinecraftCertificates=true");
-                        } else if (gameType.toLowerCase().contains("forge") || gameVersion.toLowerCase().contains("forge")) {
-                          if (gameType.toLowerCase().contains("forge")) {
-                            realGameVersion = gameVersion.toLowerCase();
-                            for (var version in Globals.forgeVersions) {
-                              if (version.split("-")[0] == realGameVersion) {
-                                gameVersion = version;
-                              }
-                            }
-                          } else {
-                            realGameVersion = gameVersion.toLowerCase().split("-")[0];
-                          }
-                          isModded = true;
-                          args.add("-Dfml.ignoreInvalidMinecraftCertificates=true"); // Workaround for 1.6.4
-                        }
+                        var modLoaderConfig = versionResolver(gameType, gameVersion, context);
+                        var resolvedGameVersion = modLoaderConfig.gameVersion;
+                        var realGameVersion = modLoaderConfig.realGameVersion;
+                        var isModded = modLoaderConfig.isModded;
+                        var enableClassPath = modLoaderConfig.enableClassPath;
+                        List<String> args = List.from(modLoaderConfig.additionalArgs);
 
                         // Installa java automaticamente
                         if (!Globals.javaAdvSet) {
                           try {
-                            await LauncherUtils.JavaAutoInstall(isModded ? realGameVersion : gameVersion);
+                            await LauncherUtils.JavaAutoInstall(isModded ? realGameVersion : resolvedGameVersion);
                             Navigator.pop(context); // Chiudi il cerchiolino
                           } catch (e) {
                             Navigator.pop(context);
@@ -882,7 +827,7 @@ class _MainPageState extends State<MainPage> {
 
                         // Workaround per colpa di mojang di merda
                         var isPremium = AccountUtils.getAccount()?.isPremium;
-                        if ((gameVersion == "1.16.4" || gameVersion == "1.16.5") && isPremium == false) {
+                        if ((resolvedGameVersion == "1.16.4" || resolvedGameVersion == "1.16.5") && isPremium == false) {
                           args.addAll([
                             "-Dminecraft.api.auth.host=https://0.0.0.0/",
                             "-Dminecraft.api.account.host=https://0.0.0.0/",
@@ -890,13 +835,15 @@ class _MainPageState extends State<MainPage> {
                             "-Dminecraft.api.services.host=https://0.0.0.0/",
                           ]);
                         }
+
+                        var verList = VersionUtils.getMinecraftVersions(false);
+                        var currentVersionIndex = verList.indexWhere((version) => version["id"] == resolvedGameVersion);
+
                         // Workaround sovra-ingegnerizzato per colpa di apple
                         var startOnFirstThread = false;
                         if (Platform.isMacOS) {
-                          var verList = VersionUtils.getMinecraftVersions(false);
                           // A partire da questa versione è necessario su mac usare XstartOnFirstThread
                           var startingVersionIndex = verList.indexWhere((version) => version["id"] == "17w43a");
-                          var currentVersionIndex = verList.indexWhere((version) => version["id"] == gameVersion);
 
                           if (currentVersionIndex <= startingVersionIndex) {
                             args.addAll(["-XstartOnFirstThread"]);
@@ -915,12 +862,12 @@ class _MainPageState extends State<MainPage> {
                         // Args normali
                         args.addAll([
                           "-Duser.dir=${Globals.gamefoldercontroller.text}",
-                          "-Djava.library.path=${Globals.gamefoldercontroller.text}/versions/${gameVersion}/natives/",
+                          "-Djava.library.path=${Globals.gamefoldercontroller.text}/versions/${resolvedGameVersion}/natives/",
                           ...LauncherUtils.buildJVMOptimizedArgs(Globals.javaramcontroller.text),
                           "-jar",
                           "${LauncherUtils.getApplicationFolder("morpheus")}/Launcher.jar",
                           "-version",
-                          gameVersion,
+                          resolvedGameVersion,
                           "-minecraftToken",
                           "${AccountUtils.getAccount()?.accessToken}",
                           "-minecraftUsername",
@@ -929,7 +876,22 @@ class _MainPageState extends State<MainPage> {
                           "${AccountUtils.getAccount()?.uuid}",
                         ]);
 
-                        if (Globals.forceClasspath) {
+                        // Workaround per le versioni nuove
+                        var classpathStartIndex = verList.indexWhere((version) => version["id"] == "25w18a");
+
+                        if (classpathStartIndex != -1) {
+                          final allVersions = VersionUtils.getAllVersions();
+                          final baseVersion = VersionUtils.resolveBaseVersion(resolvedGameVersion, allVersions);
+
+                          if (baseVersion != null) {
+                            final baseIndex = verList.indexWhere((v) => v["id"] == baseVersion["id"]);
+                            if (baseIndex != -1 && baseIndex <= classpathStartIndex) {
+                              enableClassPath = true;
+                            }
+                          }
+                        }
+
+                        if (enableClassPath) {
                           args.addAll(['-c']);
                         }
 
@@ -1033,6 +995,130 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
+  ModLoaderConfig versionResolver(
+    String gameType,
+    String gameVersion,
+    BuildContext context,
+  ) {
+    var realGameVersion = gameVersion;
+    var isModded = false;
+    List<String> args = [];
+    var enableClassPath = Globals.forceClasspath;
+
+    // Latest Release
+    if (gameType.contains(AppLocalizations.of(context)!.vanilla_release_title)) {
+      return ModLoaderConfig(
+        gameVersion: "latest",
+        realGameVersion: realGameVersion,
+        isModded: false,
+        enableClassPath: enableClassPath,
+      );
+    }
+
+    // Latest Snapshot
+    if (gameType.contains(AppLocalizations.of(context)!.vanilla_snapshot_title)) {
+      return ModLoaderConfig(
+        gameVersion: "snapshot",
+        realGameVersion: realGameVersion,
+        isModded: false,
+        enableClassPath: enableClassPath,
+      );
+    }
+
+    // Fabric
+    if (gameType.toLowerCase().contains("fabric") || gameVersion.toLowerCase().contains("fabric")) {
+      if (gameVersion.toLowerCase().startsWith("fabric")) {
+        realGameVersion = gameVersion.split("-")[3];
+      } else {
+        var fabricVersion = Globals.fabricLoaderVersionsResponse[0]["version"];
+        gameVersion = "fabric-loader-$fabricVersion-$realGameVersion";
+      }
+
+      return ModLoaderConfig(
+        gameVersion: gameVersion,
+        realGameVersion: realGameVersion,
+        isModded: true,
+        enableClassPath: true,
+      );
+    }
+
+    // OptiFine
+    if (gameType.toLowerCase().contains("optifine") || gameVersion.toLowerCase().contains("optifine")) {
+      if (gameType.toLowerCase().contains("optifine")) {
+        realGameVersion = gameVersion.toLowerCase();
+        for (var version in Globals.optifineVersions) {
+          if (version.split("-")[0] == realGameVersion) {
+            gameVersion = version;
+            break;
+          }
+        }
+      } else {
+        realGameVersion = gameVersion.toLowerCase().split("-")[0];
+      }
+
+      return ModLoaderConfig(
+        gameVersion: gameVersion,
+        realGameVersion: realGameVersion,
+        isModded: true,
+        enableClassPath: enableClassPath,
+      );
+    }
+
+    // OptiForge
+    if (gameType.toLowerCase().contains("optiforge") || gameVersion.toLowerCase().contains("optiforge")) {
+      if (gameType.toLowerCase().contains("optiforge")) {
+        realGameVersion = gameVersion.toLowerCase();
+        for (var version in Globals.forgeVersions) {
+          if (version.split("-")[0] == realGameVersion) {
+            gameVersion = version.toString().replaceAll("forge", "optiforge");
+            break;
+          }
+        }
+      } else {
+        realGameVersion = gameVersion.toLowerCase().split("-")[0];
+      }
+
+      return ModLoaderConfig(
+        gameVersion: gameVersion,
+        realGameVersion: realGameVersion,
+        isModded: true,
+        additionalArgs: ["-Dfml.ignoreInvalidMinecraftCertificates=true"],
+        enableClassPath: enableClassPath,
+      );
+    }
+
+    // Forge
+    if (gameType.toLowerCase().contains("forge") || gameVersion.toLowerCase().contains("forge")) {
+      if (gameType.toLowerCase().contains("forge")) {
+        realGameVersion = gameVersion.toLowerCase();
+        for (var version in Globals.forgeVersions) {
+          if (version.split("-")[0] == realGameVersion) {
+            gameVersion = version;
+            break;
+          }
+        }
+      } else {
+        realGameVersion = gameVersion.toLowerCase().split("-")[0];
+      }
+
+      return ModLoaderConfig(
+        gameVersion: gameVersion,
+        realGameVersion: realGameVersion,
+        isModded: true,
+        additionalArgs: ["-Dfml.ignoreInvalidMinecraftCertificates=true"],
+        enableClassPath: enableClassPath,
+      );
+    }
+
+    // Vanilla (default)
+    return ModLoaderConfig(
+      gameVersion: gameVersion,
+      realGameVersion: realGameVersion,
+      isModded: false,
+      enableClassPath: enableClassPath,
+    );
+  }
+
   /////////// MODDING //////////////
 
   ListView buildModdedList() {
@@ -1133,7 +1219,18 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
           ),
-          for (var version in Globals.fabricGameVersionsResponse) buildVanillaItem("Fabric", version["version"], "", true),
+          for (var version in Globals.fabricGameVersionsResponse.where((v) {
+            if (Globals.showOnlyReleases != true) return true;
+
+            final stable = v["stable"];
+            final type = v["type"];
+
+            if (stable == true) return true;
+            if (type is String && type.toLowerCase() == "release") return true;
+
+            return false;
+          }))
+            buildVanillaItem("Fabric", version["version"], "", true),
         ],
       ],
     );

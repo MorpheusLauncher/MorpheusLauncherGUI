@@ -14,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_theme/system_theme.dart';
 
 class Globals {
-  static final buildVersion = "Ver 2.4.1";
+  static final buildVersion = "Ver 2.5.0";
   static final windowTitle = "Morpheus Launcher";
   static final borderRadius = 14.0;
 
@@ -656,6 +656,37 @@ class VersionUtils {
     return versions;
   }
 
+  static Map<String, dynamic>? resolveBaseVersion(String versionId, List<Map<String, dynamic>> allVersions) {
+    if (versionId.isEmpty || allVersions.isEmpty) return null;
+
+    final Map<String, Map<String, dynamic>> byId = {
+      for (var v in allVersions)
+        if (v["id"] != null) v["id"]: v,
+    };
+
+    final Set<String> visited = {};
+    String currentId = versionId;
+
+    while (true) {
+      if (visited.contains(currentId)) {
+        return byId[currentId];
+      }
+      visited.add(currentId);
+
+      final current = byId[currentId];
+      if (current == null) {
+        return null;
+      }
+
+      final parent = current["inheritsFrom"];
+      if (parent == null || parent == "") {
+        return current;
+      }
+
+      currentId = parent;
+    }
+  }
+
   static Future<List<VersionCompatibility>> fetchIncompatibleVersions() async {
     final url = '${Urls.morpheusBaseURL}/downloads/known-incompatible.json';
     final response = await http.get(Uri.parse(url));
@@ -715,6 +746,22 @@ class VersionUtils {
 
     return isCompatible;
   }
+}
+
+class ModLoaderConfig {
+  final String gameVersion;
+  final String realGameVersion;
+  final bool isModded;
+  final List<String> additionalArgs;
+  final bool enableClassPath;
+
+  ModLoaderConfig({
+    required this.gameVersion,
+    required this.realGameVersion,
+    required this.isModded,
+    this.additionalArgs = const [],
+    required this.enableClassPath,
+  });
 }
 
 class VersionCompatibility {
