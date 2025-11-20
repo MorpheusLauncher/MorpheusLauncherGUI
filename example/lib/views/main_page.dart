@@ -1001,8 +1001,6 @@ class _MainPageState extends State<MainPage> {
     BuildContext context,
   ) {
     var realGameVersion = gameVersion;
-    var isModded = false;
-    List<String> args = [];
     var enableClassPath = Globals.forceClasspath;
 
     // Latest Release
@@ -1011,7 +1009,7 @@ class _MainPageState extends State<MainPage> {
         gameVersion: "latest",
         realGameVersion: realGameVersion,
         isModded: false,
-        enableClassPath: enableClassPath,
+        enableClassPath: true,
       );
     }
 
@@ -1021,7 +1019,7 @@ class _MainPageState extends State<MainPage> {
         gameVersion: "snapshot",
         realGameVersion: realGameVersion,
         isModded: false,
-        enableClassPath: enableClassPath,
+        enableClassPath: true,
       );
     }
 
