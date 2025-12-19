@@ -5,10 +5,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
+import 'package:morpheus_launcher_gui/account/encryption.dart';
+import 'package:morpheus_launcher_gui/account/uuid_utils.dart';
 import 'package:morpheus_launcher_gui/globals.dart';
-
-import 'encryption.dart';
-import 'uuid_utils.dart';
 
 // Modello degli account
 class Account {

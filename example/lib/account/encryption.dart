@@ -5,8 +5,7 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart';
-
-import 'account_utils.dart';
+import 'package:morpheus_launcher_gui/account/account_utils.dart';
 
 void saveAccountListToJson(List<Account> accountList, String filePath) {
   final List<Map<String, dynamic>> jsonList = accountList.map((account) => account.toJson()).toList();

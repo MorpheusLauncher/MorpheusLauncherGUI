@@ -8,6 +8,7 @@ import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:morpheus_launcher_gui/globals.dart';
+import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
 import 'package:morpheus_launcher_gui/views/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_theme/system_theme.dart';
@@ -146,6 +147,11 @@ class MyAppBodyState extends State<MyAppBody> {
     }
     try {
       await getNews();
+    } catch (e) {
+      print(e);
+    }
+    try {
+      await VersionUtils.fetchMorpheusProducts();
     } catch (e) {
       print(e);
     }

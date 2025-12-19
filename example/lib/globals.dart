@@ -14,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_theme/system_theme.dart';
 
 class Globals {
-  static final buildVersion = "Ver 2.5.1";
+  static final buildVersion = "Ver 2.6.0";
   static final windowTitle = "Morpheus Launcher";
   static final borderRadius = 14.0;
 
@@ -36,7 +36,7 @@ class Globals {
   static late List<String> pinnedVersions = [];
   static late List<String> WindowThemes = [];
 
-  static int NavSelected = 0, AccountSelected = 0;
+  static var navSelected = NavSection.home, AccountSelected = 0;
 
   /** Sezione textfield */
   static final javapathcontroller = TextEditingController();
@@ -65,8 +65,26 @@ class Globals {
   static late var vanillaVersionsResponse = null;
   static late var vanillaNewsResponse = null;
 
+  /** Morpheus */
+  static late var morpheusVersionsResponse = null;
+
   /** Incompatible versions blacklist */
   static late var incompatibleVersions = null;
+
+  static Account? getAccount() {
+    if (Globals.accounts.isEmpty) return null;
+
+    return Globals.accounts.elementAt(Globals.AccountSelected);
+  }
+}
+
+enum NavSection {
+  home,
+  morpheus,
+  vanilla,
+  modded,
+  settings,
+  accounts,
 }
 
 class Urls {
@@ -76,6 +94,7 @@ class Urls {
   static final fabricApiURL = "https://meta.fabricmc.net/";
   static final forgeVersionsURL = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
   static final optifineVersionsURL = "${morpheusBaseURL}/downloads/optifine.json";
+  static final morpheusProductsURL = "${morpheusBaseURL}/downloads/morpheus-lite/index.json";
 
   // Roba inerente a ElyBy
   static final elybyBaseURL = "https://account.ely.by";
@@ -745,6 +764,35 @@ class VersionUtils {
     }
 
     return isCompatible;
+  }
+
+  static Future<void> fetchMorpheusProducts() async {
+    final response = await http.get(
+      Uri.parse(Urls.morpheusProductsURL),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      Globals.morpheusVersionsResponse = data['products'];
+    } else {
+      Globals.morpheusVersionsResponse = [];
+    }
+  }
+}
+
+class MorpheusProduct {
+  final String id;
+  final String name;
+  final String gameversion;
+
+  MorpheusProduct({required this.id, required this.name, required this.gameversion});
+
+  factory MorpheusProduct.fromJson(Map<String, dynamic> json) {
+    return MorpheusProduct(
+      id: json['id'],
+      name: json['name'],
+      gameversion: json['gameversion'],
+    );
   }
 }
 

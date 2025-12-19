@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 import 'package:http/http.dart' as http;
 
 import 'package:blur/blur.dart';
@@ -14,13 +13,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_switch/flutter_switch.dart';
-import 'package:image/image.dart' as img;
 import 'package:morpheus_launcher_gui/account/account_utils.dart';
 import 'package:morpheus_launcher_gui/account/microsoft_auth.dart';
 import 'package:morpheus_launcher_gui/globals.dart';
 import 'package:morpheus_launcher_gui/main.dart';
+import 'package:morpheus_launcher_gui/utils/circle_utils.dart';
+import 'package:morpheus_launcher_gui/utils/glass_morphism.dart';
+import 'package:morpheus_launcher_gui/utils/launch_utils.dart';
 import 'package:morpheus_launcher_gui/utils/morpheus_icons_icons.dart';
+import 'package:morpheus_launcher_gui/utils/skinmodel/skin_utils.dart';
+import 'package:morpheus_launcher_gui/utils/skinmodel/skin_viewer.dart';
+import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
 import 'package:morpheus_launcher_gui/views/widget_news.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simple_3d/simple_3d.dart';
@@ -28,7 +31,6 @@ import 'package:simple_3d_renderer/simple_3d_renderer.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:text_divider/text_divider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:util_simple_3d/util_simple_3d.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -45,9 +47,9 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> rebuild() async {
-    if (AccountUtils.getAccount() != null) {
+    if (Globals.getAccount() != null) {
       ThreeDimensionalViewer.objs.clear();
-      ThreeDimensionalViewer.setupUV(AccountUtils.getAccount()!.isSlimSkin);
+      ThreeDimensionalViewer.setupUV(Globals.getAccount()!.isSlimSkin);
       ThreeDimensionalViewer.texturizePlayerModel();
       Timer.periodic(Duration(milliseconds: 100), (timer) async {
         setState(() {
@@ -60,8 +62,6 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    /** Padding per non far casino con i tasti della titlebar */
-    /** e anche Padding laterale per la navbar e per la lista */
     return Material(
       color: ColorUtils.dynamicWindowBackgroundColor,
       child: Column(
@@ -69,384 +69,48 @@ class _MainPageState extends State<MainPage> {
           drawTitleCustomBar(),
           Expanded(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(8, 0, 8, 8),
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
               child: Stack(
                 children: [
-                  if (Globals.NavSelected == 0) ...[
-                    /** Home */
-                    Row(children: [
-                      buildNavbar(),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                          child: buildHomeWidgetList(),
-                        ),
-                      ),
-                    ]),
-                  ] else if (Globals.NavSelected == 1) ...[
-                    /** Vanilla */
-                    Row(children: [
-                      buildNavbar(),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                          child: buildVanillaList(),
-                        ),
-                      ),
-                    ]),
-                  ] else if (Globals.NavSelected == 2) ...[
-                    /** Versioni moddate */
-                    Row(children: [
-                      buildNavbar(),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                          child: buildModdedList(),
-                        ),
-                      ),
-                    ]),
-                  ] else if (Globals.NavSelected == 3) ...[
-                    /** Impostazioni */
-                    Row(children: [
-                      buildNavbar(),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                          child: buildSettingsList(),
-                        ),
-                      ),
-                    ]),
-                  ] else if (Globals.NavSelected == 4) ...[
-                    /** Alt Manager */
-                    Row(children: [
-                      buildNavbar(),
-                      SizedBox(width: 8),
-                      /** Lista account */
-                      Expanded(
-                        child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                          child: buildAccountList(),
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          /** Mostra la skin del player a destra */
-                          if (AccountUtils.getAccount() != null && ThreeDimensionalViewer.objs.isNotEmpty) ...[
-                            Sp3dRenderer(
-                              const Size(150, 280),
-                              Sp3dV2D(75, 125),
-                              ThreeDimensionalViewer.world,
-                              Sp3dCamera(Sp3dV3D(0, 0, 3000), 1500),
-                              Sp3dLight(Sp3dV3D(0, 0, 0), syncCam: true),
-                              allowUserWorldZoom: false,
-                              allowUserWorldRotation: true,
-                              useClipping: true,
-                            ),
-                          ],
-                          SizedBox(height: 5),
-
-                          /** Pulsante Cambia Skin */
-                          WidgetUtils.buildButton(
-                            Icons.brush,
-                            ColorUtils.dynamicPrimaryForegroundColor,
-                            ColorUtils.primaryFontColor,
-                            () async {
-                              if (AccountUtils.getAccount()!.isPremium) {
-                                WidgetUtils.showPopup(
-                                  context,
-                                  AppLocalizations.of(context)!.account_skin_uploader_type_title,
-                                  <Widget>[
-                                    Text(
-                                      AppLocalizations.of(context)!.account_skin_uploader_msg,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontFamily: 'Comfortaa',
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                  <Widget>[
-                                    TextButton(
-                                      child: const Text(
-                                        "Slim",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontFamily: 'Comfortaa',
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                      onPressed: () async {
-                                        Navigator.pop(context);
-                                        FilePickerResult? result = await FilePicker.platform.pickFiles();
-                                        if (result != null) {
-                                          File file = File(result.files.single.path!);
-                                          WidgetUtils.showMessageDialog(
-                                            context,
-                                            AppLocalizations.of(context)!.account_skin_uploader_title,
-                                            "${await uploadSkin(context, "slim", AccountUtils.getAccount()!, file.path.replaceAll("\\", "/"))}",
-                                            () => Navigator.pop(context),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                    TextButton(
-                                      child: const Text(
-                                        "Classic",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontFamily: 'Comfortaa',
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                      onPressed: () async {
-                                        Navigator.pop(context);
-                                        FilePickerResult? result = await FilePicker.platform.pickFiles();
-                                        if (result != null) {
-                                          File file = File(result.files.single.path!);
-                                          WidgetUtils.showMessageDialog(
-                                            context,
-                                            AppLocalizations.of(context)!.account_skin_uploader_title,
-                                            "${await uploadSkin(context, "classic", AccountUtils.getAccount()!, file.path.replaceAll("\\", "/"))}",
-                                            () => Navigator.pop(context),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                    TextButton(
-                                      child: Text(
-                                        AppLocalizations.of(context)!.generic_cancel,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontFamily: 'Comfortaa',
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                      onPressed: () async => Navigator.pop(context),
-                                    ),
-                                  ],
-                                );
-                              } else {
-                                WidgetUtils.showPopup(
-                                  context,
-                                  AppLocalizations.of(context)!.generic_error_msg,
-                                  [
-                                    Text(
-                                      AppLocalizations.of(context)!.account_skin_error_msg,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontFamily: 'Comfortaa',
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                  [
-                                    TextButton(
-                                      onPressed: () async {
-                                        await launchUrl(Uri.parse("https://www.minecraft.net/it-it/store/minecraft-java-bedrock-edition-pc"));
-                                        Navigator.pop(context);
-                                      },
-                                      child: Text(
-                                        AppLocalizations.of(context)!.account_skin_buy_game,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontFamily: 'Comfortaa',
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context),
-                                      child: const Text(
-                                        "OK",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontFamily: 'Comfortaa',
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }
-                            },
-                          ),
-
-                          /** Pulsanti add remove */
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              /** Aggiungi Account */
-                              WidgetUtils.buildButton(
-                                Icons.add,
-                                ColorUtils.dynamicPrimaryForegroundColor,
-                                ColorUtils.primaryFontColor,
-                                () {
-                                  /** Selezione tipo di account */
-                                  WidgetUtils.showPopup(
-                                    context,
-                                    AppLocalizations.of(context)!.account_add_button,
-                                    <Widget>[
-                                      Text(
-                                        AppLocalizations.of(context)!.account_add_type,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontFamily: 'Comfortaa',
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                    <Widget>[
-                                      TextButton(
-                                        child: const Text(
-                                          "Offline",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontFamily: 'Comfortaa',
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        onPressed: () {
-                                          AccountUtils.addSP(
-                                            context,
-                                            () => {
-                                              setState(() {
-                                                if (Globals.usernamecontroller.text.isNotEmpty)
-                                                  Globals.accounts.add(
-                                                    new Account(
-                                                      username: Globals.usernamecontroller.text,
-                                                      uuid: getOfflinePlayerUuid(Globals.usernamecontroller.text).toString(),
-                                                      accessToken: "0",
-                                                      refreshToken: "",
-                                                      isPremium: false,
-                                                      isSlimSkin: isOfflineSlimSkin(Globals.usernamecontroller.text),
-                                                      isElyBy: false,
-                                                    ),
-                                                  );
-                                                saveAccounts();
-                                                Globals.usernamecontroller.text = "";
-                                              }),
-                                              rebuild(),
-                                            },
-                                          );
-                                        },
-                                      ),
-                                      TextButton(
-                                        child: const Text(
-                                          "Offline (Ely.by)",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontFamily: 'Comfortaa',
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        onPressed: () {
-                                          AccountUtils.addElyBy(
-                                            context,
-                                            (username, uuid, accesstoken, refreshtoken, isSlimSkin) => {
-                                              setState(
-                                                () {
-                                                  Globals.accounts.add(
-                                                    new Account(
-                                                      username: username,
-                                                      uuid: uuid,
-                                                      accessToken: accesstoken,
-                                                      refreshToken: refreshtoken,
-                                                      isPremium: false,
-                                                      isSlimSkin: isSlimSkin,
-                                                      isElyBy: true,
-                                                    ),
-                                                  );
-                                                  saveAccounts();
-                                                },
-                                              ),
-                                              rebuild(),
-                                            },
-                                          );
-                                        },
-                                      ),
-                                      TextButton(
-                                        child: const Text(
-                                          "Premium",
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontFamily: 'Comfortaa',
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        onPressed: () {
-                                          AccountUtils.addPremium(
-                                            context,
-                                            (username, uuid, accesstoken, refreshtoken, isPremium, isSlimSkin) => {
-                                              setState(
-                                                () {
-                                                  Globals.accounts.add(
-                                                    new Account(
-                                                      username: username,
-                                                      uuid: uuid,
-                                                      accessToken: accesstoken,
-                                                      refreshToken: refreshtoken,
-                                                      isPremium: isPremium,
-                                                      isSlimSkin: isSlimSkin,
-                                                      isElyBy: false,
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                              rebuild(),
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
-                              /** Remove Account */
-                              WidgetUtils.buildButton(
-                                Icons.remove,
-                                ColorUtils.dynamicPrimaryForegroundColor,
-                                ColorUtils.primaryFontColor,
-                                () {
-                                  setState(() {
-                                    if (Globals.accounts.isNotEmpty) {
-                                      Globals.accounts.removeAt(Globals.AccountSelected);
-                                      saveAccounts();
-                                    } else {
-                                      WidgetUtils.showMessageDialog(
-                                        context,
-                                        AppLocalizations.of(context)!.generic_error_msg,
-                                        AppLocalizations.of(context)!.account_remove_error,
-                                        () => Navigator.pop(context),
-                                      );
-                                    }
-                                    Globals.AccountSelected = 0;
-                                  });
-                                  rebuild();
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      SizedBox(width: 10),
-                    ]),
-                  ],
+                  _buildContent(context),
                 ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    switch (Globals.navSelected) {
+      case NavSection.home:
+        return _buildPage(buildHomeWidgetList());
+      case NavSection.morpheus:
+        return _buildPage(buildMorpheusList());
+      case NavSection.vanilla:
+        return _buildPage(buildVanillaList());
+      case NavSection.modded:
+        return _buildPage(buildModdedList());
+      case NavSection.settings:
+        return _buildPage(buildSettingsList());
+      case NavSection.accounts:
+        return _buildAccountsPage();
+    }
+  }
+
+  Widget _buildPage(Widget child) {
+    return Row(
+      children: [
+        buildNavbar(),
+        const SizedBox(width: 8),
+        Expanded(
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+            child: child,
+          ),
+        ),
+      ],
     );
   }
 
@@ -465,12 +129,13 @@ class _MainPageState extends State<MainPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          buildNavItem(Icons.home, 0),
-          buildNavItem(MorpheusIcons.vanilla, 1),
-          buildNavItem(MorpheusIcons.modded, 2),
-          buildNavItem(Icons.settings, 3),
-          SizedBox(height: 20),
-          buildNavAccountItem(4),
+          buildNavItem(Icons.home, NavSection.home),
+          buildNavItem(MorpheusIcons.broadsword, NavSection.morpheus),
+          buildNavItem(MorpheusIcons.vanilla, NavSection.vanilla),
+          buildNavItem(MorpheusIcons.modded, NavSection.modded),
+          buildNavItem(Icons.settings, NavSection.settings),
+          const SizedBox(height: 20),
+          buildNavAccountItem(NavSection.accounts),
           SizedBox(height: 20),
         ],
       ),
@@ -478,53 +143,45 @@ class _MainPageState extends State<MainPage> {
   }
 
   /** Renderizza le icone della Navbar */
-  Widget buildNavItem(IconData icon, int index) {
+  Widget buildNavItem(IconData icon, NavSection section) {
+    final bool selected = Globals.navSelected == section;
+
     return GestureDetector(
       onTap: () async {
         setState(() {
-          Globals.NavSelected = index;
+          Globals.navSelected = section;
         });
-        try {
+
+        if (section == NavSection.home) {
           Globals.pinnedVersions = await VersionUtils.getPinnedVersions();
-        } catch (e) {
-          print(e);
         }
       },
-      child: MouseRegion(
-        onEnter: (e) => {},
-        child: Container(
-          height: 70,
-          width: 60,
-          child: Center(
-            child: Material(
-              elevation: 10,
-              color: Colors.transparent,
-              shadowColor: ColorUtils.defaultShadowColor,
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-              child: Icon(
-                icon,
-                color: Globals.NavSelected == index ? ColorUtils.primaryFontColor.withAlpha(255) : ColorUtils.primaryFontColor.withAlpha(128),
-                size: 30,
-              ),
-            ),
-          ),
+      child: Container(
+        height: 70,
+        width: 60,
+        child: Icon(
+          icon,
+          size: 30,
+          color: selected ? ColorUtils.primaryFontColor : ColorUtils.primaryFontColor.withAlpha(128),
         ),
       ),
     );
   }
 
   /** Renderizza la faccia del player */
-  Widget buildNavAccountItem(int index) {
+  Widget buildNavAccountItem(NavSection section) {
+    final bool selected = Globals.navSelected == section;
+
     return GestureDetector(
       onTap: () {
         setState(() {
-          Globals.NavSelected = index;
+          Globals.navSelected = section;
         });
       },
       child: MouseRegion(
         onEnter: (e) => {},
         child: FutureBuilder<Uint8List>(
-          future: AccountUtils._loadCroppedSkin(),
+          future: SkinUtils.loadCroppedSkin(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const SizedBox(
@@ -543,7 +200,7 @@ class _MainPageState extends State<MainPage> {
                 shape: BoxShape.circle,
                 image: DecorationImage(
                   filterQuality: FilterQuality.none,
-                  opacity: Globals.NavSelected == index ? 1 : 0.5,
+                  opacity: selected ? 1 : 0.5,
                   image: MemoryImage(croppedBytes),
                   fit: BoxFit.cover,
                 ),
@@ -571,7 +228,11 @@ class _MainPageState extends State<MainPage> {
               text: Text(
                 AppLocalizations.of(context)!.home_favourite_title,
                 textAlign: TextAlign.center,
-                style: WidgetUtils.customTextStyle(20, FontWeight.w300, ColorUtils.primaryFontColor),
+                style: WidgetUtils.customTextStyle(
+                  20,
+                  FontWeight.w300,
+                  ColorUtils.primaryFontColor,
+                ),
               ),
             ),
           ),
@@ -593,7 +254,11 @@ class _MainPageState extends State<MainPage> {
               text: Text(
                 AppLocalizations.of(context)!.home_news_title,
                 textAlign: TextAlign.center,
-                style: WidgetUtils.customTextStyle(20, FontWeight.w300, ColorUtils.primaryFontColor),
+                style: WidgetUtils.customTextStyle(
+                  20,
+                  FontWeight.w300,
+                  ColorUtils.primaryFontColor,
+                ),
               ),
             ),
           ),
@@ -617,7 +282,11 @@ class _MainPageState extends State<MainPage> {
             child: Text(
               AppLocalizations.of(context)!.home_news_empty_msg,
               textAlign: TextAlign.center,
-              style: WidgetUtils.customTextStyle(14, FontWeight.w300, ColorUtils.primaryFontColor),
+              style: WidgetUtils.customTextStyle(
+                14,
+                FontWeight.w300,
+                ColorUtils.primaryFontColor,
+              ),
             ),
           ),
           Padding(
@@ -631,7 +300,11 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget buildNewsItem(String title, String body, String url) {
+  Widget buildNewsItem(
+    String title,
+    String body,
+    String url,
+  ) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
@@ -693,6 +366,147 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
+  /////////// MORPHEUS /////////////
+
+  ListView buildMorpheusList() {
+    return ListView(
+      children: [
+        if (Globals.morpheusVersionsResponse != null) ...[
+          for (var prodotto in Globals.morpheusVersionsResponse) ...[
+            buildMorpheusItem(
+              prodotto['name'],
+              prodotto['gameversion'],
+              prodotto['id'],
+              prodotto['img'],
+            ),
+          ],
+        ],
+      ],
+    );
+  }
+
+  Widget buildMorpheusItem(
+    String productName,
+    String gameVersion,
+    String productId,
+    String image,
+  ) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
+      child: Container(
+        child: Material(
+          elevation: 15,
+          color: ColorUtils.dynamicPrimaryForegroundColor,
+          shadowColor: ColorUtils.defaultShadowColor,
+          borderRadius: BorderRadius.circular(Globals.borderRadius + 4),
+          child: Stack(
+            children: [
+              /** Immagine del client */
+              Container(
+                height: MediaQuery.of(context).size.height * 0.5,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 3, horizontal: 3),
+                  child: Image.network(
+                    "${image}",
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    fit: BoxFit.cover,
+                  ).blurred(
+                    blur: 0,
+                    blurColor: Colors.black,
+                    colorOpacity: 0.1,
+                    borderRadius: BorderRadius.circular(Globals.borderRadius + 2),
+                  ),
+                ),
+              ),
+              Column(
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.5 - 74,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    child: GlassMorphism(
+                      blur: 8,
+                      opacity: 0.15,
+                      radius: Globals.borderRadius,
+                      child: Stack(
+                        children: [
+                          /** Info del client */
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(8, 5, 10, 5),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "${productName}",
+                                  style: WidgetUtils.customTextStyle(
+                                    18,
+                                    FontWeight.w500,
+                                    Colors.white,
+                                  ),
+                                ),
+                                Text(
+                                  "minecraft ${gameVersion}",
+                                  style: WidgetUtils.customTextStyle(
+                                    14,
+                                    FontWeight.w500,
+                                    Colors.white.withAlpha(200),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          /** Sezione Pulsanti */
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                height: 55,
+                                child: WidgetUtils.buildButton(
+                                  Icons.rocket_launch,
+                                  ColorUtils.dynamicAccentColor,
+                                  Colors.white,
+                                  () async {
+                                    final config = LaunchConfig(
+                                      gameVersion: gameVersion,
+                                      productId: productId,
+                                      isModded: false,
+                                      realGameVersion: gameVersion,
+                                      enableClassPath: false,
+                                      startOnFirstThread: Platform.isMacOS,
+                                      jvmArgs: [],
+                                      launcherArgs: [],
+                                    );
+
+                                    await LaunchUtils.launchMinecraft(
+                                      context,
+                                      config,
+                                      onAccountRequired: () {
+                                        setState(() => Globals.navSelected = NavSection.accounts);
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /////////// VANILLA //////////////
 
   ListView buildVanillaList() {
@@ -705,14 +519,28 @@ class _MainPageState extends State<MainPage> {
             child: Text(
               AppLocalizations.of(context)!.vanilla_empty_title,
               textAlign: TextAlign.center,
-              style: WidgetUtils.customTextStyle(22, FontWeight.w300, ColorUtils.primaryFontColor),
+              style: WidgetUtils.customTextStyle(
+                22,
+                FontWeight.w300,
+                ColorUtils.primaryFontColor,
+              ),
             ),
           ),
 
         /** Ultime versioni (ONLINE) */
         if (Globals.vanillaVersionsResponse != null) ...[
-          buildVanillaItem(AppLocalizations.of(context)!.vanilla_release_title, Globals.vanillaVersionsResponse["latest"]["release"], "", true),
-          buildVanillaItem(AppLocalizations.of(context)!.vanilla_snapshot_title, Globals.vanillaVersionsResponse["latest"]["snapshot"], "", true),
+          buildVanillaItem(
+            AppLocalizations.of(context)!.vanilla_release_title,
+            Globals.vanillaVersionsResponse["latest"]["release"],
+            "",
+            true,
+          ),
+          buildVanillaItem(
+            AppLocalizations.of(context)!.vanilla_snapshot_title,
+            Globals.vanillaVersionsResponse["latest"]["snapshot"],
+            "",
+            true,
+          ),
           /** Separatore */
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
@@ -725,12 +553,25 @@ class _MainPageState extends State<MainPage> {
         /** Lista completa delle versioni solo vanilla (misto) */
         for (var version in VersionUtils.getMinecraftVersions(false))
           if ((version["type"] == "release" && Globals.showOnlyReleases) || !Globals.showOnlyReleases)
-            buildVanillaItem(version["type"], version["id"], version["releaseTime"], VersionUtils.isCompatible(version["type"], version["id"])),
+            buildVanillaItem(
+              version["type"],
+              version["id"],
+              version["releaseTime"],
+              VersionUtils.isCompatible(
+                version["type"],
+                version["id"],
+              ),
+            ),
       ],
     );
   }
 
-  Widget buildVanillaItem(String gameType, String gameVersion, String releaseDate, bool compatible) {
+  Widget buildVanillaItem(
+    String gameType,
+    String gameVersion,
+    String releaseDate,
+    bool compatible,
+  ) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
@@ -759,12 +600,20 @@ class _MainPageState extends State<MainPage> {
                   children: [
                     Text(
                       "${gameType.substring(0, 1).toUpperCase() + gameType.substring(1)} ${gameVersion}",
-                      style: WidgetUtils.customTextStyle(releaseDate.isNotEmpty ? 18 : 20, FontWeight.w500, ColorUtils.primaryFontColor),
+                      style: WidgetUtils.customTextStyle(
+                        releaseDate.isNotEmpty ? 18 : 20,
+                        FontWeight.w500,
+                        ColorUtils.primaryFontColor,
+                      ),
                     ),
                     if (releaseDate.isNotEmpty)
                       Text(
                         "${DateTime.parse(releaseDate).toLocal().day}/${DateTime.parse(releaseDate).toLocal().month}/${DateTime.parse(releaseDate).toLocal().year}",
-                        style: WidgetUtils.customTextStyle(14, FontWeight.w500, ColorUtils.secondaryFontColor),
+                        style: WidgetUtils.customTextStyle(
+                          14,
+                          FontWeight.w500,
+                          ColorUtils.secondaryFontColor,
+                        ),
                       ),
                   ],
                 ),
@@ -789,7 +638,9 @@ class _MainPageState extends State<MainPage> {
                             Globals.pinnedVersions.remove(gameVersion);
                           }
                         });
-                        await VersionUtils.updateLauncherProfiles(Globals.pinnedVersions);
+                        await VersionUtils.updateLauncherProfiles(
+                          Globals.pinnedVersions,
+                        );
                       },
                     ),
                   ],
@@ -800,190 +651,31 @@ class _MainPageState extends State<MainPage> {
                     ColorUtils.dynamicAccentColor,
                     Colors.white,
                     () async {
-                      if (AccountUtils.getAccount() != null) {
-                        if (!Globals.javaAdvSet) WidgetUtils.showLoadingCircle(context);
-                        Globals.consolecontroller.clear();
-                        AccountUtils.refreshPremium(context); // refresha il token di minecraft
+                      var modLoaderConfig = versionResolver(gameType, gameVersion, context);
 
-                        var modLoaderConfig = versionResolver(gameType, gameVersion, context);
-                        var resolvedGameVersion = modLoaderConfig.gameVersion;
-                        var realGameVersion = modLoaderConfig.realGameVersion;
-                        var isModded = modLoaderConfig.isModded;
-                        var enableClassPath = modLoaderConfig.enableClassPath;
-                        List<String> args = List.from(modLoaderConfig.additionalArgs);
+                      final config = LaunchConfig(
+                        gameVersion: modLoaderConfig.gameVersion,
+                        productId: null,
+                        isModded: modLoaderConfig.isModded,
+                        realGameVersion: modLoaderConfig.realGameVersion,
+                        enableClassPath: LaunchUtils.shouldEnableClassPath(
+                          modLoaderConfig.gameVersion,
+                          modLoaderConfig.enableClassPath,
+                        ),
+                        startOnFirstThread: LaunchUtils.shouldUseStartOnFirstThread(
+                          modLoaderConfig.gameVersion,
+                        ),
+                        jvmArgs: modLoaderConfig.additionalArgs,
+                        launcherArgs: [],
+                      );
 
-                        // Installa java automaticamente
-                        if (!Globals.javaAdvSet) {
-                          try {
-                            await LauncherUtils.JavaAutoInstall(isModded ? realGameVersion : resolvedGameVersion);
-                            Navigator.pop(context); // Chiudi il cerchiolino
-                          } catch (e) {
-                            Navigator.pop(context);
-                            WidgetUtils.showMessageDialog(context, AppLocalizations.of(context)!.generic_error_msg, "$e", () {
-                              Navigator.pop(context);
-                            });
-                          }
-                        }
-
-                        // Workaround per colpa di mojang di merda
-                        var isPremium = AccountUtils.getAccount()?.isPremium;
-                        if ((resolvedGameVersion == "1.16.4" || resolvedGameVersion == "1.16.5") && isPremium == false) {
-                          args.addAll([
-                            "-Dminecraft.api.auth.host=https://0.0.0.0/",
-                            "-Dminecraft.api.account.host=https://0.0.0.0/",
-                            "-Dminecraft.api.session.host=https://0.0.0.0/",
-                            "-Dminecraft.api.services.host=https://0.0.0.0/",
-                          ]);
-                        }
-
-                        var verList = VersionUtils.getMinecraftVersions(false);
-                        var currentVersionIndex = verList.indexWhere((version) => version["id"] == resolvedGameVersion);
-
-                        // Workaround sovra-ingegnerizzato per colpa di apple
-                        var startOnFirstThread = false;
-                        if (Platform.isMacOS) {
-                          // A partire da questa versione è necessario su mac usare XstartOnFirstThread
-                          var startingVersionIndex = verList.indexWhere((version) => version["id"] == "17w43a");
-
-                          if (currentVersionIndex <= startingVersionIndex) {
-                            args.addAll(["-XstartOnFirstThread"]);
-                            startOnFirstThread = true;
-                          }
-                        }
-
-                        // Args VM aggiuntivi
-                        var vmSplit = Globals.javavmcontroller.text.split(" ");
-                        if (Globals.javavmcontroller.text.isNotEmpty) args.addAll(vmSplit);
-
-                        if (AccountUtils.getAccount()?.isElyBy == true) {
-                          args.addAll(['-javaagent:${LauncherUtils.getApplicationFolder("morpheus")}/authlib-injector.jar=ely.by']);
-                        }
-
-                        // Args normali
-                        args.addAll([
-                          "-Duser.dir=${Globals.gamefoldercontroller.text}",
-                          "-Djava.library.path=${Globals.gamefoldercontroller.text}/versions/${resolvedGameVersion}/natives/",
-                          ...LauncherUtils.buildJVMOptimizedArgs(Globals.javaramcontroller.text),
-                          "-jar",
-                          "${LauncherUtils.getApplicationFolder("morpheus")}/Launcher.jar",
-                          "-version",
-                          resolvedGameVersion,
-                          "-minecraftToken",
-                          "${AccountUtils.getAccount()?.accessToken}",
-                          "-minecraftUsername",
-                          "${AccountUtils.getAccount()?.username}",
-                          "-minecraftUUID",
-                          "${AccountUtils.getAccount()?.uuid}",
-                        ]);
-
-                        // Workaround per le versioni nuove
-                        var classpathStartIndex = verList.indexWhere((version) => version["id"] == "25w18a");
-
-                        if (classpathStartIndex != -1) {
-                          final allVersions = VersionUtils.getAllVersions();
-                          final baseVersion = VersionUtils.resolveBaseVersion(resolvedGameVersion, allVersions);
-
-                          if (baseVersion != null) {
-                            final baseIndex = verList.indexWhere((v) => v["id"] == baseVersion["id"]);
-                            if (baseIndex != -1 && baseIndex <= classpathStartIndex) {
-                              enableClassPath = true;
-                            }
-                          }
-                        }
-
-                        if (enableClassPath) {
-                          args.addAll(['-c']);
-                        }
-
-                        if (startOnFirstThread) {
-                          args.addAll(["-startOnFirstThread"]);
-                        }
-
-                        if (Globals.customFolderSet) {
-                          args.addAll([
-                            "-gameFolder",
-                            "${Globals.gamefoldercontroller.text}",
-                          ]);
-                        }
-
-                        var launcherSplit = Globals.javalaunchercontroller.text.split(" ");
-                        if (Globals.javalaunchercontroller.text.isNotEmpty) args.addAll(launcherSplit);
-
-                        try {
-                          Process process = await Process.start(Globals.javapathcontroller.text, args);
-                          if (Globals.showConsole) {
-                            WidgetUtils.showConsole(context, process);
-                          } else {
-                            process.stdout.transform(systemEncoding.decoder).forEach((line) {});
-                            process.stderr.transform(systemEncoding.decoder).forEach((line) {});
-                          }
-                          int exitCode = await process.exitCode;
-                          Globals.consolecontroller.text += "[LAUNCHER]: exit code $exitCode";
-                          // check if minecraft crashed and isn't crashed manually
-                          if (exitCode != 0 && exitCode != 143) {
-                            WidgetUtils.showPopup(
-                              context,
-                              AppLocalizations.of(context)!.generic_error_msg,
-                              <Widget>[
-                                Text(
-                                  AppLocalizations.of(context)!.console_crash_msg,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontFamily: 'Comfortaa',
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
-                              <Widget>[
-                                TextButton(
-                                  child: const Text(
-                                    "OK",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontFamily: 'Comfortaa',
-                                      fontWeight: FontWeight.w300,
-                                    ),
-                                  ),
-                                  onPressed: () async {
-                                    // final lines = Globals.consolecontroller.text.split('\n');
-                                    // final crashlog = lines.skip(lines.length > 40 ? lines.length - 40 : 0).join('\n');
-                                    // print(crashlog);
-                                  },
-                                ),
-                                TextButton(
-                                  child: Text(
-                                    AppLocalizations.of(context)!.generic_cancel,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontFamily: 'Comfortaa',
-                                      fontWeight: FontWeight.w300,
-                                    ),
-                                  ),
-                                  onPressed: () => Navigator.pop(context),
-                                ),
-                              ],
-                            );
-                          }
-                        } catch (error) {
-                          WidgetUtils.showMessageDialog(
-                            context,
-                            AppLocalizations.of(context)!.generic_error_msg,
-                            "$error",
-                            () => Navigator.pop(context),
-                          );
-                        }
-                      } else {
-                        WidgetUtils.showMessageDialog(
-                          context,
-                          AppLocalizations.of(context)!.account_required_title,
-                          AppLocalizations.of(context)!.account_required_msg,
-                          () {
-                            Navigator.pop(context);
-                            setState(() => Globals.NavSelected = 4);
-                          },
-                        );
-                      }
+                      await LaunchUtils.launchMinecraft(
+                        context,
+                        config,
+                        onAccountRequired: () {
+                          setState(() => Globals.navSelected = NavSection.accounts);
+                        },
+                      );
                     },
                   ),
                 ],
@@ -1004,7 +696,7 @@ class _MainPageState extends State<MainPage> {
     var enableClassPath = Globals.forceClasspath;
 
     // Latest Release
-    if (gameType.contains(AppLocalizations.of(context)!.vanilla_release_title)) {
+    if (gameVersion.contains("latest")) {
       return ModLoaderConfig(
         gameVersion: "latest",
         realGameVersion: realGameVersion,
@@ -1014,7 +706,7 @@ class _MainPageState extends State<MainPage> {
     }
 
     // Latest Snapshot
-    if (gameType.contains(AppLocalizations.of(context)!.vanilla_snapshot_title)) {
+    if (gameVersion.contains("snapshot")) {
       return ModLoaderConfig(
         gameVersion: "snapshot",
         realGameVersion: realGameVersion,
@@ -1080,7 +772,9 @@ class _MainPageState extends State<MainPage> {
         gameVersion: gameVersion,
         realGameVersion: realGameVersion,
         isModded: true,
-        additionalArgs: ["-Dfml.ignoreInvalidMinecraftCertificates=true"],
+        additionalArgs: [
+          "-Dfml.ignoreInvalidMinecraftCertificates=true",
+        ],
         enableClassPath: enableClassPath,
       );
     }
@@ -1103,7 +797,9 @@ class _MainPageState extends State<MainPage> {
         gameVersion: gameVersion,
         realGameVersion: realGameVersion,
         isModded: true,
-        additionalArgs: ["-Dfml.ignoreInvalidMinecraftCertificates=true"],
+        additionalArgs: [
+          "-Dfml.ignoreInvalidMinecraftCertificates=true",
+        ],
         enableClassPath: enableClassPath,
       );
     }
@@ -1132,7 +828,11 @@ class _MainPageState extends State<MainPage> {
               text: Text(
                 AppLocalizations.of(context)!.modded_installed_title,
                 textAlign: TextAlign.center,
-                style: WidgetUtils.customTextStyle(20, FontWeight.w300, ColorUtils.primaryFontColor),
+                style: WidgetUtils.customTextStyle(
+                  20,
+                  FontWeight.w300,
+                  ColorUtils.primaryFontColor,
+                ),
               ),
             ),
           ),
@@ -1144,13 +844,22 @@ class _MainPageState extends State<MainPage> {
             child: Text(
               AppLocalizations.of(context)!.modded_empty_title,
               textAlign: TextAlign.center,
-              style: WidgetUtils.customTextStyle(22, FontWeight.w300, ColorUtils.primaryFontColor),
+              style: WidgetUtils.customTextStyle(
+                22,
+                FontWeight.w300,
+                ColorUtils.primaryFontColor,
+              ),
             ),
           ),
 
         /** Lista completa delle versioni moddate istallate */
         for (var version in VersionUtils.getMinecraftVersions(true))
-          buildVanillaItem(version["type"], version["id"], "", VersionUtils.isCompatible(version["type"], version["id"])),
+          buildVanillaItem(
+            version["type"],
+            version["id"],
+            "",
+            VersionUtils.isCompatible(version["type"], version["id"]),
+          ),
 
         /** Lista delle optifine installabili */
         if (Globals.optifineVersions != null) ...[
@@ -1162,11 +871,21 @@ class _MainPageState extends State<MainPage> {
               text: Text(
                 AppLocalizations.of(context)!.modded_optifine_download_available,
                 textAlign: TextAlign.center,
-                style: WidgetUtils.customTextStyle(20, FontWeight.w300, ColorUtils.primaryFontColor),
+                style: WidgetUtils.customTextStyle(
+                  20,
+                  FontWeight.w300,
+                  ColorUtils.primaryFontColor,
+                ),
               ),
             ),
           ),
-          for (var version in Globals.optifineVersions) buildVanillaItem("Optifine", version.split("-")[0], "", VersionUtils.isCompatible("Optifine", version.split("-")[0])),
+          for (var version in Globals.optifineVersions)
+            buildVanillaItem(
+              "Optifine",
+              version.split("-")[0],
+              "",
+              VersionUtils.isCompatible("Optifine", version.split("-")[0]),
+            ),
         ],
 
         /** Lista dei forge optifine installabili */
@@ -1179,11 +898,21 @@ class _MainPageState extends State<MainPage> {
               text: Text(
                 AppLocalizations.of(context)!.modded_forge_download_available,
                 textAlign: TextAlign.center,
-                style: WidgetUtils.customTextStyle(20, FontWeight.w300, ColorUtils.primaryFontColor),
+                style: WidgetUtils.customTextStyle(
+                  20,
+                  FontWeight.w300,
+                  ColorUtils.primaryFontColor,
+                ),
               ),
             ),
           ),
-          for (var version in Globals.optiforgeVersions) buildVanillaItem("OptiForge", version.split("-")[0], "", VersionUtils.isCompatible("OptiForge", version.split("-")[0])),
+          for (var version in Globals.optiforgeVersions)
+            buildVanillaItem(
+              "OptiForge",
+              version.split("-")[0],
+              "",
+              VersionUtils.isCompatible("OptiForge", version.split("-")[0]),
+            ),
         ],
 
         /** Lista dei forge installabili */
@@ -1196,11 +925,21 @@ class _MainPageState extends State<MainPage> {
               text: Text(
                 AppLocalizations.of(context)!.modded_forge_download_available,
                 textAlign: TextAlign.center,
-                style: WidgetUtils.customTextStyle(20, FontWeight.w300, ColorUtils.primaryFontColor),
+                style: WidgetUtils.customTextStyle(
+                  20,
+                  FontWeight.w300,
+                  ColorUtils.primaryFontColor,
+                ),
               ),
             ),
           ),
-          for (var version in Globals.forgeVersions) buildVanillaItem("Forge", version.split("-")[0], "", VersionUtils.isCompatible("Forge", version.split("-")[0])),
+          for (var version in Globals.forgeVersions)
+            buildVanillaItem(
+              "Forge",
+              version.split("-")[0],
+              "",
+              VersionUtils.isCompatible("Forge", version.split("-")[0]),
+            ),
         ],
 
         /** Lista dei fabric installabili */
@@ -1213,7 +952,11 @@ class _MainPageState extends State<MainPage> {
               text: Text(
                 AppLocalizations.of(context)!.modded_fabric_download_available,
                 textAlign: TextAlign.center,
-                style: WidgetUtils.customTextStyle(20, FontWeight.w300, ColorUtils.primaryFontColor),
+                style: WidgetUtils.customTextStyle(
+                  20,
+                  FontWeight.w300,
+                  ColorUtils.primaryFontColor,
+                ),
               ),
             ),
           ),
@@ -1248,7 +991,11 @@ class _MainPageState extends State<MainPage> {
             text: Text(
               AppLocalizations.of(context)!.settings_appearance_label,
               textAlign: TextAlign.center,
-              style: WidgetUtils.customTextStyle(20, FontWeight.w300, ColorUtils.primaryFontColor),
+              style: WidgetUtils.customTextStyle(
+                20,
+                FontWeight.w300,
+                ColorUtils.primaryFontColor,
+              ),
             ),
           ),
         ),
@@ -1315,7 +1062,11 @@ class _MainPageState extends State<MainPage> {
                       children: [
                         Text(
                           AppLocalizations.of(context)!.settings_follow_system_color,
-                          style: WidgetUtils.customTextStyle(16, FontWeight.w500, ColorUtils.primaryFontColor),
+                          style: WidgetUtils.customTextStyle(
+                            16,
+                            FontWeight.w500,
+                            ColorUtils.primaryFontColor,
+                          ),
                         ),
                       ],
                     ),
@@ -1341,7 +1092,9 @@ class _MainPageState extends State<MainPage> {
                               onTap: () async => {
                                 Globals.accentColor = 0,
                                 (await SharedPreferences.getInstance()).setInt('accentColor', Globals.accentColor),
-                                setState(() => ColorUtils.dynamicAccentColor = ColorUtils.getColorFromAccent(Globals.accentColor)),
+                                setState(() => ColorUtils.dynamicAccentColor = ColorUtils.getColorFromAccent(
+                                      Globals.accentColor,
+                                    )),
                                 ColorUtils.reloadColors(),
                                 Window.setEffect(
                                   effect: getWindowEffect(),
@@ -1359,7 +1112,7 @@ class _MainPageState extends State<MainPage> {
                                   ColoredCircle(
                                     size: 20,
                                     color: SystemTheme.accentColor.light.withAlpha(200),
-                                    outlineColor: Globals.accentColor == 0 ? Colors.white : Colors.transparent,
+                                    outlineColor: Globals.accentColor == 0 ? SystemTheme.accentColor.light : Colors.transparent,
                                     outlineWidth: 2,
                                     distance: 3,
                                   ),
@@ -1367,7 +1120,11 @@ class _MainPageState extends State<MainPage> {
                                     padding: EdgeInsets.fromLTRB(2, 4, 0, 0),
                                     child: Text(
                                       "OS",
-                                      style: WidgetUtils.customTextStyle(10, FontWeight.w100, Colors.white),
+                                      style: WidgetUtils.customTextStyle(
+                                        10,
+                                        FontWeight.w100,
+                                        Colors.white,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -1383,8 +1140,13 @@ class _MainPageState extends State<MainPage> {
                               child: GestureDetector(
                                 onTap: () async => {
                                   Globals.accentColor = i,
-                                  (await SharedPreferences.getInstance()).setInt('accentColor', Globals.accentColor),
-                                  setState(() => ColorUtils.dynamicAccentColor = ColorUtils.getColorFromAccent(Globals.accentColor)),
+                                  (await SharedPreferences.getInstance()).setInt(
+                                    'accentColor',
+                                    Globals.accentColor,
+                                  ),
+                                  setState(() => ColorUtils.dynamicAccentColor = ColorUtils.getColorFromAccent(
+                                        Globals.accentColor,
+                                      )),
                                   ColorUtils.reloadColors(),
                                   Window.setEffect(
                                     effect: getWindowEffect(),
@@ -1400,7 +1162,11 @@ class _MainPageState extends State<MainPage> {
                                 child: ColoredCircle(
                                   size: 20,
                                   color: ColorUtils.getColorFromAccent(i),
-                                  outlineColor: Globals.accentColor == i ? Colors.white : Colors.transparent,
+                                  outlineColor: Globals.accentColor == i
+                                      ? ColorUtils.getColorFromAccent(
+                                          Globals.accentColor,
+                                        )
+                                      : Colors.transparent,
                                   outlineWidth: 2,
                                   distance: 3,
                                 ),
@@ -1448,7 +1214,11 @@ class _MainPageState extends State<MainPage> {
                       children: [
                         Text(
                           AppLocalizations.of(context)!.settings_theme,
-                          style: WidgetUtils.customTextStyle(16, FontWeight.w500, ColorUtils.primaryFontColor),
+                          style: WidgetUtils.customTextStyle(
+                            16,
+                            FontWeight.w500,
+                            ColorUtils.primaryFontColor,
+                          ),
                         ),
                       ],
                     ),
@@ -1472,15 +1242,25 @@ class _MainPageState extends State<MainPage> {
                             isExpanded: true,
                             hint: Text(
                               'Theme',
-                              style: WidgetUtils.customTextStyle(16, FontWeight.w500, ColorUtils.primaryFontColor),
+                              style: WidgetUtils.customTextStyle(
+                                16,
+                                FontWeight.w500,
+                                ColorUtils.primaryFontColor,
+                              ),
                             ),
-                            items: Globals.WindowThemes.map((String item) => DropdownMenuItem<String>(
-                                  value: item,
-                                  child: Text(
-                                    item,
-                                    style: WidgetUtils.customTextStyle(16, FontWeight.w500, ColorUtils.primaryFontColor),
+                            items: Globals.WindowThemes.map(
+                              (String item) => DropdownMenuItem<String>(
+                                value: item,
+                                child: Text(
+                                  item,
+                                  style: WidgetUtils.customTextStyle(
+                                    16,
+                                    FontWeight.w500,
+                                    ColorUtils.primaryFontColor,
                                   ),
-                                )).toList(),
+                                ),
+                              ),
+                            ).toList(),
                             value: Globals.selectedWindowTheme,
                             onChanged: (String? value) async {
                               Globals.selectedWindowTheme = value!;
@@ -1489,7 +1269,10 @@ class _MainPageState extends State<MainPage> {
                               if (ColorUtils.isMaterial) Globals.fullTransparent = false;
 
                               SharedPreferences prefs = await SharedPreferences.getInstance();
-                              await prefs.setString("themeSet", Globals.selectedWindowTheme);
+                              await prefs.setString(
+                                "themeSet",
+                                Globals.selectedWindowTheme,
+                              );
                               ColorUtils.reloadColors();
 
                               dynamic effect = getWindowEffect();
@@ -1511,7 +1294,9 @@ class _MainPageState extends State<MainPage> {
                               height: 40,
                               width: 140,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(Globals.borderRadius - 4),
+                                borderRadius: BorderRadius.circular(
+                                  Globals.borderRadius - 4,
+                                ),
                                 color: ColorUtils.dynamicSecondaryForegroundColor,
                               ),
                             ),
@@ -1520,7 +1305,9 @@ class _MainPageState extends State<MainPage> {
                             ),
                             dropdownStyleData: DropdownStyleData(
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(Globals.borderRadius - 4),
+                                borderRadius: BorderRadius.circular(
+                                  Globals.borderRadius - 4,
+                                ),
                                 color: ColorUtils.dynamicPrimaryForegroundColor,
                               ),
                               offset: Offset(0, -4),
@@ -1575,7 +1362,11 @@ class _MainPageState extends State<MainPage> {
             text: Text(
               AppLocalizations.of(context)!.settings_misc_label,
               textAlign: TextAlign.center,
-              style: WidgetUtils.customTextStyle(20, FontWeight.w300, ColorUtils.primaryFontColor),
+              style: WidgetUtils.customTextStyle(
+                20,
+                FontWeight.w300,
+                ColorUtils.primaryFontColor,
+              ),
             ),
           ),
         ),
@@ -1655,7 +1446,10 @@ class _MainPageState extends State<MainPage> {
                                     File file = File(result.files.single.path!);
                                     Globals.javapathcontroller.text = file.path.replaceAll("\\", "/");
                                     SharedPreferences prefs = await SharedPreferences.getInstance();
-                                    await prefs.setString("javaPath", Globals.javapathcontroller.text);
+                                    await prefs.setString(
+                                      "javaPath",
+                                      Globals.javapathcontroller.text,
+                                    );
                                   }
                                 },
                               ),
@@ -1705,7 +1499,10 @@ class _MainPageState extends State<MainPage> {
                         Globals.javapathcontroller,
                         (value) async {
                           SharedPreferences prefs = await SharedPreferences.getInstance();
-                          await prefs.setString("javaPath", Globals.javapathcontroller.text);
+                          await prefs.setString(
+                            "javaPath",
+                            Globals.javapathcontroller.text,
+                          );
                         },
                       ),
                       /** Java ram */
@@ -1730,7 +1527,10 @@ class _MainPageState extends State<MainPage> {
                         Globals.javaramcontroller,
                         (value) async {
                           SharedPreferences prefs = await SharedPreferences.getInstance();
-                          await prefs.setString("javaRAM", Globals.javaramcontroller.text);
+                          await prefs.setString(
+                            "javaRAM",
+                            Globals.javaramcontroller.text,
+                          );
                         },
                       ),
                       /** Java VM args */
@@ -1755,7 +1555,10 @@ class _MainPageState extends State<MainPage> {
                         Globals.javavmcontroller,
                         (value) async {
                           SharedPreferences prefs = await SharedPreferences.getInstance();
-                          await prefs.setString("javaVMArgs", Globals.javavmcontroller.text);
+                          await prefs.setString(
+                            "javaVMArgs",
+                            Globals.javavmcontroller.text,
+                          );
                         },
                       ),
                       /** Launcher args */
@@ -1780,7 +1583,10 @@ class _MainPageState extends State<MainPage> {
                         Globals.javalaunchercontroller,
                         (value) async {
                           SharedPreferences prefs = await SharedPreferences.getInstance();
-                          await prefs.setString("javaLauncherArgs", Globals.javalaunchercontroller.text);
+                          await prefs.setString(
+                            "javaLauncherArgs",
+                            Globals.javalaunchercontroller.text,
+                          );
                         },
                       ),
                       /** Modalità classpath */
@@ -1828,7 +1634,10 @@ class _MainPageState extends State<MainPage> {
                   setState(() => Globals.customFolderSet = value),
                   if (!Globals.customFolderSet) ...[
                     Globals.gamefoldercontroller.text = LauncherUtils.getApplicationFolder("minecraft"),
-                    await (await SharedPreferences.getInstance()).setString("gameFolderPath", Globals.gamefoldercontroller.text),
+                    await (await SharedPreferences.getInstance()).setString(
+                      "gameFolderPath",
+                      Globals.gamefoldercontroller.text,
+                    ),
                   ],
                 },
               ),
@@ -1850,7 +1659,10 @@ class _MainPageState extends State<MainPage> {
                               if (selectedDirectory != null) {
                                 Globals.gamefoldercontroller.text = selectedDirectory.replaceAll("\\", "/");
                                 SharedPreferences prefs = await SharedPreferences.getInstance();
-                                await prefs.setString("gameFolderPath", Globals.gamefoldercontroller.text);
+                                await prefs.setString(
+                                  "gameFolderPath",
+                                  Globals.gamefoldercontroller.text,
+                                );
                               }
                             },
                           ),
@@ -1863,7 +1675,10 @@ class _MainPageState extends State<MainPage> {
                     Globals.gamefoldercontroller,
                     (value) async {
                       SharedPreferences prefs = await SharedPreferences.getInstance();
-                      await prefs.setString("gameFolderPath", Globals.gamefoldercontroller.text);
+                      await prefs.setString(
+                        "gameFolderPath",
+                        Globals.gamefoldercontroller.text,
+                      );
                     },
                   ),
                 ),
@@ -1898,7 +1713,11 @@ class _MainPageState extends State<MainPage> {
             text: Text(
               AppLocalizations.of(context)!.settings_account_label,
               textAlign: TextAlign.center,
-              style: WidgetUtils.customTextStyle(20, FontWeight.w300, ColorUtils.primaryFontColor),
+              style: WidgetUtils.customTextStyle(
+                20,
+                FontWeight.w300,
+                ColorUtils.primaryFontColor,
+              ),
             ),
           ),
         ),
@@ -1971,7 +1790,11 @@ class _MainPageState extends State<MainPage> {
           child: GestureDetector(
             child: Text(
               "build: ${Globals.buildVersion} on ${extractPlatformInfo(Platform.version)} - morpheuslauncher.it (cc by-nc-sa) 2023-2025",
-              style: WidgetUtils.customTextStyle(12, FontWeight.w500, ColorUtils.secondaryFontColor),
+              style: WidgetUtils.customTextStyle(
+                12,
+                FontWeight.w500,
+                ColorUtils.secondaryFontColor,
+              ),
             ),
             onTap: () {
               WidgetUtils.showMessageDialog(
@@ -1992,8 +1815,14 @@ class _MainPageState extends State<MainPage> {
             children: [
               linkIcon(MorpheusIcons.globe, 'https://morpheuslauncher.it'),
               linkIcon(MorpheusIcons.discord, 'https://discord.gg/aerXnBe'),
-              linkIcon(MorpheusIcons.github_mark, 'https://github.com/MorpheusLauncher'),
-              linkIcon(MorpheusIcons.patreon, 'https://www.patreon.com/c/Lampadina_17'),
+              linkIcon(
+                MorpheusIcons.github_mark,
+                'https://github.com/MorpheusLauncher',
+              ),
+              linkIcon(
+                MorpheusIcons.patreon,
+                'https://www.patreon.com/c/Lampadina_17',
+              ),
               linkIcon(MorpheusIcons.kofi, 'https://ko-fi.com/lampadina_17'),
             ],
           ),
@@ -2018,6 +1847,346 @@ class _MainPageState extends State<MainPage> {
 
   /////////// ACCOUNT //////////////
 
+  Widget _buildAccountsPage() {
+    return Row(children: [
+      buildNavbar(),
+      SizedBox(width: 8),
+      /** Lista account */
+      Expanded(
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+          child: buildAccountList(),
+        ),
+      ),
+      SizedBox(width: 10),
+      Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          /** Mostra la skin del player a destra */
+          if (Globals.getAccount() != null && ThreeDimensionalViewer.objs.isNotEmpty) ...[
+            Sp3dRenderer(
+              const Size(150, 280),
+              Sp3dV2D(75, 125),
+              ThreeDimensionalViewer.world,
+              Sp3dCamera(Sp3dV3D(0, 0, 3000), 1500),
+              Sp3dLight(Sp3dV3D(0, 0, 0), syncCam: true),
+              allowUserWorldZoom: false,
+              allowUserWorldRotation: true,
+              useClipping: true,
+            ),
+          ],
+          SizedBox(height: 5),
+
+          /** Pulsante Cambia Skin */
+          WidgetUtils.buildButton(
+            Icons.brush,
+            ColorUtils.dynamicPrimaryForegroundColor,
+            ColorUtils.primaryFontColor,
+            () async {
+              if (Globals.getAccount()!.isPremium) {
+                WidgetUtils.showPopup(
+                  context,
+                  AppLocalizations.of(context)!.account_skin_uploader_type_title,
+                  <Widget>[
+                    Text(
+                      AppLocalizations.of(context)!.account_skin_uploader_msg,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Comfortaa',
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                  <Widget>[
+                    TextButton(
+                      child: const Text(
+                        "Slim",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Comfortaa',
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        FilePickerResult? result = await FilePicker.platform.pickFiles();
+                        if (result != null) {
+                          File file = File(result.files.single.path!);
+                          WidgetUtils.showMessageDialog(
+                            context,
+                            AppLocalizations.of(context)!.account_skin_uploader_title,
+                            "${await uploadSkin(context, "slim", Globals.getAccount()!, file.path.replaceAll("\\", "/"))}",
+                            () => Navigator.pop(context),
+                          );
+                        }
+                      },
+                    ),
+                    TextButton(
+                      child: const Text(
+                        "Classic",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Comfortaa',
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        FilePickerResult? result = await FilePicker.platform.pickFiles();
+                        if (result != null) {
+                          File file = File(result.files.single.path!);
+                          WidgetUtils.showMessageDialog(
+                            context,
+                            AppLocalizations.of(context)!.account_skin_uploader_title,
+                            "${await uploadSkin(context, "classic", Globals.getAccount()!, file.path.replaceAll("\\", "/"))}",
+                            () => Navigator.pop(context),
+                          );
+                        }
+                      },
+                    ),
+                    TextButton(
+                      child: Text(
+                        AppLocalizations.of(context)!.generic_cancel,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Comfortaa',
+                          fontWeight: FontWeight.w500,
+                          color: Colors.red,
+                        ),
+                      ),
+                      onPressed: () async => Navigator.pop(context),
+                    ),
+                  ],
+                );
+              } else {
+                WidgetUtils.showPopup(
+                  context,
+                  AppLocalizations.of(context)!.generic_error_msg,
+                  [
+                    Text(
+                      AppLocalizations.of(context)!.account_skin_error_msg,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Comfortaa',
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                  [
+                    TextButton(
+                      onPressed: () async {
+                        await launchUrl(Uri.parse(
+                          "https://www.minecraft.net/it-it/store/minecraft-java-bedrock-edition-pc",
+                        ));
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        AppLocalizations.of(context)!.account_skin_buy_game,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Comfortaa',
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        "OK",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Comfortaa',
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+            },
+          ),
+
+          /** Pulsanti add remove */
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              /** Aggiungi Account */
+              WidgetUtils.buildButton(
+                Icons.add,
+                ColorUtils.dynamicPrimaryForegroundColor,
+                ColorUtils.primaryFontColor,
+                () {
+                  /** Selezione tipo di account */
+                  WidgetUtils.showPopup(
+                    context,
+                    AppLocalizations.of(context)!.account_add_button,
+                    <Widget>[
+                      Text(
+                        AppLocalizations.of(context)!.account_add_type,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Comfortaa',
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                    <Widget>[
+                      TextButton(
+                        child: const Text(
+                          "Offline",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: 'Comfortaa',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        onPressed: () {
+                          AccountUtils.addSP(
+                            context,
+                            () => {
+                              setState(() {
+                                if (Globals.usernamecontroller.text.isNotEmpty)
+                                  Globals.accounts.add(
+                                    new Account(
+                                      username: Globals.usernamecontroller.text,
+                                      uuid: getOfflinePlayerUuid(
+                                        Globals.usernamecontroller.text,
+                                      ).toString(),
+                                      accessToken: "0",
+                                      refreshToken: "",
+                                      isPremium: false,
+                                      isSlimSkin: isOfflineSlimSkin(Globals.usernamecontroller.text),
+                                      isElyBy: false,
+                                    ),
+                                  );
+                                saveAccounts();
+                                Globals.usernamecontroller.text = "";
+                              }),
+                              rebuild(),
+                            },
+                          );
+                        },
+                      ),
+                      TextButton(
+                        child: const Text(
+                          "Offline (Ely.by)",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: 'Comfortaa',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        onPressed: () {
+                          AccountUtils.addElyBy(
+                            context,
+                            (
+                              username,
+                              uuid,
+                              accesstoken,
+                              refreshtoken,
+                              isSlimSkin,
+                            ) =>
+                                {
+                              setState(
+                                () {
+                                  Globals.accounts.add(
+                                    new Account(
+                                      username: username,
+                                      uuid: uuid,
+                                      accessToken: accesstoken,
+                                      refreshToken: refreshtoken,
+                                      isPremium: false,
+                                      isSlimSkin: isSlimSkin,
+                                      isElyBy: true,
+                                    ),
+                                  );
+                                  saveAccounts();
+                                },
+                              ),
+                              rebuild(),
+                            },
+                          );
+                        },
+                      ),
+                      TextButton(
+                        child: const Text(
+                          "Premium",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: 'Comfortaa',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        onPressed: () {
+                          AccountUtils.addPremium(
+                            context,
+                            (
+                              username,
+                              uuid,
+                              accesstoken,
+                              refreshtoken,
+                              isPremium,
+                              isSlimSkin,
+                            ) =>
+                                {
+                              setState(
+                                () {
+                                  Globals.accounts.add(
+                                    new Account(
+                                      username: username,
+                                      uuid: uuid,
+                                      accessToken: accesstoken,
+                                      refreshToken: refreshtoken,
+                                      isPremium: isPremium,
+                                      isSlimSkin: isSlimSkin,
+                                      isElyBy: false,
+                                    ),
+                                  );
+                                },
+                              ),
+                              rebuild(),
+                            },
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+              /** Remove Account */
+              WidgetUtils.buildButton(
+                Icons.remove,
+                ColorUtils.dynamicPrimaryForegroundColor,
+                ColorUtils.primaryFontColor,
+                () {
+                  setState(() {
+                    if (Globals.accounts.isNotEmpty) {
+                      Globals.accounts.removeAt(Globals.AccountSelected);
+                      saveAccounts();
+                    } else {
+                      WidgetUtils.showMessageDialog(
+                        context,
+                        AppLocalizations.of(context)!.generic_error_msg,
+                        AppLocalizations.of(context)!.account_remove_error,
+                        () => Navigator.pop(context),
+                      );
+                    }
+                    Globals.AccountSelected = 0;
+                  });
+                  rebuild();
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+      SizedBox(width: 10),
+    ]);
+  }
+
   ListView buildAccountList() {
     return ListView(
       children: [
@@ -2037,7 +2206,11 @@ class _MainPageState extends State<MainPage> {
             child: Text(
               AppLocalizations.of(context)!.account_empty_msg,
               textAlign: TextAlign.center,
-              style: WidgetUtils.customTextStyle(14, FontWeight.w300, ColorUtils.primaryFontColor),
+              style: WidgetUtils.customTextStyle(
+                14,
+                FontWeight.w300,
+                ColorUtils.primaryFontColor,
+              ),
             ),
           ),
         ],
@@ -2045,7 +2218,12 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget buildAccountEntry(String username, bool premium, bool elyby, int index) {
+  Widget buildAccountEntry(
+    String username,
+    bool premium,
+    bool elyby,
+    int index,
+  ) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
@@ -2070,7 +2248,9 @@ class _MainPageState extends State<MainPage> {
                         shape: BoxShape.circle,
                         image: DecorationImage(
                           opacity: 0.8,
-                          image: CachedNetworkImageProvider("${Urls.skinURL}/head/${username}"),
+                          image: CachedNetworkImageProvider(
+                            "${Urls.skinURL}/head/${username}",
+                          ),
                         ),
                       ),
                     ),
@@ -2082,11 +2262,19 @@ class _MainPageState extends State<MainPage> {
                       children: [
                         Text(
                           username,
-                          style: WidgetUtils.customTextStyle(18, FontWeight.w500, ColorUtils.primaryFontColor),
+                          style: WidgetUtils.customTextStyle(
+                            18,
+                            FontWeight.w500,
+                            ColorUtils.primaryFontColor,
+                          ),
                         ),
                         Text(
                           premium ? "Premium" : (elyby ? "ElyBy" : "Offline"),
-                          style: WidgetUtils.customTextStyle(14, FontWeight.w300, ColorUtils.secondaryFontColor),
+                          style: WidgetUtils.customTextStyle(
+                            14,
+                            FontWeight.w300,
+                            ColorUtils.secondaryFontColor,
+                          ),
                         ),
                       ],
                     ),
@@ -2162,45 +2350,10 @@ class AccountUtils {
   /////// ACCOUNT MANAGER //////////
   //////////////////////////////////
 
-  static Future<Uint8List> _loadCroppedSkin() async {
-    final rawSkin = await ThreeDimensionalViewer.getImageBytes(AccountUtils._buildSkinModelImageProvider());
-    final img.Image? original = img.decodeImage(rawSkin);
-    if (original == null) return rawSkin;
-    final cropped = img.copyCrop(original, x: 8, y: 8, width: 8, height: 8);
-
-    return Uint8List.fromList(img.encodePng(cropped));
-  }
-
-  static ImageProvider _buildSkinModelImageProvider() {
-    final account = getAccount();
-    if (account == null) {
-      return const AssetImage("assets/alex-raw.png");
-    }
-
-    final offlineSkin = AssetImage(
-      account.isSlimSkin ? "assets/alex-raw.png" : "assets/steve-raw.png",
-    );
-
-    String? imageUrl;
-
-    if (account.isPremium) {
-      imageUrl = "${Urls.skinURL}/raw/${account.uuid}";
-    } else if (account.isElyBy) {
-      imageUrl = "${Urls.elybySkinsURL}/skins/${account.username}";
-    }
-
-    if (imageUrl != null) {
-      try {
-        return CachedNetworkImageProvider(imageUrl);
-      } catch (_) {
-        return offlineSkin;
-      }
-    }
-
-    return offlineSkin;
-  }
-
-  static void addSP(dynamic context, Function callback) {
+  static void addSP(
+    dynamic context,
+    Function callback,
+  ) {
     Navigator.pop(context);
     WidgetUtils.showPopup(
       context,
@@ -2325,18 +2478,20 @@ class AccountUtils {
     }
   }
 
-  static Future<void> refreshPremium(dynamic context) async {
-    if (getAccount()?.isPremium == true) {
+  static Future<void> refreshPremium(
+    dynamic context,
+  ) async {
+    if (Globals.getAccount()?.isPremium == true) {
       Globals.consolecontroller.text += "[LAUNCHER]: ${AppLocalizations.of(context)!.account_token_refresh}\n";
 
       try {
-        var minecraftAuth = await doMicrosoftRefresh(context, getAccount()!.refreshToken);
+        var minecraftAuth = await doMicrosoftRefresh(context, Globals.getAccount()!.refreshToken);
         if (!minecraftAuth.toString().startsWith("[MC]:")) {
           var minecraftToken = minecraftAuth['access_token'];
           var minecraft = await fetchMinecraftProfile(context, minecraftToken);
 
           if (!minecraft.toString().startsWith("[MC]:")) {
-            getAccount()?.accessToken = minecraftToken;
+            Globals.getAccount()?.accessToken = minecraftToken;
             saveAccounts();
           } else {
             WidgetUtils.showMessageDialog(
@@ -2355,7 +2510,14 @@ class AccountUtils {
 
   static Future<void> addPremium(
     dynamic context,
-    Function(dynamic username, dynamic uuid, dynamic accesstoken, dynamic refreshtoken, bool isPremium, bool isSlimSkin) callback,
+    Function(
+      dynamic username,
+      dynamic uuid,
+      dynamic accesstoken,
+      dynamic refreshtoken,
+      bool isPremium,
+      bool isSlimSkin,
+    ) callback,
   ) async {
     String str = await doMicrosoftConsent(context);
 
@@ -2397,7 +2559,9 @@ class AccountUtils {
             onPressed: () async {
               await Clipboard.setData(ClipboardData(text: userCode));
               if (!await launchUrl(Uri.parse(verificationUri))) {
-                throw Exception("${AppLocalizations.of(context)!.account_add_fail}: ${verificationUri}");
+                throw Exception(
+                  "${AppLocalizations.of(context)!.account_add_fail}: ${verificationUri}",
+                );
               }
             },
           ),
@@ -2418,7 +2582,12 @@ class AccountUtils {
       );
 
       Timer.periodic(Duration(seconds: 3), (timer) async {
-        var data = await getToken(context, 'urn:ietf:params:oauth:grant-type:device_code', null, deviceCode);
+        var data = await getToken(
+          context,
+          'urn:ietf:params:oauth:grant-type:device_code',
+          null,
+          deviceCode,
+        );
         if (data != null) {
           if (!data.toString().startsWith("[MS]:")) {
             var microsoftAccess = data['access_token'];
@@ -2473,916 +2642,5 @@ class AccountUtils {
         () => Navigator.pop(context),
       );
     }
-  }
-
-  static Account? getAccount() {
-    if (Globals.accounts.isEmpty) return null;
-
-    return Globals.accounts.elementAt(Globals.AccountSelected);
-  }
-}
-
-class CustomSettingSwitchStyle {
-  final IconData icon;
-  final Color bgColor;
-  final Color shadowColor;
-  final Color fontColor;
-  final Color toggleColor;
-  final Color activeColor;
-  final Color inactiveColor;
-
-  CustomSettingSwitchStyle({
-    required this.icon,
-    required this.bgColor,
-    required this.shadowColor,
-    required this.fontColor,
-    required this.toggleColor,
-    required this.activeColor,
-    required this.inactiveColor,
-  });
-}
-
-class WidgetUtils {
-  //////////////////////////////////
-  /////////// SETTINGS /////////////
-  //////////////////////////////////
-
-  /** Switch impostazioni */
-  static Widget buildSettingSwitchItem(String name, String name2, CustomSettingSwitchStyle style, var set, Function(dynamic value) callback) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
-      child: Container(
-        height: 55,
-        child: Material(
-          elevation: 15,
-          color: style.bgColor,
-          shadowColor: style.shadowColor,
-          borderRadius: BorderRadius.circular(Globals.borderRadius),
-          child: Stack(
-            children: [
-              Row(
-                children: [
-                  Container(
-                    height: 55,
-                    width: 45,
-                    child: Center(
-                      child: Material(
-                        elevation: 10,
-                        color: Colors.transparent,
-                        shadowColor: ColorUtils.defaultShadowColor,
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        child: Icon(
-                          style.icon,
-                          color: style.fontColor,
-                          size: 26,
-                        ),
-                      ),
-                    ),
-                  ),
-                  /** Nome del setting */
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(0, 18, 10, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name,
-                          style: customTextStyle(16, FontWeight.w500, style.fontColor),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              /** Interruttore */
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                    child: Material(
-                      elevation: 15,
-                      color: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      // Globals.defaultShadowColor,
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                      child: MouseRegion(
-                        onEnter: (e) => {},
-                        onExit: (e) => {},
-                        child: FlutterSwitch(
-                          width: 50,
-                          height: 25,
-                          toggleSize: 18.0,
-                          toggleColor: style.toggleColor,
-                          activeColor: style.activeColor,
-                          inactiveColor: style.inactiveColor,
-                          value: set,
-                          onToggle: (value) async {
-                            callback(value);
-                            SharedPreferences prefs = await SharedPreferences.getInstance();
-                            await prefs.setBool(name2, value);
-                            set = value;
-                            ;
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /** Textfield */
-  static Widget buildSettingTextItem(dynamic child, Color background, Color foreground, String hint, TextEditingController controller, Function(dynamic value) callback) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
-      child: Container(
-        child: Material(
-          elevation: 15,
-          color: background,
-          shadowColor: ColorUtils.defaultShadowColor,
-          borderRadius: BorderRadius.circular(Globals.borderRadius - 2),
-          child: Stack(
-            children: [
-              Focus(
-                onFocusChange: (hasFocus) async {
-                  callback(hasFocus);
-                },
-                child: TextField(
-                  style: TextStyle(
-                    color: foreground,
-                    fontFamily: 'Comfortaa',
-                    shadows: [
-                      Shadow(
-                        color: ColorUtils.defaultShadowColor, // Choose the color of the shadow
-                        blurRadius: 2.0, // Adjust the blur radius for the shadow effect
-                        offset: Offset(2.0, 2.0), // Set the horizontal and vertical offset for the shadow
-                      ),
-                    ],
-                  ),
-                  controller: controller,
-                  decoration: InputDecoration(
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.transparent),
-                      borderRadius: BorderRadius.circular(Globals.borderRadius - 2),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                      borderRadius: BorderRadius.circular(Globals.borderRadius - 2),
-                    ),
-                    hintText: hint,
-                    hintStyle: customTextStyle(16, FontWeight.w300, foreground),
-                    filled: false,
-                  ),
-                ),
-              ),
-              if (child != null) child,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /** Container riempibile impostazioni */
-  static Widget buildSettingContainerItem(dynamic widgets) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
-      child: Container(
-        child: Material(
-          elevation: 15,
-          color: ColorUtils.dynamicPrimaryForegroundColor,
-          shadowColor: ColorUtils.defaultShadowColor,
-          borderRadius: BorderRadius.circular(Globals.borderRadius),
-          child: widgets,
-        ),
-      ),
-    );
-  }
-
-  /////////////////////////////////
-  //// ALTRI ELEMENTI GRAFICI /////
-  /////////////////////////////////
-
-  static Widget buildButton(IconData icon, Color color, Color iconColor, VoidCallback onPressed) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 5, 6, 5),
-      child: GestureDetector(
-        onTap: onPressed,
-        child: backShadow(
-          MouseRegion(
-            onEnter: (e) => {},
-            child: Material(
-              elevation: 15,
-              color: color,
-              shadowColor: Colors.transparent,
-              borderRadius: BorderRadius.circular(Globals.borderRadius - 4),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                child: Center(
-                  child: Icon(
-                    icon,
-                    color: iconColor,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          20.0,
-          ColorUtils.defaultShadowColor,
-        ),
-      ),
-    );
-  }
-
-  static Widget buildTextButton(Color color, Color textColor, VoidCallback onPressed, String text) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(7, 7, 0, 7),
-      child: GestureDetector(
-        onTap: onPressed,
-        child: backShadow(
-          MouseRegion(
-            onEnter: (e) => {},
-            child: Material(
-              elevation: 15,
-              color: color,
-              shadowColor: Colors.transparent,
-              borderRadius: BorderRadius.circular(Globals.borderRadius - 4),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                child: Center(
-                  child: Text(
-                    text,
-                    style: customTextStyle(16, FontWeight.w500, textColor),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          20.0,
-          ColorUtils.defaultShadowColor,
-        ),
-      ),
-    );
-  }
-
-  static void showPopup(dynamic context, String title, List<Widget> content, List<Widget> actions) {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black.withAlpha(80),
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          ),
-          backgroundColor: Colors.white.withAlpha(230) /* colore dello sfondo del popup */,
-          shadowColor: Colors.transparent,
-          title: Text(
-            title,
-            style: TextStyle(
-              fontSize: 20,
-              fontFamily: 'Comfortaa',
-              fontWeight: FontWeight.w700,
-              color: Colors.black,
-            ),
-          ),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: content,
-            ),
-          ),
-          actions: actions,
-        );
-      },
-    );
-  }
-
-  static void showMessageDialog(dynamic context, String title, String content, VoidCallback callback) {
-    WidgetUtils.showPopup(
-      context,
-      title,
-      <Widget>[
-        Text(
-          content,
-          style: TextStyle(
-            fontSize: 14,
-            fontFamily: 'Comfortaa',
-            fontWeight: FontWeight.w500,
-            color: Colors.black,
-          ),
-        ),
-      ],
-      <Widget>[
-        TextButton(
-          child: const Text(
-            "OK",
-            style: TextStyle(
-              fontSize: 14,
-              fontFamily: 'Comfortaa',
-              fontWeight: FontWeight.w300,
-            ),
-          ),
-          onPressed: callback,
-        ),
-      ],
-    );
-  }
-
-  static Future<void> showConsole(dynamic context, dynamic process) async {
-    WidgetUtils.showPopup(
-      context,
-      "Console",
-      <Widget>[
-        await Container(
-          color: Colors.white.withAlpha(128),
-          padding: new EdgeInsets.all(2.0),
-          child: await new ConstrainedBox(
-            constraints: new BoxConstraints(
-              minWidth: MediaQuery.of(context).size.width,
-              maxWidth: MediaQuery.of(context).size.width,
-              minHeight: 75,
-              maxHeight: MediaQuery.of(context).size.height,
-            ),
-            child: await SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              reverse: true,
-
-              // here's the actual text box
-              child: await TextField(
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                controller: Globals.consolecontroller,
-                readOnly: true,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w400,
-                  fontFamily: "JetbrainsMono",
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-      <Widget>[
-        await IconButton(
-          iconSize: 30,
-          icon: const Icon(
-            Icons.help,
-            color: Colors.blueAccent,
-          ),
-          onPressed: () {
-            WidgetUtils.showDiagnostic(context);
-          },
-        ),
-        await IconButton(
-          iconSize: 30,
-          icon: const Icon(
-            Icons.cleaning_services,
-            color: Colors.blueAccent,
-          ),
-          onPressed: () async {
-            Globals.consolecontroller.clear();
-            Globals.consolecontroller.text += "[LAUNCHER]: ${AppLocalizations.of(context)!.console_clear_msg}\n";
-          },
-        ),
-        await IconButton(
-          iconSize: 30,
-          icon: const Icon(
-            Icons.folder,
-            color: Colors.orange,
-          ),
-          onPressed: () async {
-            final Uri _url;
-            if (Platform.isWindows) {
-              _url = Uri.parse('file:///${Globals.gamefoldercontroller.text}');
-            } else {
-              _url = Uri.parse('file://${Globals.gamefoldercontroller.text}');
-            }
-            if (!await launchUrl(_url)) {
-              throw Exception('Could not launch $_url');
-            }
-          },
-        ),
-        await IconButton(
-          iconSize: 30,
-          icon: Icon(
-            Icons.logout,
-            color: ColorUtils.dynamicAccentColor.withAlpha(255),
-          ),
-          onPressed: () {
-            showPopup(
-              context,
-              AppLocalizations.of(context)!.console_exit_title,
-              <Widget>[
-                Text(
-                  "${AppLocalizations.of(context)!.console_exit_msg1}\n${AppLocalizations.of(context)!.console_exit_msg2}",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Comfortaa',
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-              <Widget>[
-                TextButton(
-                  child: Text(
-                    AppLocalizations.of(context)!.generic_cancel,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: 'Comfortaa',
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                TextButton(
-                  child: Text(
-                    AppLocalizations.of(context)!.console_exit_kill,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: 'Comfortaa',
-                      fontWeight: FontWeight.w700,
-                      color: Colors.red,
-                    ),
-                  ),
-                  onPressed: () {
-                    process.kill();
-                    Globals.consolecontroller.text += "[LAUNCHER]: ${AppLocalizations.of(context)!.console_game_kill_msg}\n";
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                ),
-                TextButton(
-                  child: Text(
-                    AppLocalizations.of(context)!.console_exit_only,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: 'Comfortaa',
-                      fontWeight: FontWeight.w700,
-                      color: ColorUtils.dynamicAccentColor.withAlpha(255),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            );
-          },
-        ),
-      ],
-    );
-    process.stdout.transform(systemEncoding.decoder).forEach((line) {
-      Globals.consolecontroller.text += line.toString();
-    });
-    process.stderr.transform(systemEncoding.decoder).forEach((line) {
-      Globals.consolecontroller.text += line.toString();
-    });
-  }
-
-  static void showDiagnostic(dynamic context) {
-    Globals.diagnosticcontroller.clear();
-    Globals.diagnosticcontroller.text += "------- System info -------\n";
-    Globals.diagnosticcontroller.text += "Build: ${Globals.buildVersion}\n";
-    Globals.diagnosticcontroller.text += "Platform: ${Platform.version}\n";
-    Globals.diagnosticcontroller.text += "Operating system: ${Platform.operatingSystemVersion}\n";
-    Globals.diagnosticcontroller.text += "Locale: ${Platform.localeName}\n";
-    Globals.diagnosticcontroller.text += "Machine name: ${Platform.localHostname}\n";
-    Globals.diagnosticcontroller.text += "CPU cores: ${Platform.numberOfProcessors}\n";
-    Globals.diagnosticcontroller.text += "Java executable: ${Globals.javapathcontroller.text}\n";
-    Globals.diagnosticcontroller.text += "Java Ram: ${Globals.javaramcontroller.text}\n";
-    Globals.diagnosticcontroller.text += "Java advanced settings: ${Globals.javaAdvSet}\n";
-    Globals.diagnosticcontroller.text += "Java args: ${Globals.javavmcontroller.text}\n";
-    Globals.diagnosticcontroller.text += "Launcher args: ${Globals.javalaunchercontroller.text}\n";
-    Globals.diagnosticcontroller.text += "------- Installed versions -------\n";
-    for (var version in VersionUtils.getMinecraftOfflineVersions(false)) {
-      Globals.diagnosticcontroller.text += "Type: ${version["type"]}, Version: ${version["id"]}\n";
-    }
-    for (var version in VersionUtils.getMinecraftOfflineVersions(true)) {
-      Globals.diagnosticcontroller.text += "Type: ${version["type"]}, Version: ${version["id"]}\n";
-    }
-    if (Globals.accounts.isNotEmpty) {
-      Globals.diagnosticcontroller.text += "------- Accounts -------\n";
-      for (var account in Globals.accounts) {
-        Globals.diagnosticcontroller.text += "Username: ${account.username}, UUID: ${account.uuid}, Premium: ${account.isPremium}, Slim skin: ${account.isSlimSkin}\n";
-      }
-    }
-    Globals.diagnosticcontroller.text += "------- Game crashlog -------\n";
-    List<String> lines = Globals.consolecontroller.text.split('\n');
-    for (String line in lines) {
-      Globals.diagnosticcontroller.text += line + "\n";
-    }
-
-    WidgetUtils.showPopup(
-      context,
-      AppLocalizations.of(context)!.settings_diagnostic_title,
-      <Widget>[
-        Container(
-          color: Colors.white.withAlpha(128),
-          padding: new EdgeInsets.all(2.0),
-          child: TextField(
-            keyboardType: TextInputType.multiline,
-            maxLines: null,
-            controller: Globals.diagnosticcontroller,
-            readOnly: true,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w400,
-              fontFamily: "JetbrainsMono",
-              color: Colors.black,
-            ),
-          ),
-        ),
-      ],
-      [
-        TextButton(
-          child: Text(
-            AppLocalizations.of(context)!.settings_diagnostic_copy,
-            style: TextStyle(
-              fontSize: 14,
-              fontFamily: 'Comfortaa',
-              fontWeight: FontWeight.w700,
-              color: ColorUtils.dynamicAccentColor.withAlpha(255),
-            ),
-          ),
-          onPressed: () async {
-            await Clipboard.setData(ClipboardData(text: Globals.diagnosticcontroller.text));
-          },
-        ),
-        TextButton(
-          child: Text(
-            AppLocalizations.of(context)!.console_exit_only,
-            style: TextStyle(
-              fontSize: 14,
-              fontFamily: 'Comfortaa',
-              fontWeight: FontWeight.w700,
-              color: ColorUtils.dynamicAccentColor.withAlpha(255),
-            ),
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ],
-    );
-  }
-
-  static void showLoadingCircle(dynamic context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Center(
-          child: Image.asset(
-            'assets/morpheus-animated.gif',
-            width: 64,
-          ),
-        );
-      },
-    );
-  }
-
-  static TextStyle customTextStyle(double size, FontWeight weight, Color textColor) {
-    return TextStyle(
-      fontSize: size,
-      fontFamily: 'Comfortaa',
-      fontWeight: weight,
-      color: textColor,
-      shadows: [
-        Shadow(
-          color: ColorUtils.defaultShadowColor, // Choose the color of the shadow
-          blurRadius: 15.0, // Adjust the blur radius for the shadow effect
-          offset: Offset(2.0, 2.0), // Set the horizontal and vertical offset for the shadow
-        ),
-      ],
-    );
-  }
-
-  static Widget backShadow(Widget child, dynamic radius, Color color) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(radius),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: color,
-            blurRadius: radius,
-            offset: Offset(0, 0),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-class ThreeDimensionalViewer {
-  static late List<Sp3dObj> objs = [];
-  static late Sp3dWorld world = Sp3dWorld(objs);
-  static late bool isLoaded = false;
-
-  static void setupUV(bool isSlimSkin) {
-    int yaw = 0;
-    int pitch = 0;
-
-    loadPlayerHead(yaw, pitch);
-    loadPlayerChest(yaw, pitch);
-    loadPlayerLegs(yaw, pitch);
-    loadPlayerArms(yaw, pitch, AccountUtils.getAccount()!.isSlimSkin);
-  }
-
-  static void texturizePlayerModel() async {
-    final rawSkin = await getImageBytes(AccountUtils._buildSkinModelImageProvider());
-    final img.Image? originalSkin = img.decodeImage(rawSkin);
-
-    texturizePlayerHead(originalSkin);
-    texturizePlayerChest(originalSkin);
-    texturizePlayerLegs(originalSkin);
-    texturizePlayerArms(originalSkin, AccountUtils.getAccount()!.isSlimSkin);
-    world = Sp3dWorld(objs);
-    world.initImages();
-  }
-
-  /** Crea la testa */
-  static void loadPlayerHead(dynamic yaw, dynamic pitch) {
-    Sp3dObj testa = UtilSp3dGeometry.cube(128, 128, 128, 1, 1, 1);
-    updateCube(testa, Sp3dV3D(0, 160, -64), yaw, pitch);
-    testa.materials.add(Sp3dMaterial(Colors.green, true, 0.0, Colors.green)); // Testa avanti
-    testa.materials.add(Sp3dMaterial(Colors.red, true, 0.0, Colors.red)); // Testa dietro
-    testa.materials.add(Sp3dMaterial(Colors.blue, true, 0.0, Colors.blue)); // Testa sopra
-    testa.materials.add(Sp3dMaterial(Colors.yellow, true, 0.0, Colors.yellow)); // Testa sinistra
-    testa.materials.add(Sp3dMaterial(Colors.purple, true, 0.0, Colors.purple)); // Testa sotto
-    testa.materials.add(Sp3dMaterial(Colors.teal, true, 0.0, Colors.teal)); // Testa destra
-    for (int i = 0; i < 6; i++) testa.fragments[0].faces[i].materialIndex = i + 1;
-    testa.materials[0] = FSp3dMaterial.white;
-    objs.add(testa);
-  }
-
-  static void loadPlayerChest(dynamic yaw, dynamic pitch) {
-    Sp3dObj busto = UtilSp3dGeometry.cube(128, 192, 64, 1, 1, 1);
-    updateCube(busto, Sp3dV3D(0, 0, -32), yaw, pitch);
-    busto.materials.add(Sp3dMaterial(Colors.lightGreen, true, 0.0, Colors.lightGreen)); // Busto avanti
-    busto.materials.add(Sp3dMaterial(Colors.redAccent, true, 0.0, Colors.redAccent)); // Busto dietro
-    busto.materials.add(Sp3dMaterial(Colors.lightBlue, true, 0.0, Colors.lightBlue)); // Busto sopra
-    busto.materials.add(Sp3dMaterial(Colors.yellowAccent, true, 0.0, Colors.yellowAccent)); // Busto sinistra
-    busto.materials.add(Sp3dMaterial(Colors.purpleAccent, true, 0.0, Colors.purpleAccent)); // Busto sotto
-    busto.materials.add(Sp3dMaterial(Colors.tealAccent, true, 0.0, Colors.tealAccent)); // Busto destra
-    for (int i = 0; i < 6; i++) busto.fragments[0].faces[i].materialIndex = i + 1;
-    busto.materials[0] = FSp3dMaterial.white;
-    objs.add(busto);
-  }
-
-  static void loadPlayerLegs(dynamic yaw, dynamic pitch) {
-    Sp3dObj leftleg = UtilSp3dGeometry.cube(64, 192, 64, 1, 1, 1);
-    updateCube(leftleg, Sp3dV3D(-32, -192, -32), yaw, pitch);
-    leftleg.materials.add(Sp3dMaterial(Colors.lightGreenAccent, true, 0.0, Colors.lightGreenAccent)); // leftleg avanti
-    leftleg.materials.add(Sp3dMaterial(Color(0xffbe0000), true, 0.0, Color(0xffbe0000))); // leftleg dietro
-    leftleg.materials.add(Sp3dMaterial(Color(0xff2f2fff), true, 0.0, Color(0xff2f2fff))); // leftleg sopra
-    leftleg.materials.add(Sp3dMaterial(Color(0xffffd300), true, 0.0, Color(0xffffd300))); // leftleg sinistra
-    leftleg.materials.add(Sp3dMaterial(Color(0xff931089), true, 0.0, Color(0xff931089))); // leftleg sotto
-    leftleg.materials.add(Sp3dMaterial(Color(0xff00ffb2), true, 0.0, Color(0xff00ffb2))); // leftleg destra
-    for (int i = 0; i < 6; i++) leftleg.fragments[0].faces[i].materialIndex = i + 1;
-    leftleg.materials[0] = FSp3dMaterial.white;
-    objs.add(leftleg);
-
-    Sp3dObj rightleg = UtilSp3dGeometry.cube(64, 192, 64, 1, 1, 1);
-    updateCube(rightleg, Sp3dV3D(32, -192, -32), yaw, pitch);
-    rightleg.materials.add(Sp3dMaterial(Color(0xff06dc4b), true, 0.0, Color(0xff06dc4b))); // rightleg avanti
-    rightleg.materials.add(Sp3dMaterial(Color(0xffbd0606), true, 0.0, Color(0xffbd0606))); // rightleg dietro
-    rightleg.materials.add(Sp3dMaterial(Color(0xff2929ee), true, 0.0, Color(0xff2929ee))); // rightleg sopra
-    rightleg.materials.add(Sp3dMaterial(Color(0xffe8c51c), true, 0.0, Color(0xffe8c51c))); // rightleg sinistra
-    rightleg.materials.add(Sp3dMaterial(Color(0xff9b1191), true, 0.0, Color(0xff9b1191))); // rightleg sotto
-    rightleg.materials.add(Sp3dMaterial(Color(0xff12d99c), true, 0.0, Color(0xff12d99c))); // rightleg destra
-    for (int i = 0; i < 6; i++) rightleg.fragments[0].faces[i].materialIndex = i + 1;
-    rightleg.materials[0] = FSp3dMaterial.white;
-    objs.add(rightleg);
-  }
-
-  static void loadPlayerArms(dynamic yaw, dynamic pitch, bool isSlimSkin) {
-    Sp3dObj leftarm = UtilSp3dGeometry.cube(isSlimSkin ? 48 : 64, 192, 64, 1, 1, 1);
-    updateCube(leftarm, Sp3dV3D(isSlimSkin ? -88 : -96, 0, -32), yaw, pitch);
-    leftarm.materials.add(Sp3dMaterial(Color(0xff36ce14), true, 0.0, Color(0xff36ce14))); // leftarm avanti
-    leftarm.materials.add(Sp3dMaterial(Color(0xffd73232), true, 0.0, Color(0xffd73232))); // leftarm dietro
-    leftarm.materials.add(Sp3dMaterial(Color(0xff324dd7), true, 0.0, Color(0xff324dd7))); // leftarm sopra
-    leftarm.materials.add(Sp3dMaterial(Color(0xffd7c932), true, 0.0, Color(0xffd7c932))); // leftarm sinistra
-    leftarm.materials.add(Sp3dMaterial(Color(0xffb332d7), true, 0.0, Color(0xffb332d7))); // leftarm sotto
-    leftarm.materials.add(Sp3dMaterial(Color(0xff1fbb7f), true, 0.0, Color(0xff1fbb7f))); // leftarm destra
-    for (int i = 0; i < 6; i++) leftarm.fragments[0].faces[i].materialIndex = i + 1;
-    leftarm.materials[0] = FSp3dMaterial.white;
-    objs.add(leftarm);
-
-    Sp3dObj rightarm = UtilSp3dGeometry.cube(isSlimSkin ? 48 : 64, 192, 64, 1, 1, 1);
-    updateCube(rightarm, Sp3dV3D(isSlimSkin ? 88 : 96, 0, -32), yaw, pitch);
-    rightarm.materials.add(Sp3dMaterial(Color(0xff35c416), true, 0.0, Color(0xff35c416))); // rightarm avanti
-    rightarm.materials.add(Sp3dMaterial(Color(0xffbb2323), true, 0.0, Color(0xffbb2323))); // rightarm dietro
-    rightarm.materials.add(Sp3dMaterial(Color(0xff2e47c7), true, 0.0, Color(0xff2e47c7))); // rightarm sopra
-    rightarm.materials.add(Sp3dMaterial(Color(0xffc5b82a), true, 0.0, Color(0xffc5b82a))); // rightarm sinistra
-    rightarm.materials.add(Sp3dMaterial(Color(0xffa131c0), true, 0.0, Color(0xffa131c0))); // rightarm sotto
-    rightarm.materials.add(Sp3dMaterial(Color(0xff159865), true, 0.0, Color(0xff159865))); // leftarm destra
-    for (int i = 0; i < 6; i++) rightarm.fragments[0].faces[i].materialIndex = i + 1;
-    rightarm.materials[0] = FSp3dMaterial.white;
-    objs.add(rightarm);
-  }
-
-  /** Texturizza la testa */
-  static void texturizePlayerHead(dynamic originalSkin) async {
-    objs[0].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin!, x: 8, y: 8, width: 8, height: 8)))); // Testa avanti (faccia)
-    objs[0].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 24, y: 8, width: 8, height: 8)))); // Testa dietro (nuca)
-    objs[0].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 8, y: 0, width: 8, height: 8)))); // Testa sopra
-    objs[0].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 0, y: 8, width: 8, height: 8)))); // Testa sinistra
-    objs[0].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 16, y: 0, width: 8, height: 8)))); // Testa sotto
-    objs[0].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 16, y: 8, width: 8, height: 8)))); // Testa destra
-
-    for (int i = 0; i < 6; i++) objs[0].materials[i + 1].imageIndex = i;
-  }
-
-  /** Texturizza il busto */
-  static void texturizePlayerChest(dynamic originalSkin) async {
-    objs[1].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 20, y: 20, width: 8, height: 12)))); // Busto avanti
-    objs[1].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 32, y: 20, width: 8, height: 12)))); // Busto dietro
-    objs[1].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 20, y: 16, width: 8, height: 4)))); // Busto sopra
-    objs[1].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 16, y: 20, width: 4, height: 12)))); // Busto sinistra
-    objs[1].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 28, y: 16, width: 8, height: 4)))); // Busto sotto
-    objs[1].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 28, y: 20, width: 4, height: 12)))); // Busto destra
-
-    for (int i = 0; i < 6; i++) objs[1].materials[i + 1].imageIndex = i;
-  }
-
-  /** Texturizza le gambe */
-  static void texturizePlayerLegs(dynamic originalSkin) async {
-    /** Prepara le texture per la gamba destra (flippato) */
-    img.Image RightLegAvanti = img.copyCrop(originalSkin, x: 4, y: 20, width: 4, height: 12);
-    img.flipHorizontal(RightLegAvanti);
-    img.Image RightLegDietro = img.copyCrop(originalSkin, x: 12, y: 20, width: 4, height: 12);
-    img.flipHorizontal(RightLegDietro);
-    img.Image RightLegSopra = img.copyCrop(originalSkin, x: 4, y: 16, width: 4, height: 4);
-    img.flipHorizontal(RightLegSopra);
-    img.Image RightLegSinistra = img.copyCrop(originalSkin, x: 8, y: 20, width: 4, height: 12);
-    img.flipHorizontal(RightLegSinistra);
-    img.Image RightLegSotto = img.copyCrop(originalSkin, x: 8, y: 16, width: 4, height: 4);
-    img.flipHorizontal(RightLegSotto);
-    img.Image RightLegDestra = img.copyCrop(originalSkin, x: 0, y: 20, width: 4, height: 12);
-    img.flipHorizontal(RightLegDestra);
-
-    /** Texturizza la gamba sinistra (terza persona) */
-    objs[2].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 4, y: 20, width: 4, height: 12)))); // LeftLeg avanti
-    objs[2].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 12, y: 20, width: 4, height: 12)))); // LeftLeg dietro
-    objs[2].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 4, y: 16, width: 4, height: 4)))); // LeftLeg sopra
-    objs[2].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 0, y: 20, width: 4, height: 12)))); // LeftLeg sinistra
-    objs[2].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 8, y: 16, width: 4, height: 4)))); // LeftLeg sotto
-    objs[2].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 8, y: 20, width: 4, height: 12)))); // LeftLeg destra
-    /** Texturizza la gamba destra (terza persona) */
-    objs[3].images.add(Uint8List.fromList(img.encodePng(RightLegAvanti))); // RightLeg avanti
-    objs[3].images.add(Uint8List.fromList(img.encodePng(RightLegDietro))); // RightLeg dietro
-    objs[3].images.add(Uint8List.fromList(img.encodePng(RightLegSopra))); // RightLeg sopra
-    objs[3].images.add(Uint8List.fromList(img.encodePng(RightLegSinistra))); // RightLeg sinistra
-    objs[3].images.add(Uint8List.fromList(img.encodePng(RightLegSotto))); // RightLeg sotto
-    objs[3].images.add(Uint8List.fromList(img.encodePng(RightLegDestra))); // RightLeg destra
-
-    for (int i = 0; i < 6; i++) objs[2].materials[i + 1].imageIndex = i;
-    for (int i = 0; i < 6; i++) objs[3].materials[i + 1].imageIndex = i;
-  }
-
-  /** Texturizza le braccia */
-  static void texturizePlayerArms(dynamic originalSkin, bool isSlimSkin) async {
-    /** Prepara le texture per il braccio destro (flippato) */
-    img.Image RightArmAvanti = img.copyCrop(originalSkin, x: 44, y: 20, width: isSlimSkin ? 3 : 4, height: 12);
-    img.flipHorizontal(RightArmAvanti);
-    img.Image RightArmDietro = img.copyCrop(originalSkin, x: 52, y: 20, width: isSlimSkin ? 3 : 4, height: 12);
-    img.flipHorizontal(RightArmDietro);
-    img.Image RightArmSopra = img.copyCrop(originalSkin, x: 44, y: 16, width: isSlimSkin ? 3 : 4, height: 4);
-    img.flipHorizontal(RightArmSopra);
-    img.Image RightArmSinistra = img.copyCrop(originalSkin, x: 48, y: 20, width: 4, height: 12);
-    img.flipHorizontal(RightArmSinistra);
-    img.Image RightArmSotto = img.copyCrop(originalSkin, x: 48, y: 16, width: isSlimSkin ? 3 : 4, height: 4);
-    img.flipHorizontal(RightArmSotto);
-    img.Image RightArmDestra = img.copyCrop(originalSkin, x: 40, y: 20, width: 4, height: 12);
-    img.flipHorizontal(RightArmDestra);
-
-    /** Texturizza il braccio sinistro (terza persona) */
-    objs[4].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 44, y: 20, width: isSlimSkin ? 3 : 4, height: 12)))); // LeftArm avanti
-    objs[4].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 52, y: 20, width: isSlimSkin ? 3 : 4, height: 12)))); // LeftArm dietro
-    objs[4].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 44, y: 16, width: isSlimSkin ? 3 : 4, height: 4)))); // LeftArm sopra
-    objs[4].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 40, y: 20, width: 4, height: 12)))); // LeftArm sinistra
-    objs[4].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 48, y: 16, width: isSlimSkin ? 3 : 4, height: 4)))); // LeftArm sotto
-    objs[4].images.add(Uint8List.fromList(img.encodePng(img.copyCrop(originalSkin, x: 48, y: 20, width: 4, height: 12)))); // LeftArm destra
-    /** Texturizza il braccio destro (terza persona) */
-    objs[5].images.add(Uint8List.fromList(img.encodePng(RightArmAvanti))); // RightArm avanti
-    objs[5].images.add(Uint8List.fromList(img.encodePng(RightArmDietro))); // RightArm dietro
-    objs[5].images.add(Uint8List.fromList(img.encodePng(RightArmSopra))); // RightArm sopra
-    objs[5].images.add(Uint8List.fromList(img.encodePng(RightArmSinistra))); // RightArm sinistra
-    objs[5].images.add(Uint8List.fromList(img.encodePng(RightArmSotto))); // RightArm sotto
-    objs[5].images.add(Uint8List.fromList(img.encodePng(RightArmDestra))); // RightArm destra
-
-    for (int i = 0; i < 6; i++) objs[4].materials[i + 1].imageIndex = i;
-    for (int i = 0; i < 6; i++) objs[5].materials[i + 1].imageIndex = i;
-  }
-
-  static void updateCube(Sp3dObj obj, Sp3dV3D position, int yaw, int pitch) {
-    obj.move(position);
-    obj.rotateBy(Sp3dV3D(0, 0, 0), Sp3dV3D(0, 1, 0).nor(), yaw * Sp3dConstantValues.toRadian);
-    obj.rotateBy(Sp3dV3D(0, 0, 0), Sp3dV3D(1, 0, 0).nor(), pitch * Sp3dConstantValues.toRadian);
-  }
-
-  static Future<Uint8List> getImageBytes(ImageProvider imageProvider) async {
-    final completer = Completer<Uint8List>();
-    final imageStream = imageProvider.resolve(ImageConfiguration.empty);
-
-    imageStream.addListener(ImageStreamListener((info, _) async {
-      final byteData = await info.image.toByteData(format: ImageByteFormat.png);
-      if (byteData != null) {
-        final uint8List = byteData.buffer.asUint8List();
-        completer.complete(uint8List);
-      }
-    }));
-
-    return completer.future;
-  }
-}
-
-class CirclePainter extends CustomPainter {
-  final Color color;
-  final double radius;
-  final Color outlineColor;
-  final double outlineWidth;
-  final double distance;
-
-  CirclePainter({
-    required this.color,
-    required this.radius,
-    this.outlineColor = Colors.transparent,
-    this.outlineWidth = 0,
-    this.distance = 0,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    size = Size(radius, radius);
-
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    // Disegna il cerchio interno
-    canvas.drawCircle(Offset(size.width / 2, size.height / 2), size.width / 2, paint);
-
-    if (outlineWidth > 0) {
-      final outlinePaint = Paint()
-        ..color = outlineColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = outlineWidth;
-
-      // Calcola il raggio del cerchio esterno tenendo conto della distanza
-      double outerRadius = size.width / 2 + distance + outlineWidth / 2;
-
-      // Disegna il cerchio esterno
-      canvas.drawCircle(Offset(size.width / 2, size.height / 2), outerRadius, outlinePaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return true;
-  }
-}
-
-class ColoredCircle extends StatelessWidget {
-  final double size;
-  final Color color;
-  final Color outlineColor;
-  final double outlineWidth;
-  final double distance;
-
-  ColoredCircle({
-    required this.size,
-    required this.color,
-    this.outlineColor = Colors.transparent,
-    this.outlineWidth = 0,
-    this.distance = 0,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size + 2 * (distance + outlineWidth), size + 2 * (distance + outlineWidth)),
-      painter: CirclePainter(
-        color: color,
-        radius: size,
-        outlineColor: outlineColor,
-        outlineWidth: outlineWidth,
-        distance: distance,
-      ),
-    );
   }
 }

@@ -2,8 +2,7 @@ import 'package:blur/blur.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:morpheus_launcher_gui/globals.dart';
-
-import '../main.dart';
+import 'package:morpheus_launcher_gui/main.dart';
 
 class NewsScreen extends StatelessWidget {
   final String title;
