@@ -703,7 +703,7 @@ class _MainPageState extends State<MainPage> {
     var enableClassPath = Globals.forceClasspath;
 
     // Latest Release
-    if (gameVersion.contains("latest")) {
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title as Pattern) || gameVersion.contains("latest")) {
       return ModLoaderConfig(
         gameVersion: "latest",
         realGameVersion: realGameVersion,
@@ -713,7 +713,7 @@ class _MainPageState extends State<MainPage> {
     }
 
     // Latest Snapshot
-    if (gameVersion.contains("snapshot")) {
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title as Pattern) || gameVersion.contains("snapshot")) {
       return ModLoaderConfig(
         gameVersion: "snapshot",
         realGameVersion: realGameVersion,
