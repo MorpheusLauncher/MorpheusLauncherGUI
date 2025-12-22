@@ -8,6 +8,8 @@
   "home_news_title": "Änderungsprotokoll",
   "home_news_empty_msg": "Kann das Minecraft-Änderungsprotokoll von Mojang nicht abrufen. Bitte erlauben Sie diesem Programm den Zugriff durch Ihre Firewall",
 
+  "morpheus_products_empty": "Produkte von morpheus konnten nicht abgerufen werden",
+
   "vanilla_empty_title": "Keine Vanilla-Minecraft-Versionen gefunden",
   "vanilla_release_title": "Neueste Version",
   "vanilla_snapshot_title": "Neueste Snapshot-Version",

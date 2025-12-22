@@ -8,6 +8,8 @@
   "home_news_title": "Dziennik zmian",
   "home_news_empty_msg": "Nie można pobrać dziennika zmian Minecrafta od Mojangu. Proszę zezwolić na dostęp temu programowi przez zaporę ogniową",
 
+  "morpheus_products_empty": "Nie można pobrać produktów morpheus",
+
   "vanilla_empty_title": "Nie znaleziono wersji Vanilla Minecrafta",
   "vanilla_release_title": "Najnowsza wersja",
   "vanilla_snapshot_title": "Najnowsza wersja snapshot",

@@ -150,8 +150,9 @@ class LaunchUtils {
     /* ---------- JAR ---------- */
 
     args.addAll([
-      "-jar",
+      "-cp",
       "${LauncherUtils.getApplicationFolder("morpheus")}/Launcher.jar",
+      "team.morpheus.launcher.Main",
     ]);
 
     /* ---------- LAUNCHER ARGS (DOPO -jar) ---------- */

@@ -278,7 +278,7 @@ class _MainPageState extends State<MainPage> {
         ] else ...[
           /** quando non può mostrare le news */
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 2),
+            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
             child: Text(
               AppLocalizations.of(context)!.home_news_empty_msg,
               textAlign: TextAlign.center,
@@ -287,12 +287,6 @@ class _MainPageState extends State<MainPage> {
                 FontWeight.w300,
                 ColorUtils.primaryFontColor,
               ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 15),
-            child: Divider(
-              color: ColorUtils.secondaryFontColor,
             ),
           ),
         ],
@@ -380,6 +374,19 @@ class _MainPageState extends State<MainPage> {
               prodotto['img'],
             ),
           ],
+        ] else ...[
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              AppLocalizations.of(context)!.morpheus_products_empty,
+              textAlign: TextAlign.center,
+              style: WidgetUtils.customTextStyle(
+                22,
+                FontWeight.w300,
+                ColorUtils.primaryFontColor,
+              ),
+            ),
+          ),
         ],
       ],
     );
@@ -477,7 +484,7 @@ class _MainPageState extends State<MainPage> {
                                       isModded: false,
                                       realGameVersion: gameVersion,
                                       enableClassPath: false,
-                                      startOnFirstThread: Platform.isMacOS,
+                                      startOnFirstThread: false,
                                       jvmArgs: [],
                                       launcherArgs: [],
                                     );
@@ -2202,7 +2209,7 @@ class _MainPageState extends State<MainPage> {
         ] else ...[
           /** mostra il messaggio quando non ci sono account */
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
+            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
             child: Text(
               AppLocalizations.of(context)!.account_empty_msg,
               textAlign: TextAlign.center,

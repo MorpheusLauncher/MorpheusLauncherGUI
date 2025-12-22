@@ -8,6 +8,8 @@
   "home_news_title": "Changelog",
   "home_news_empty_msg": "Cannot fetch minecraft changelog from mojang, please allow this program through your firewall",
 
+  "morpheus_products_empty": "Unable to fetch morpheus products",
+
   "vanilla_empty_title": "No vanilla minecraft versions found",
   "vanilla_release_title": "Latest release",
   "vanilla_snapshot_title": "Latest snapshot",

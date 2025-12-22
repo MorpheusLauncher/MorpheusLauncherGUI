@@ -8,6 +8,8 @@
   "home_news_title": "Registro de cambios",
   "home_news_empty_msg": "No se puede recuperar el registro de cambios de Mojang, por favor permite este programa en tu firewall",
 
+  "morpheus_products_empty": "No se pueden recuperar los productos morpheus",
+
   "vanilla_empty_title": "No se encontró ninguna versión Vanilla",
   "vanilla_release_title": "Última versión",
   "vanilla_snapshot_title": "Último snapshot",
