@@ -107,6 +107,14 @@ flutter:
     - assets/alex-raw.png
     - assets/steve-raw.png
     - assets/pages/elyby_success.html
+    - assets/alpha.png
+    - assets/beta.png
+    - assets/release.png
+    - assets/snapshot.png
+    - assets/optifine.png
+    - assets/optiforge.png
+    - assets/forge.png
+    - assets/fabric.png
 
   fonts:
     - family: MorpheusIcons

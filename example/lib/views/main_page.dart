@@ -23,6 +23,7 @@ import 'package:morpheus_launcher_gui/utils/launch_utils.dart';
 import 'package:morpheus_launcher_gui/utils/morpheus_icons_icons.dart';
 import 'package:morpheus_launcher_gui/utils/skinmodel/skin_utils.dart';
 import 'package:morpheus_launcher_gui/utils/skinmodel/skin_viewer.dart';
+import 'package:morpheus_launcher_gui/utils/version_utils.dart';
 import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
 import 'package:morpheus_launcher_gui/views/widget_news.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -130,13 +131,15 @@ class _MainPageState extends State<MainPage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           buildNavItem(Icons.home, NavSection.home),
-          buildNavItem(MorpheusIcons.broadsword, NavSection.morpheus),
+          const SizedBox(height: 20),
+          buildNavMorpheusItem(NavSection.morpheus),
+          const SizedBox(height: 20),
           buildNavItem(MorpheusIcons.vanilla, NavSection.vanilla),
           buildNavItem(MorpheusIcons.modded, NavSection.modded),
           buildNavItem(Icons.settings, NavSection.settings),
           const SizedBox(height: 20),
           buildNavAccountItem(NavSection.accounts),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -163,6 +166,77 @@ class _MainPageState extends State<MainPage> {
           icon,
           size: 30,
           color: selected ? ColorUtils.primaryFontColor : ColorUtils.primaryFontColor.withAlpha(128),
+        ),
+      ),
+    );
+  }
+
+  Widget buildNavMorpheusItem(NavSection section) {
+    final bool selected = Globals.navSelected == section;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          Globals.navSelected = section;
+        });
+      },
+      child: MouseRegion(
+        onEnter: (e) => {},
+        child: FutureBuilder<Uint8List>(
+          future: SkinUtils.loadCroppedSkin(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const SizedBox(
+                height: 80,
+                width: 35,
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            return ColorFiltered(
+              colorFilter: selected
+                  ? const ColorFilter.mode(
+                      Colors.transparent,
+                      BlendMode.multiply,
+                    )
+                  : const ColorFilter.matrix(
+                      <double>[
+                        0.2126,
+                        0.7152,
+                        0.0722,
+                        0,
+                        0,
+                        0.2126,
+                        0.7152,
+                        0.0722,
+                        0,
+                        0,
+                        0.2126,
+                        0.7152,
+                        0.0722,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                      ],
+                    ),
+              child: Container(
+                height: 30,
+                width: 30,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: DecorationImage(
+                    filterQuality: FilterQuality.none,
+                    image: AssetImage("assets/morpheus.png"),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -242,7 +316,11 @@ class _MainPageState extends State<MainPage> {
                 version["type"],
                 version["id"],
                 "",
-                VersionUtils.isCompatible(version["type"], version["id"]),
+                VersionUtils.isCompatible(
+                  version["type"],
+                  version["id"],
+                  context,
+                ),
               ),
             ],
           /** Divider News/Changelog mojang */
@@ -567,6 +645,7 @@ class _MainPageState extends State<MainPage> {
               VersionUtils.isCompatible(
                 version["type"],
                 version["id"],
+                context,
               ),
             ),
       ],
@@ -592,16 +671,60 @@ class _MainPageState extends State<MainPage> {
           child: Stack(
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 16),
-                child: Icon(
-                  compatible ? Icons.check_circle_rounded : Icons.not_interested_rounded,
-                  color: compatible ? Colors.lightGreenAccent : Colors.redAccent,
+                padding: EdgeInsets.fromLTRB(10, 12, 0, 0),
+                child: ColorFiltered(
+                  colorFilter: VersionUtils.isCompatible(
+                    gameType,
+                    gameVersion,
+                    context,
+                  )
+                      ? const ColorFilter.mode(
+                          Colors.transparent,
+                          BlendMode.multiply,
+                        )
+                      : const ColorFilter.matrix(
+                          <double>[
+                            0.2126,
+                            0.7152,
+                            0.0722,
+                            0,
+                            0,
+                            0.2126,
+                            0.7152,
+                            0.0722,
+                            0,
+                            0,
+                            0.2126,
+                            0.7152,
+                            0.0722,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            1,
+                            0,
+                          ],
+                        ),
+                  child: Container(
+                    height: 30,
+                    width: 30,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: DecorationImage(
+                        filterQuality: FilterQuality.none,
+                        opacity: 1,
+                        image: AssetImage(_getVersionIcon(gameType, gameVersion)),
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
                 ),
               ),
 
               /** Info delle Versione */
               Padding(
-                padding: EdgeInsets.fromLTRB(42, releaseDate != "" ? 5 : 14, 10, 0),
+                padding: EdgeInsets.fromLTRB(48, releaseDate != "" ? 5 : 14, 10, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -670,7 +793,7 @@ class _MainPageState extends State<MainPage> {
                           modLoaderConfig.enableClassPath,
                         ),
                         startOnFirstThread: LaunchUtils.shouldUseStartOnFirstThread(
-                          modLoaderConfig.gameVersion,
+                          modLoaderConfig.realGameVersion,
                         ),
                         jvmArgs: modLoaderConfig.additionalArgs,
                         launcherArgs: [],
@@ -692,6 +815,21 @@ class _MainPageState extends State<MainPage> {
         ),
       ),
     );
+  }
+
+  String _getVersionIcon(String gameType, String gameVersion) {
+    final type = gameType.toLowerCase();
+    final version = gameVersion.toLowerCase();
+
+    if (type.contains("alpha")) return 'assets/alpha.png';
+    if (type.contains("beta")) return 'assets/beta.png';
+    if (type.contains("snapshot")) return 'assets/snapshot.png';
+    if (type.contains("optifine") || version.contains("optifine")) return 'assets/optifine.png';
+    if (type.contains("optiforge") || version.contains("optiforge")) return 'assets/optiforge.png';
+    if (type.contains("forge") || version.contains("forge")) return 'assets/forge.png';
+    if (type.contains("fabric") || version.contains("fabric")) return 'assets/fabric.png';
+
+    return 'assets/release.png';
   }
 
   ModLoaderConfig versionResolver(
@@ -865,7 +1003,11 @@ class _MainPageState extends State<MainPage> {
             version["type"],
             version["id"],
             "",
-            VersionUtils.isCompatible(version["type"], version["id"]),
+            VersionUtils.isCompatible(
+              version["type"],
+              version["id"],
+              context,
+            ),
           ),
 
         /** Lista delle optifine installabili */
@@ -891,7 +1033,11 @@ class _MainPageState extends State<MainPage> {
               "Optifine",
               version.split("-")[0],
               "",
-              VersionUtils.isCompatible("Optifine", version.split("-")[0]),
+              VersionUtils.isCompatible(
+                "Optifine",
+                version.split("-")[0],
+                context,
+              ),
             ),
         ],
 
@@ -918,7 +1064,11 @@ class _MainPageState extends State<MainPage> {
               "OptiForge",
               version.split("-")[0],
               "",
-              VersionUtils.isCompatible("OptiForge", version.split("-")[0]),
+              VersionUtils.isCompatible(
+                "OptiForge",
+                version.split("-")[0],
+                context,
+              ),
             ),
         ],
 
@@ -945,7 +1095,11 @@ class _MainPageState extends State<MainPage> {
               "Forge",
               version.split("-")[0],
               "",
-              VersionUtils.isCompatible("Forge", version.split("-")[0]),
+              VersionUtils.isCompatible(
+                "Forge",
+                version.split("-")[0],
+                context,
+              ),
             ),
         ],
 
