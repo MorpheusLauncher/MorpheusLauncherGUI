@@ -318,13 +318,47 @@ class VersionUtils {
     Globals.incompatibleJson = json.decode(response.body);
   }
 
-  static bool isCompatible(String type, String versionId, BuildContext context) {
+  // Classe helper per i risultati di compatibilità
+  static ({bool isCompatible, String? reason}) _checkCompatibilityWithReason(String loaderType, String version) {
+    try {
+      final loaderConfig = Globals.incompatibleJson[loaderType];
+      if (loaderConfig == null) return (isCompatible: true, reason: null);
+
+      final currentOS = _getCurrentOS();
+      final currentArch = _getCurrentArch();
+
+      List<dynamic> rangesToCheck;
+
+      if (Globals.forceClasspath) {
+        rangesToCheck = loaderConfig['classpath']?['ranges'] as List? ?? [];
+      } else {
+        rangesToCheck = loaderConfig['classloader']?['ranges'] as List? ?? [];
+      }
+
+      for (var range in rangesToCheck) {
+        if (_isVersionInRange(version, range['from'], range['to'])) {
+          final incompatible = range['incompatible'] as Map<String, dynamic>?;
+          if (incompatible != null && incompatible.containsKey(currentOS)) {
+            final platformCompat = incompatible[currentOS] as Map<String, dynamic>;
+            final isIncompatible = platformCompat[currentArch] as bool? ?? false;
+
+            if (isIncompatible) {
+              return (isCompatible: false, reason: range['reason'] as String?);
+            }
+          }
+        }
+      }
+
+      return (isCompatible: true, reason: null);
+    } catch (e) {
+      return (isCompatible: true, reason: null);
+    }
+  }
+
+  // Metodo helper per normalizzare il tipo e la versione
+  static ({String gameType, String gameVer}) _normalizeTypeAndVersion(String type, String versionId, BuildContext context) {
     var gameType = type.toLowerCase();
     var gameVer = versionId.toLowerCase();
-
-    // We assume that latest vanilla's are good and compatible
-    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title.toLowerCase() as Pattern)) return true;
-    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title.toLowerCase() as Pattern)) return true;
 
     if (gameVer.contains("optifine")) {
       gameType = "optifine";
@@ -346,43 +380,31 @@ class VersionUtils {
       gameType = "alpha";
     }
 
-    return _checkCompatibility(gameType, gameVer);
+    return (gameType: gameType, gameVer: gameVer);
   }
 
-  static bool _checkCompatibility(String loaderType, String version) {
-    try {
-      final loaderConfig = Globals.incompatibleJson[loaderType];
-      if (loaderConfig == null) return true;
+  static bool isCompatible(String type, String versionId, BuildContext context) {
+    var gameType = type.toLowerCase();
 
-      final currentOS = _getCurrentOS();
-      final currentArch = _getCurrentArch();
+    // We assume that latest vanilla's are good and compatible
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title.toLowerCase() as Pattern)) return true;
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title.toLowerCase() as Pattern)) return true;
 
-      List<dynamic> rangesToCheck;
+    final normalized = _normalizeTypeAndVersion(type, versionId, context);
 
-      if (Globals.forceClasspath) {
-        rangesToCheck = loaderConfig['classpath']?['ranges'] as List? ?? [];
-      } else {
-        rangesToCheck = loaderConfig['classloader']?['ranges'] as List? ?? [];
-      }
+    return _checkCompatibilityWithReason(normalized.gameType, normalized.gameVer).isCompatible;
+  }
 
-      for (var range in rangesToCheck) {
-        if (_isVersionInRange(version, range['from'], range['to'])) {
-          final incompatible = range['incompatible'] as Map<String, dynamic>?;
-          if (incompatible != null && incompatible.containsKey(currentOS)) {
-            final platformCompat = incompatible[currentOS] as Map<String, dynamic>;
-            final isIncompatible = platformCompat[currentArch] as bool? ?? false;
+  static String? getIncompatibilityReason(String type, String versionId, BuildContext context) {
+    var gameType = type.toLowerCase();
 
-            if (isIncompatible) {
-              return false;
-            }
-          }
-        }
-      }
+    // Le versioni vanilla sono sempre compatibili
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title.toLowerCase() as Pattern)) return null;
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title.toLowerCase() as Pattern)) return null;
 
-      return true;
-    } catch (e) {
-      return true;
-    }
+    final normalized = _normalizeTypeAndVersion(type, versionId, context);
+
+    return _checkCompatibilityWithReason(normalized.gameType, normalized.gameVer).reason;
   }
 
   static bool _isVersionInRange(String version, String from, String to) {

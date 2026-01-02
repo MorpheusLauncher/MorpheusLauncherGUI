@@ -670,50 +670,59 @@ class _MainPageState extends State<MainPage> {
             children: [
               Padding(
                 padding: EdgeInsets.fromLTRB(10, 12, 0, 0),
-                child: ColorFiltered(
-                  colorFilter: VersionUtils.isCompatible(
-                    gameType,
-                    gameVersion,
-                    context,
-                  )
-                      ? const ColorFilter.mode(
-                          Colors.transparent,
-                          BlendMode.multiply,
-                        )
-                      : const ColorFilter.matrix(
-                          <double>[
-                            0.2126,
-                            0.7152,
-                            0.0722,
-                            0,
-                            0,
-                            0.2126,
-                            0.7152,
-                            0.0722,
-                            0,
-                            0,
-                            0.2126,
-                            0.7152,
-                            0.0722,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            1,
-                            0,
-                          ],
+                child: Tooltip(
+                  message: VersionUtils.getIncompatibilityReason(gameType, gameVersion, context) ?? "",
+                  textStyle: WidgetUtils.customTextStyle(12, FontWeight.w500, ColorUtils.primaryFontColor),
+                  decoration: BoxDecoration(
+                    color: ColorUtils.dynamicBackgroundColor,
+                    borderRadius: BorderRadius.all(const Radius.circular(5)),
+                  ),
+                  waitDuration: Duration(milliseconds: 500),
+                  child: ColorFiltered(
+                    colorFilter: VersionUtils.isCompatible(
+                      gameType,
+                      gameVersion,
+                      context,
+                    )
+                        ? const ColorFilter.mode(
+                            Colors.transparent,
+                            BlendMode.multiply,
+                          )
+                        : const ColorFilter.matrix(
+                            <double>[
+                              0.2126,
+                              0.7152,
+                              0.0722,
+                              0,
+                              0,
+                              0.2126,
+                              0.7152,
+                              0.0722,
+                              0,
+                              0,
+                              0.2126,
+                              0.7152,
+                              0.0722,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              1,
+                              0,
+                            ],
+                          ),
+                    child: Container(
+                      height: 30,
+                      width: 30,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          filterQuality: FilterQuality.none,
+                          opacity: 1,
+                          image: AssetImage(_getVersionIcon(gameType, gameVersion)),
+                          fit: BoxFit.contain,
                         ),
-                  child: Container(
-                    height: 30,
-                    width: 30,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        filterQuality: FilterQuality.none,
-                        opacity: 1,
-                        image: AssetImage(_getVersionIcon(gameType, gameVersion)),
-                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
