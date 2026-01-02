@@ -77,13 +77,15 @@ class LaunchUtils {
       if (Globals.showConsole && context.mounted) {
         WidgetUtils.showConsole(context, process);
       } else {
-        // STD OUT
+        // Consuma comunque stdout/stderr
         process.stdout.transform(systemEncoding.decoder).listen((data) {
-          print('[STDOUT] ${data.replaceAll(RegExp(r'[\r\n]+'), '')}');
+          final cleaned = data.replaceAll(RegExp(r'[\r\n]+'), '');
+          print('[STDOUT] $cleaned');
         });
-        // STD ERR
+
         process.stderr.transform(systemEncoding.decoder).listen((data) {
-          print('[STDERR] ${data.replaceAll(RegExp(r'[\r\n]+'), '')}');
+          final cleaned = data.replaceAll(RegExp(r'[\r\n]+'), '');
+          print('[STDERR] $cleaned');
         });
       }
 
