@@ -612,28 +612,26 @@ class _MainPageState extends State<MainPage> {
             ),
           ),
 
-        /** Ultime versioni (ONLINE) */
-        if (Globals.vanillaVersionsResponse != null) ...[
-          buildVanillaItem(
-            AppLocalizations.of(context)!.vanilla_release_title,
-            Globals.vanillaVersionsResponse["latest"]["release"],
-            "",
-            true,
+        /** Ultime versioni */
+        buildVanillaItem(
+          AppLocalizations.of(context)!.vanilla_release_title,
+          Globals.vanillaVersionsResponse != null ? Globals.vanillaVersionsResponse["latest"]["release"] : "",
+          "",
+          true,
+        ),
+        buildVanillaItem(
+          AppLocalizations.of(context)!.vanilla_snapshot_title,
+          Globals.vanillaVersionsResponse != null ? Globals.vanillaVersionsResponse["latest"]["snapshot"] : "",
+          "",
+          true,
+        ),
+        /** Separatore */
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Divider(
+            color: ColorUtils.secondaryFontColor,
           ),
-          buildVanillaItem(
-            AppLocalizations.of(context)!.vanilla_snapshot_title,
-            Globals.vanillaVersionsResponse["latest"]["snapshot"],
-            "",
-            true,
-          ),
-          /** Separatore */
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Divider(
-              color: ColorUtils.secondaryFontColor,
-            ),
-          ),
-        ],
+        ),
 
         /** Lista completa delle versioni solo vanilla (misto) */
         for (var version in VersionUtils.getMinecraftVersions(false))

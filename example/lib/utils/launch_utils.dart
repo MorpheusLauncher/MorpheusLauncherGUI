@@ -77,9 +77,14 @@ class LaunchUtils {
       if (Globals.showConsole && context.mounted) {
         WidgetUtils.showConsole(context, process);
       } else {
-        // Consuma comunque stdout/stderr
-        process.stdout.transform(systemEncoding.decoder).listen((_) {});
-        process.stderr.transform(systemEncoding.decoder).listen((_) {});
+        // STD OUT
+        process.stdout.transform(systemEncoding.decoder).listen((data) {
+          print('[STDOUT] ${data.replaceAll(RegExp(r'[\r\n]+'), '')}');
+        });
+        // STD ERR
+        process.stderr.transform(systemEncoding.decoder).listen((data) {
+          print('[STDERR] ${data.replaceAll(RegExp(r'[\r\n]+'), '')}');
+        });
       }
 
       // Handle exit code senza bloccare UI

@@ -36,8 +36,7 @@ class Globals {
   static late List<String> pinnedVersions = [];
   static late List<String> WindowThemes = [];
 
-  static var navSelected = NavSection.home,
-      AccountSelected = 0;
+  static var navSelected = NavSection.home, AccountSelected = 0;
 
   /** Sezione textfield */
   static final javapathcontroller = TextEditingController();
