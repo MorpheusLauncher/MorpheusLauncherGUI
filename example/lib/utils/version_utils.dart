@@ -140,7 +140,7 @@ class VersionUtils {
       if (value.isNotEmpty) {
         var parts = value.last.split('-');
         if (parts.length >= 2) {
-          if (keys.indexOf(key) >= keys.indexOf("1.8.9") && keys.indexOf(key) <= keys.indexOf("1.12.2")) resultList.add("${parts[0]}-forge-${parts[1]}");
+          if (keys.indexOf(key) >= keys.indexOf("1.8.9") && keys.indexOf(key) <= keys.indexOf("1.12")) resultList.add("${parts[0]}-forge-${parts[1]}");
         }
       }
     });

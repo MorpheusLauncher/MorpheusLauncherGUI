@@ -78,8 +78,15 @@ class LaunchUtils {
         WidgetUtils.showConsole(context, process);
       } else {
         // Consuma comunque stdout/stderr
-        process.stdout.transform(systemEncoding.decoder).listen((_) {});
-        process.stderr.transform(systemEncoding.decoder).listen((_) {});
+        process.stdout.transform(systemEncoding.decoder).listen((data) {
+          final cleaned = data.replaceAll(RegExp(r'[\r\n]+'), '');
+          print('[STDOUT] $cleaned');
+        });
+
+        process.stderr.transform(systemEncoding.decoder).listen((data) {
+          final cleaned = data.replaceAll(RegExp(r'[\r\n]+'), '');
+          print('[STDERR] $cleaned');
+        });
       }
 
       // Handle exit code senza bloccare UI
