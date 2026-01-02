@@ -187,8 +187,8 @@ class _MainPageState extends State<MainPage> {
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const SizedBox(
-                height: 80,
-                width: 35,
+                height: 30,
+                width: 30,
                 child: CircularProgressIndicator(),
               );
             }
@@ -259,7 +259,7 @@ class _MainPageState extends State<MainPage> {
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const SizedBox(
-                height: 80,
+                height: 35,
                 width: 35,
                 child: CircularProgressIndicator(),
               );

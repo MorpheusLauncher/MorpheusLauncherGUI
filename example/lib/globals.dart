@@ -36,7 +36,8 @@ class Globals {
   static late List<String> pinnedVersions = [];
   static late List<String> WindowThemes = [];
 
-  static var navSelected = NavSection.home, AccountSelected = 0;
+  static var navSelected = NavSection.home,
+      AccountSelected = 0;
 
   /** Sezione textfield */
   static final javapathcontroller = TextEditingController();
@@ -312,24 +313,36 @@ class LauncherUtils {
     if (requiredJavaVersion != null) {
       try {
         if (isOnline() && !Directory(javaBinPath).existsSync()) {
-          final queryParameters = {
-            'java_version': "$requiredJavaVersion",
-            'os': Platform.operatingSystem,
-            'arch': Platform.version.contains("arm64") ? "aarch64" : "x86_64",
-            'archive_type': 'zip',
-            'java_package_type': 'jre',
-            'latest': 'true',
-            'javafx_bundled': 'false',
-          };
-          final uri = Uri.https('api.azul.com', '/metadata/v1/zulu/packages', queryParameters);
-          final azulResponse = await http.get(uri, headers: {
-            HttpHeaders.contentTypeHeader: 'application/json',
-          });
+          String downloadURL;
+          String fileName;
 
-          dynamic javaResponse = json.decode(azulResponse.body);
-          String fileName = javaResponse[0]["name"];
-          String downloadURL = javaResponse[0]["download_url"];
-          Directory(javaBasePath).createSync(recursive: true); // Crea la cartella
+          // Se è Java 8 su macOS x64, usa il JRE patchato
+          bool isX64 = !Platform.version.contains("arm64");
+          if (requiredJavaVersion == 8 && Platform.isMacOS && isX64) {
+            downloadURL = "${Urls.morpheusBaseURL}/downloads/jre-8-patched.zip";
+            fileName = "jre-8-patched.zip";
+          } else {
+            // Altrimenti usa l'API Azul come prima
+            final queryParameters = {
+              'java_version': "$requiredJavaVersion",
+              'os': Platform.operatingSystem,
+              'arch': Platform.version.contains("arm64") ? "aarch64" : "x86_64",
+              'archive_type': 'zip',
+              'java_package_type': 'jre',
+              'latest': 'true',
+              'javafx_bundled': 'false',
+            };
+            final uri = Uri.https('api.azul.com', '/metadata/v1/zulu/packages', queryParameters);
+            final azulResponse = await http.get(uri, headers: {
+              HttpHeaders.contentTypeHeader: 'application/json',
+            });
+
+            dynamic javaResponse = json.decode(azulResponse.body);
+            fileName = javaResponse[0]["name"];
+            downloadURL = javaResponse[0]["download_url"];
+          }
+
+          Directory(javaBasePath).createSync(recursive: true);
 
           final zipResponse = await http.get(Uri.parse(downloadURL));
           if (zipResponse.statusCode == 200) {
