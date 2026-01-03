@@ -318,7 +318,62 @@ class VersionUtils {
     Globals.incompatibleJson = json.decode(response.body);
   }
 
-  // Classe helper per i risultati di compatibilità
+  // Metodo helper per normalizzare il tipo e la versione
+  static ({String gameType, String gameVer}) _normalizeTypeAndVersion(String type, String versionId, BuildContext context) {
+    var gameType = type.toLowerCase();
+    var gameVer = versionId.toLowerCase();
+
+    if (gameVer.contains("pre-release")) {
+      gameVer = gameVer.split(" ").first;
+    }
+
+    if (gameVer.contains("optifine")) {
+      gameType = "optifine";
+      gameVer = gameVer.split("-")[0];
+    } else if (gameVer.contains("optiforge")) {
+      gameType = "optiforge";
+      gameVer = gameVer.split("-")[0];
+    } else if (gameVer.contains("forge")) {
+      gameType = "forge";
+      gameVer = gameVer.split("-")[0];
+    } else if (gameVer.contains("fabric")) {
+      gameType = "fabric";
+      gameVer = gameVer.split("-")[3];
+    } else if (gameType.contains("release") || gameType.contains("snapshot")) {
+      gameType = "release";
+    } else if (gameType.contains("beta")) {
+      gameType = "beta";
+    } else if (gameType.contains("alpha")) {
+      gameType = "alpha";
+    }
+
+    return (gameType: gameType, gameVer: gameVer);
+  }
+
+  static bool isCompatible(String type, String versionId, BuildContext context) {
+    var gameType = type.toLowerCase();
+
+    // We assume that latest vanilla's are good and compatible
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title.toLowerCase() as Pattern)) return true;
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title.toLowerCase() as Pattern)) return true;
+
+    final normalized = _normalizeTypeAndVersion(type, versionId, context);
+
+    return _checkCompatibilityWithReason(normalized.gameType, normalized.gameVer).isCompatible;
+  }
+
+  static String? getIncompatibilityReason(String type, String versionId, BuildContext context) {
+    var gameType = type.toLowerCase();
+
+    // Le versioni vanilla sono sempre compatibili
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title.toLowerCase() as Pattern)) return null;
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title.toLowerCase() as Pattern)) return null;
+
+    final normalized = _normalizeTypeAndVersion(type, versionId, context);
+
+    return _checkCompatibilityWithReason(normalized.gameType, normalized.gameVer).reason;
+  }
+
   static ({bool isCompatible, String? reason}) _checkCompatibilityWithReason(String loaderType, String version) {
     try {
       final loaderConfig = Globals.incompatibleJson[loaderType];
@@ -353,58 +408,6 @@ class VersionUtils {
     } catch (e) {
       return (isCompatible: true, reason: null);
     }
-  }
-
-  // Metodo helper per normalizzare il tipo e la versione
-  static ({String gameType, String gameVer}) _normalizeTypeAndVersion(String type, String versionId, BuildContext context) {
-    var gameType = type.toLowerCase();
-    var gameVer = versionId.toLowerCase();
-
-    if (gameVer.contains("optifine")) {
-      gameType = "optifine";
-      gameVer = gameVer.split("-")[0];
-    } else if (gameVer.contains("optiforge")) {
-      gameType = "optiforge";
-      gameVer = gameVer.split("-")[0];
-    } else if (gameVer.contains("forge")) {
-      gameType = "forge";
-      gameVer = gameVer.split("-")[0];
-    } else if (gameVer.contains("fabric")) {
-      gameType = "fabric";
-      gameVer = gameVer.split("-")[3];
-    } else if (gameType.contains("release") || gameType.contains("snapshot")) {
-      gameType = "stable";
-    } else if (gameType.contains("beta")) {
-      gameType = "beta";
-    } else if (gameType.contains("alpha")) {
-      gameType = "alpha";
-    }
-
-    return (gameType: gameType, gameVer: gameVer);
-  }
-
-  static bool isCompatible(String type, String versionId, BuildContext context) {
-    var gameType = type.toLowerCase();
-
-    // We assume that latest vanilla's are good and compatible
-    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title.toLowerCase() as Pattern)) return true;
-    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title.toLowerCase() as Pattern)) return true;
-
-    final normalized = _normalizeTypeAndVersion(type, versionId, context);
-
-    return _checkCompatibilityWithReason(normalized.gameType, normalized.gameVer).isCompatible;
-  }
-
-  static String? getIncompatibilityReason(String type, String versionId, BuildContext context) {
-    var gameType = type.toLowerCase();
-
-    // Le versioni vanilla sono sempre compatibili
-    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title.toLowerCase() as Pattern)) return null;
-    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title.toLowerCase() as Pattern)) return null;
-
-    final normalized = _normalizeTypeAndVersion(type, versionId, context);
-
-    return _checkCompatibilityWithReason(normalized.gameType, normalized.gameVer).reason;
   }
 
   static bool _isVersionInRange(String version, String from, String to) {

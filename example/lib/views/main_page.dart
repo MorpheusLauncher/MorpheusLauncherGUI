@@ -656,6 +656,13 @@ class _MainPageState extends State<MainPage> {
     String releaseDate,
     bool compatible,
   ) {
+    final bool compatible = VersionUtils.isCompatible(
+      gameType,
+      gameVersion,
+      context,
+    );
+    final String? incompatibilityReason = compatible ? null : VersionUtils.getIncompatibilityReason(gameType, gameVersion, context);
+
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
@@ -671,7 +678,7 @@ class _MainPageState extends State<MainPage> {
               Padding(
                 padding: EdgeInsets.fromLTRB(10, 12, 0, 0),
                 child: Tooltip(
-                  message: VersionUtils.getIncompatibilityReason(gameType, gameVersion, context) ?? "",
+                  message: incompatibilityReason ?? "",
                   textStyle: WidgetUtils.customTextStyle(12, FontWeight.w500, ColorUtils.primaryFontColor),
                   decoration: BoxDecoration(
                     color: ColorUtils.dynamicBackgroundColor,
@@ -679,11 +686,7 @@ class _MainPageState extends State<MainPage> {
                   ),
                   waitDuration: Duration(milliseconds: 500),
                   child: ColorFiltered(
-                    colorFilter: VersionUtils.isCompatible(
-                      gameType,
-                      gameVersion,
-                      context,
-                    )
+                    colorFilter: compatible
                         ? const ColorFilter.mode(
                             Colors.transparent,
                             BlendMode.multiply,
