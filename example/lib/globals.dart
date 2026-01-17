@@ -372,10 +372,24 @@ class LauncherUtils {
                   }
                 }
               }
-            } else if (Platform.isWindows) {
-              final archive = ZipDecoder().decodeBytes(archiveResponse.bodyBytes);
+            } else {
+              // Estrazione con la libreria archive per Windows e Linux
+              Archive archive;
+
+              if (Platform.isLinux) {
+                // Decodifica TAR.GZ
+                final bytes = File(archivePath).readAsBytesSync();
+                final tarBytes = GZipDecoder().decodeBytes(bytes);
+                archive = TarDecoder().decodeBytes(tarBytes);
+              } else {
+                // Decodifica ZIP (Windows)
+                archive = ZipDecoder().decodeBytes(archiveResponse.bodyBytes);
+              }
+
+              // Estrai i file
+              String folderToRemove = fileName.replaceAll(Platform.isLinux ? ".tar.gz" : ".zip", "/");
               for (final file in archive) {
-                final filePath = "$javaBasePath/${file.name}".replaceAll(fileName.replaceAll(".zip", "/"), "");
+                final filePath = "$javaBasePath/${file.name}".replaceAll(folderToRemove, "");
                 if (file.isFile) {
                   File(filePath)
                     ..createSync(recursive: true)
@@ -384,30 +398,17 @@ class LauncherUtils {
                   Directory(filePath).create(recursive: true);
                 }
               }
-            } else if (Platform.isLinux) {
-              // Estrai il tar.gz
-              Process tarProcess = await Process.start("tar", ["-xzf", archivePath, "-C", javaBasePath]);
-
-              // Senza non funziona
-              tarProcess.stdout.transform(systemEncoding.decoder).forEach((line) {});
-
-              // Quando finisce di estrarre tutto sposta i file nella directory precedente
-              if (await tarProcess.exitCode == 0) {
-                Directory currentDir = Directory("$javaBasePath/${fileName.replaceAll(".tar.gz", "/")}");
-                List<FileSystemEntity> files = currentDir.listSync();
-                for (FileSystemEntity file in files) {
-                  Process moveProcess = await Process.start("mv", [file.path, javaBasePath]);
-
-                  // Quando finisce di spostare un file alla volta cancella la cartella alla fine
-                  if (await moveProcess.exitCode == 0) {
-                    await Process.start("rmdir", [currentDir.path]);
-                  }
-                }
-              }
             }
 
             // Cancella l'archivio
             File(archivePath).deleteSync();
+
+            if (Platform.isMacOS || Platform.isLinux) {
+              // Imposta permessi di esecuzione su tutta la directory bin
+              await Process.run("chmod", ["-R", "+x", "$javaBasePath/bin"]);
+              // Imposta anche permessi di lettura ed esecuzione ricorsivamente su tutto
+              await Process.run("chmod", ["-R", "755", javaBasePath]);
+            }
           }
         }
       } catch (error) {
