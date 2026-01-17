@@ -67,11 +67,37 @@ class LaunchUtils {
 
       if (context.mounted) Navigator.pop(context);
 
+      // Verifica che il path Java esista e sia eseguibile
+      final javaPath = Globals.javapathcontroller.text;
+      final javaFile = File(javaPath);
+
+      if (!javaFile.existsSync()) {
+        throw Exception("Java non trovato in: $javaPath");
+      }
+
+      // Su Linux/macOS verifica che sia eseguibile
+      if (Platform.isLinux || Platform.isMacOS) {
+        final stat = await Process.run('stat', ['-c', '%a', javaPath]);
+        if (stat.exitCode != 0) {
+          // Prova con chmod se stat fallisce
+          await Process.run('chmod', ['+x', javaPath]);
+        }
+      }
+
       // Costruisci args di lancio
       final args = await _buildLaunchArguments(context, config);
 
+      // Debug: stampa il comando completo
+      print("[DEBUG] Java path: $javaPath");
+      print("[DEBUG] Full command: $javaPath ${args.join(' ')}");
+
       // Avvia il processo
-      final process = await Process.start(Globals.javapathcontroller.text, args);
+      final process = await Process.start(
+        javaPath,
+        args,
+        workingDirectory: Globals.gamefoldercontroller.text,
+        mode: ProcessStartMode.normal,
+      );
 
       // Gestione console
       if (Globals.showConsole && context.mounted) {
@@ -80,18 +106,21 @@ class LaunchUtils {
         // Consuma comunque stdout/stderr
         process.stdout.transform(systemEncoding.decoder).listen((data) {
           final cleaned = data.replaceAll(RegExp(r'[\r\n]+'), '');
-          print('[STDOUT] $cleaned');
+          if (cleaned.isNotEmpty) print('[STDOUT] $cleaned');
         });
 
         process.stderr.transform(systemEncoding.decoder).listen((data) {
           final cleaned = data.replaceAll(RegExp(r'[\r\n]+'), '');
-          print('[STDERR] $cleaned');
+          if (cleaned.isNotEmpty) print('[STDERR] $cleaned');
         });
       }
 
       // Handle exit code senza bloccare UI
       _handleProcessExit(context, process);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print("[ERROR] Launch failed: $e");
+      print("[STACKTRACE] $stackTrace");
+
       if (context.mounted) {
         Navigator.pop(context);
         WidgetUtils.showMessageDialog(
@@ -143,23 +172,32 @@ class LaunchUtils {
 
     // Ely.by
     if (account.isElyBy) {
-      args.add(
-        '-javaagent:${LauncherUtils.getApplicationFolder("morpheus")}/authlib-injector.jar=ely.by',
-      );
+      final authlibPath = '${LauncherUtils.getApplicationFolder("morpheus")}/authlib-injector.jar';
+      if (File(authlibPath).existsSync()) {
+        args.add('-javaagent:$authlibPath=ely.by');
+      }
     }
 
     // JVM base
+    final nativesPath = '${Globals.gamefoldercontroller.text}/versions/${config.gameVersion}/natives/';
     args.addAll([
       "-Duser.dir=${Globals.gamefoldercontroller.text}",
-      "-Djava.library.path=${Globals.gamefoldercontroller.text}/versions/${config.gameVersion}/natives/",
+      "-Djava.library.path=$nativesPath",
       ...LauncherUtils.buildJVMOptimizedArgs(Globals.javaramcontroller.text),
     ]);
 
     /* ---------- JAR ---------- */
 
+    final launcherJarPath = '${LauncherUtils.getApplicationFolder("morpheus")}/Launcher.jar';
+
+    // Verifica che il Launcher.jar esista
+    if (!File(launcherJarPath).existsSync()) {
+      throw Exception("Launcher.jar non trovato in: $launcherJarPath");
+    }
+
     args.addAll([
       "-cp",
-      "${LauncherUtils.getApplicationFolder("morpheus")}/Launcher.jar",
+      launcherJarPath,
       "team.morpheus.launcher.Main",
     ]);
 
