@@ -73,14 +73,23 @@ class LaunchUtils {
       final Process process;
 
       if (Platform.isLinux) {
-        // Su Linux usa subshell per evitare problemi
         final javaPath = Globals.javapathcontroller.text;
-        final javaDir = javaPath.substring(0, javaPath.lastIndexOf('/')); // rimuovi dal percorso java per lasciare solo fino a bin/
-        final javaArgs = args.map(_escapeShellArg).join(' '); // Costruisci il comando completo come stringa
+        final lastSlashIndex = javaPath.lastIndexOf('/');
 
-        process = await Process.start('sh', ['-c', '(cd "$javaDir" && ./java $javaArgs)']);
+        if (lastSlashIndex > 0) {
+          // Su linux è meglio usare una subshell per evitare vari casini
+          final javaDir = javaPath.substring(0, lastSlashIndex);
+          final javaArgs = args.map(_escapeShellArg).join(' ');
+          process = await Process.start('sh', ['-c', '(cd "$javaDir" && ./java $javaArgs)']);
+        } else {
+          process = await Process.start(
+            javaPath,
+            args,
+            workingDirectory: Globals.gamefoldercontroller.text,
+          );
+        }
       } else {
-        // Su Windows e MacOS usa il lancio normale
+        // Su Windows e MacOS usiamo il lancio normale
         process = await Process.start(
           Globals.javapathcontroller.text,
           args,

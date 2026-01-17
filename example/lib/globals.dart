@@ -249,8 +249,14 @@ class LauncherUtils {
       Process process;
       if (Platform.isLinux) {
         final javaPath = Globals.javapathcontroller.text;
-        final javaDir = javaPath.substring(0, javaPath.lastIndexOf('/'));
-        process = await Process.start('sh', ['-c', '(cd "$javaDir" && ./java -version)']);
+        final lastSlashIndex = javaPath.lastIndexOf('/');
+
+        if (lastSlashIndex != -1) {
+          final javaDir = javaPath.substring(0, lastSlashIndex);
+          process = await Process.start('sh', ['-c', '(cd "$javaDir" && ./java -version)']);
+        } else {
+          process = await Process.start(javaPath, ['-version']);
+        }
       } else {
         process = await Process.start(
           Globals.javapathcontroller.text,
