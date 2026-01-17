@@ -250,7 +250,7 @@ class LauncherUtils {
       if (Platform.isLinux) {
         final javaPath = Globals.javapathcontroller.text;
         final javaDir = javaPath.substring(0, javaPath.lastIndexOf('/'));
-        process = await Process.start('sh', ['-c', '(cd "$javaDir" && java -version)']);
+        process = await Process.start('sh', ['-c', '(cd "$javaDir" && ./java -version)']);
       } else {
         process = await Process.start(
           Globals.javapathcontroller.text,
