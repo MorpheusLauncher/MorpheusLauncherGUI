@@ -70,8 +70,39 @@ class LaunchUtils {
       // Costruisci args di lancio
       final args = await _buildLaunchArguments(context, config);
 
-      // Avvia il processo
-      final process = await Process.start(Globals.javapathcontroller.text, args);
+      final Process process;
+
+      if (Platform.isLinux) {
+        // Su linux per evitare casini usiamo una subshells
+        final javaPath = Globals.javapathcontroller.text;
+        final javaDir = javaPath.substring(0, javaPath.lastIndexOf('/'));
+        final javaExec = javaPath.substring(javaPath.lastIndexOf('/') + 1);
+
+        // Costruisci il comando completo con escape degli argomenti
+        final escapedArgs = args.map((arg) {
+          if (arg.contains(' ') || arg.contains('\$') || arg.contains('"')) {
+            return "'${arg.replaceAll("'", "'\\''")}'"; //'
+          }
+
+          return arg;
+        }).join(' ');
+
+        final fullCommand = '(cd "$javaDir" && exec ./$javaExec $escapedArgs)';
+
+        // Avvia il processo tramite shell
+        process = await Process.start(
+          '/bin/sh',
+          ['-c', fullCommand],
+          workingDirectory: Globals.gamefoldercontroller.text,
+        );
+      } else {
+        // Su Windows e MacOS usa il lancio normale
+        process = await Process.start(
+          Globals.javapathcontroller.text,
+          args,
+          workingDirectory: Globals.gamefoldercontroller.text,
+        );
+      }
 
       // Gestione console
       if (Globals.showConsole && context.mounted) {
