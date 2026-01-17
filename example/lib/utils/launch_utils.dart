@@ -85,7 +85,7 @@ class LaunchUtils {
           'sh',
           [
             '-c',
-            '(cd "$javaDir" && exec ./java $javaArgs)',
+            '(cd "$javaDir" && java $javaArgs)',
           ],
         );
       } else {
