@@ -14,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_theme/system_theme.dart';
 
 class Globals {
-  static final buildVersion = "Ver 2.7.0";
+  static final buildVersion = "Ver 2.8.2";
   static final windowTitle = "Morpheus Launcher";
   static final borderRadius = 14.0;
 
@@ -326,8 +326,8 @@ class LauncherUtils {
               'java_version': "$requiredJavaVersion",
               'os': Platform.operatingSystem,
               'arch': Platform.version.contains("arm64") ? "aarch64" : "x86_64",
-              'archive_type': 'zip',
-              'java_package_type': 'jre',
+              'archive_type': Platform.isLinux ? 'tar.gz' : 'zip',
+              'java_package_type': 'jdk',
               'latest': 'true',
               'javafx_bundled': 'false',
             };
@@ -343,17 +343,18 @@ class LauncherUtils {
 
           Directory(javaBasePath).createSync(recursive: true);
 
-          final zipResponse = await http.get(Uri.parse(downloadURL));
-          if (zipResponse.statusCode == 200) {
-            // Il nome dello zip che verrà scaricato
-            String zipPath = "$javaBasePath/jre-$requiredJavaVersion.zip";
+          final archiveResponse = await http.get(Uri.parse(downloadURL));
+          if (archiveResponse.statusCode == 200) {
+            // Il nome dell'archivio che verrà scaricato
+            String archiveExtension = Platform.isLinux ? '.tar.gz' : '.zip';
+            String archivePath = "$javaBasePath/jre-$requiredJavaVersion$archiveExtension";
 
-            // Scarica lo zip
-            File(zipPath).writeAsBytesSync(zipResponse.bodyBytes);
+            // Scarica l'archivio
+            File(archivePath).writeAsBytesSync(archiveResponse.bodyBytes);
 
             if (Platform.isMacOS) {
               // Unzippa da terminale, perchè in dart fa schifo
-              Process unzipProcess = await Process.start("unzip", ["-o", zipPath, "-d", "$javaBasePath/"]);
+              Process unzipProcess = await Process.start("unzip", ["-o", archivePath, "-d", "$javaBasePath/"]);
 
               // Senza non funziona
               unzipProcess.stdout.transform(systemEncoding.decoder).forEach((line) {});
@@ -372,7 +373,7 @@ class LauncherUtils {
                 }
               }
             } else if (Platform.isWindows) {
-              final archive = ZipDecoder().decodeBytes(zipResponse.bodyBytes);
+              final archive = ZipDecoder().decodeBytes(archiveResponse.bodyBytes);
               for (final file in archive) {
                 final filePath = "$javaBasePath/${file.name}".replaceAll(fileName.replaceAll(".zip", "/"), "");
                 if (file.isFile) {
@@ -384,15 +385,15 @@ class LauncherUtils {
                 }
               }
             } else if (Platform.isLinux) {
-              // Unzippa da terminale, perchè in dart fa schifo
-              Process unzipProcess = await Process.start("unzip", [zipPath, "-d", "$javaBasePath/"]);
+              // Estrai il tar.gz
+              Process tarProcess = await Process.start("tar", ["-xzf", archivePath, "-C", javaBasePath]);
 
               // Senza non funziona
-              unzipProcess.stdout.transform(systemEncoding.decoder).forEach((line) {});
+              tarProcess.stdout.transform(systemEncoding.decoder).forEach((line) {});
 
               // Quando finisce di estrarre tutto sposta i file nella directory precedente
-              if (await unzipProcess.exitCode == 0) {
-                Directory currentDir = Directory("$javaBasePath/${fileName.replaceAll(".zip", "/")}");
+              if (await tarProcess.exitCode == 0) {
+                Directory currentDir = Directory("$javaBasePath/${fileName.replaceAll(".tar.gz", "/")}");
                 List<FileSystemEntity> files = currentDir.listSync();
                 for (FileSystemEntity file in files) {
                   Process moveProcess = await Process.start("mv", [file.path, javaBasePath]);
@@ -405,8 +406,8 @@ class LauncherUtils {
               }
             }
 
-            // Cancella lo zip
-            File(zipPath).deleteSync();
+            // Cancella l'archivio
+            File(archivePath).deleteSync();
           }
         }
       } catch (error) {
