@@ -246,10 +246,17 @@ class LauncherUtils {
 
   static Future<Map<String, String>?> checkJava() async {
     try {
-      Process process = await Process.start(
-        Globals.javapathcontroller.text,
-        ['-version'],
-      );
+      Process process;
+      if (Platform.isLinux) {
+        final javaPath = Globals.javapathcontroller.text;
+        final javaDir = javaPath.substring(0, javaPath.lastIndexOf('/'));
+        process = await Process.start('sh', ['-c', '(cd "$javaDir" && java -version)']);
+      } else {
+        process = await Process.start(
+          Globals.javapathcontroller.text,
+          ['-version'],
+        );
+      }
 
       String? firstLine;
       await for (String line in process.stderr.transform(systemEncoding.decoder)) {

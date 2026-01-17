@@ -75,19 +75,10 @@ class LaunchUtils {
       if (Platform.isLinux) {
         // Su Linux usa subshell per evitare problemi
         final javaPath = Globals.javapathcontroller.text;
-        // Estrai la directory bin/ togliendo /java finale
-        final javaDir = javaPath.substring(0, javaPath.lastIndexOf('/'));
+        final javaDir = javaPath.substring(0, javaPath.lastIndexOf('/')); // rimuovi dal percorso java per lasciare solo fino a bin/
+        final javaArgs = args.map(_escapeShellArg).join(' '); // Costruisci il comando completo come stringa
 
-        // Costruisci il comando completo come stringa
-        final javaArgs = args.map(_escapeShellArg).join(' ');
-
-        process = await Process.start(
-          'sh',
-          [
-            '-c',
-            '(cd "$javaDir" && java $javaArgs)',
-          ],
-        );
+        process = await Process.start('sh', ['-c', '(cd "$javaDir" && java $javaArgs)']);
       } else {
         // Su Windows e MacOS usa il lancio normale
         process = await Process.start(
