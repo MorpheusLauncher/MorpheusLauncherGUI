@@ -250,7 +250,7 @@ class LauncherUtils {
       if (Platform.isLinux) {
         final javaPath = Globals.javapathcontroller.text;
         final javaDir = javaPath.substring(0, javaPath.lastIndexOf('/'));
-        process = await Process.start('sh', ['-c', '(cd "$javaDir" && java -version)']);
+        process = await Process.start('sh', ['-c', '(cd "$javaDir" && ./java -version)']);
       } else {
         process = await Process.start(
           Globals.javapathcontroller.text,
@@ -344,8 +344,20 @@ class LauncherUtils {
             });
 
             dynamic javaResponse = json.decode(azulResponse.body);
-            fileName = javaResponse[0]["name"];
-            downloadURL = javaResponse[0]["download_url"];
+
+            var filteredPackages = javaResponse.where((package) {
+              String packageName = package["name"] ?? "";
+
+              return !packageName.contains("musl") && !packageName.contains("alpine");
+            }).toList();
+
+            if (filteredPackages.isNotEmpty) {
+              fileName = filteredPackages[0]["name"];
+              downloadURL = filteredPackages[0]["download_url"];
+            } else {
+              fileName = javaResponse[0]["name"];
+              downloadURL = javaResponse[0]["download_url"];
+            }
           }
 
           Directory(javaBasePath).createSync(recursive: true);
