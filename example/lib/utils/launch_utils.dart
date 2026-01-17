@@ -73,27 +73,20 @@ class LaunchUtils {
       final Process process;
 
       if (Platform.isLinux) {
-        // Su linux per evitare casini usiamo una subshells
+        // Su Linux usa subshell per evitare problemi
         final javaPath = Globals.javapathcontroller.text;
+        // Estrai la directory bin/ togliendo /java finale
         final javaDir = javaPath.substring(0, javaPath.lastIndexOf('/'));
-        final javaExec = javaPath.substring(javaPath.lastIndexOf('/') + 1);
 
-        // Costruisci il comando completo con escape degli argomenti
-        final escapedArgs = args.map((arg) {
-          if (arg.contains(' ') || arg.contains('\$') || arg.contains('"')) {
-            return "'${arg.replaceAll("'", "'\\''")}'"; //'
-          }
+        // Costruisci il comando completo come stringa
+        final javaArgs = args.map(_escapeShellArg).join(' ');
 
-          return arg;
-        }).join(' ');
-
-        final fullCommand = '(cd "$javaDir" && exec ./$javaExec $escapedArgs)';
-
-        // Avvia il processo tramite shell
         process = await Process.start(
-          '/bin/sh',
-          ['-c', fullCommand],
-          workingDirectory: Globals.gamefoldercontroller.text,
+          'sh',
+          [
+            '-c',
+            '(cd "$javaDir" && exec ./java $javaArgs)',
+          ],
         );
       } else {
         // Su Windows e MacOS usa il lancio normale
@@ -133,6 +126,16 @@ class LaunchUtils {
         );
       }
     }
+  }
+
+  static String _escapeShellArg(String arg) {
+    // Se l'argomento contiene spazi o caratteri speciali, wrappa con quote singole
+    if (arg.contains(' ') || arg.contains('\$') || arg.contains('!') || arg.contains('"') || arg.contains('\'') || arg.contains('\\')) {
+      // Escape delle singole quote interne
+      return "'${arg.replaceAll("'", "'\\''")}'";
+    }
+
+    return arg;
   }
 
   /// Gestione exit del processo in background
