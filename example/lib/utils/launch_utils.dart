@@ -141,7 +141,7 @@ class LaunchUtils {
   /// Gestione exit del processo in background
   static Future<void> _handleProcessExit(BuildContext context, Process process) async {
     final exitCode = await process.exitCode;
-    Globals.consolecontroller.text += "[LAUNCHER]: exit code $exitCode";
+    Globals.consolecontroller.append("[LAUNCHER]: exit code $exitCode\n");
 
     if (exitCode != 0 && exitCode != 143 && context.mounted) {
       _showCrashDialog(context);

@@ -12,9 +12,10 @@ import 'package:morpheus_launcher_gui/account/account_utils.dart';
 import 'package:morpheus_launcher_gui/account/encryption.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_theme/system_theme.dart';
+import 'package:morpheus_launcher_gui/utils/log_controller.dart';
 
 class Globals {
-  static final buildVersion = "Ver 2.9.0";
+  static final buildVersion = "Ver 3.0.0";
   static final windowTitle = "Morpheus Launcher";
   static final borderRadius = 14.0;
 
@@ -45,8 +46,9 @@ class Globals {
   static final javalaunchercontroller = TextEditingController();
   static final gamefoldercontroller = TextEditingController();
   static final usernamecontroller = TextEditingController();
-  static final consolecontroller = TextEditingController();
-  static final diagnosticcontroller = TextEditingController();
+
+  static final LogController consolecontroller = LogController();
+  static final LogController diagnosticcontroller = LogController();
 
   /** Fabric */
   static late var fabricGameVersionsResponse = null;

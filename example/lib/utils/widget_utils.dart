@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:morpheus_launcher_gui/globals.dart';
+import 'package:morpheus_launcher_gui/utils/log_controller.dart';
 import 'package:morpheus_launcher_gui/utils/version_utils.dart';
+import 'package:morpheus_launcher_gui/utils/virtualized_log_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -32,13 +34,11 @@ class CustomSettingSwitchStyle {
 
 class WidgetUtils {
   /** Switch impostazioni */
-  static Widget buildSettingSwitchItem(
-    String name,
-    String name2,
-    CustomSettingSwitchStyle style,
-    var set,
-    Function(dynamic value) callback,
-  ) {
+  static Widget buildSettingSwitchItem(String name,
+      String name2,
+      CustomSettingSwitchStyle style,
+      var set,
+      Function(dynamic value) callback,) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
@@ -99,7 +99,6 @@ class WidgetUtils {
                       elevation: 15,
                       color: Colors.transparent,
                       shadowColor: Colors.transparent,
-                      // Globals.defaultShadowColor,
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                       child: MouseRegion(
                         onEnter: (e) => {},
@@ -117,7 +116,6 @@ class WidgetUtils {
                             SharedPreferences prefs = await SharedPreferences.getInstance();
                             await prefs.setBool(name2, value);
                             set = value;
-                            ;
                           },
                         ),
                       ),
@@ -133,14 +131,12 @@ class WidgetUtils {
   }
 
   /** Textfield */
-  static Widget buildSettingTextItem(
-    dynamic child,
-    Color background,
-    Color foreground,
-    String hint,
-    TextEditingController controller,
-    Function(dynamic value) callback,
-  ) {
+  static Widget buildSettingTextItem(dynamic child,
+      Color background,
+      Color foreground,
+      String hint,
+      TextEditingController controller,
+      Function(dynamic value) callback,) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
@@ -162,13 +158,8 @@ class WidgetUtils {
                     shadows: [
                       Shadow(
                         color: ColorUtils.defaultShadowColor,
-                        // Choose the color of the shadow
                         blurRadius: 2.0,
-                        // Adjust the blur radius for the shadow effect
-                        offset: Offset(
-                          2.0,
-                          2.0,
-                        ), // Set the horizontal and vertical offset for the shadow
+                        offset: Offset(2.0, 2.0),
                       ),
                     ],
                   ),
@@ -216,12 +207,10 @@ class WidgetUtils {
   //// ALTRI ELEMENTI GRAFICI /////
   /////////////////////////////////
 
-  static Widget buildButton(
-    IconData icon,
-    Color color,
-    Color iconColor,
-    VoidCallback onPressed,
-  ) {
+  static Widget buildButton(IconData icon,
+      Color color,
+      Color iconColor,
+      VoidCallback onPressed,) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 5, 6, 5),
       child: GestureDetector(
@@ -237,11 +226,7 @@ class WidgetUtils {
               child: Container(
                 padding: EdgeInsets.all(10),
                 child: Center(
-                  child: Icon(
-                    icon,
-                    color: iconColor,
-                    size: 20,
-                  ),
+                  child: Icon(icon, color: iconColor, size: 20),
                 ),
               ),
             ),
@@ -253,12 +238,10 @@ class WidgetUtils {
     );
   }
 
-  static Widget buildTextButton(
-    Color color,
-    Color textColor,
-    VoidCallback onPressed,
-    String text,
-  ) {
+  static Widget buildTextButton(Color color,
+      Color textColor,
+      VoidCallback onPressed,
+      String text,) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(7, 7, 0, 7),
       child: GestureDetector(
@@ -274,10 +257,7 @@ class WidgetUtils {
               child: Container(
                 padding: EdgeInsets.all(10),
                 child: Center(
-                  child: Text(
-                    text,
-                    style: customTextStyle(16, FontWeight.w500, textColor),
-                  ),
+                  child: Text(text, style: customTextStyle(16, FontWeight.w500, textColor)),
                 ),
               ),
             ),
@@ -289,12 +269,10 @@ class WidgetUtils {
     );
   }
 
-  static void showPopup(
-    dynamic context,
-    String title,
-    List<Widget> content,
-    List<Widget> actions,
-  ) {
+  static void showPopup(dynamic context,
+      String title,
+      List<Widget> content,
+      List<Widget> actions,) {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -304,7 +282,7 @@ class WidgetUtils {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
-          backgroundColor: Colors.white.withAlpha(230) /* colore dello sfondo del popup */,
+          backgroundColor: Colors.white.withAlpha(230),
           shadowColor: Colors.transparent,
           title: Text(
             title,
@@ -316,9 +294,7 @@ class WidgetUtils {
             ),
           ),
           content: SingleChildScrollView(
-            child: ListBody(
-              children: content,
-            ),
+            child: ListBody(children: content),
           ),
           actions: actions,
         );
@@ -326,12 +302,10 @@ class WidgetUtils {
     );
   }
 
-  static void showMessageDialog(
-    dynamic context,
-    String title,
-    String content,
-    VoidCallback callback,
-  ) {
+  static void showMessageDialog(dynamic context,
+      String title,
+      String content,
+      VoidCallback callback,) {
     WidgetUtils.showPopup(
       context,
       title,
@@ -367,65 +341,49 @@ class WidgetUtils {
       context,
       "Console",
       <Widget>[
-        await Container(
-          color: Colors.white.withAlpha(128),
-          padding: new EdgeInsets.all(2.0),
-          child: await new ConstrainedBox(
-            constraints: new BoxConstraints(
-              minWidth: MediaQuery.of(context).size.width,
-              maxWidth: MediaQuery.of(context).size.width,
-              minHeight: 75,
-              maxHeight: MediaQuery.of(context).size.height,
-            ),
-            child: await SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              reverse: true,
-
-              // here's the actual text box
-              child: await TextField(
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                controller: Globals.consolecontroller,
-                readOnly: true,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w400,
-                  fontFamily: "JetbrainsMono",
-                  color: Colors.black,
-                ),
-              ),
-            ),
+        // Un solo scroll gestito internamente da VirtualizedLogView
+        SizedBox(
+          width: MediaQuery
+              .of(context)
+              .size
+              .width,
+          height: MediaQuery
+              .of(context)
+              .size
+              .height * 0.6,
+          child: VirtualizedLogView(
+            controller: Globals.consolecontroller,
+            backgroundColor: Colors.white.withAlpha(128),
+            textColor: Colors.black,
+            fontSize: 10,
+            fontFamily: 'JetBrainsMono',
+            wrapLines: true,
+            minWidth: MediaQuery
+                .of(context)
+                .size
+                .width - 20,
           ),
         ),
       ],
       <Widget>[
-        await IconButton(
+        IconButton(
           iconSize: 30,
-          icon: const Icon(
-            Icons.help,
-            color: Colors.blueAccent,
-          ),
+          icon: const Icon(Icons.help, color: Colors.blueAccent),
           onPressed: () {
             WidgetUtils.showDiagnostic(context);
           },
         ),
-        await IconButton(
+        IconButton(
           iconSize: 30,
-          icon: const Icon(
-            Icons.cleaning_services,
-            color: Colors.blueAccent,
-          ),
+          icon: const Icon(Icons.cleaning_services, color: Colors.blueAccent),
           onPressed: () async {
             Globals.consolecontroller.clear();
-            Globals.consolecontroller.text += "[LAUNCHER]: ${AppLocalizations.of(context)!.console_clear_msg}\n";
+            Globals.consolecontroller.appendLine("[LAUNCHER]: ${AppLocalizations.of(context)!.console_clear_msg}");
           },
         ),
-        await IconButton(
+        IconButton(
           iconSize: 30,
-          icon: const Icon(
-            Icons.folder,
-            color: Colors.orange,
-          ),
+          icon: const Icon(Icons.folder, color: Colors.orange),
           onPressed: () async {
             final Uri _url;
             if (Platform.isWindows) {
@@ -438,12 +396,9 @@ class WidgetUtils {
             }
           },
         ),
-        await IconButton(
+        IconButton(
           iconSize: 30,
-          icon: Icon(
-            Icons.logout,
-            color: ColorUtils.dynamicAccentColor.withAlpha(255),
-          ),
+          icon: Icon(Icons.logout, color: ColorUtils.dynamicAccentColor.withAlpha(255)),
           onPressed: () {
             showPopup(
               context,
@@ -469,9 +424,7 @@ class WidgetUtils {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => Navigator.pop(context),
                 ),
                 TextButton(
                   child: Text(
@@ -485,7 +438,7 @@ class WidgetUtils {
                   ),
                   onPressed: () {
                     process.kill();
-                    Globals.consolecontroller.text += "[LAUNCHER]: ${AppLocalizations.of(context)!.console_game_kill_msg}\n";
+                    Globals.consolecontroller.appendLine("[LAUNCHER]: ${AppLocalizations.of(context)!.console_game_kill_msg}");
                     Navigator.pop(context);
                     Navigator.pop(context);
                   },
@@ -511,65 +464,61 @@ class WidgetUtils {
         ),
       ],
     );
-    process.stdout.transform(systemEncoding.decoder).forEach((line) {
-      Globals.consolecontroller.text += line.toString();
+
+    process.stdout.transform(systemEncoding.decoder).forEach((chunk) {
+      Globals.consolecontroller.append(chunk);
     });
-    process.stderr.transform(systemEncoding.decoder).forEach((line) {
-      Globals.consolecontroller.text += line.toString();
+    process.stderr.transform(systemEncoding.decoder).forEach((chunk) {
+      Globals.consolecontroller.append(chunk);
     });
   }
 
   static void showDiagnostic(dynamic context) {
     Globals.diagnosticcontroller.clear();
-    Globals.diagnosticcontroller.text += "------- System info -------\n";
-    Globals.diagnosticcontroller.text += "Build: ${Globals.buildVersion}\n";
-    Globals.diagnosticcontroller.text += "Platform: ${Platform.version}\n";
-    Globals.diagnosticcontroller.text += "Operating system: ${Platform.operatingSystemVersion}\n";
-    Globals.diagnosticcontroller.text += "Locale: ${Platform.localeName}\n";
-    Globals.diagnosticcontroller.text += "Machine name: ${Platform.localHostname}\n";
-    Globals.diagnosticcontroller.text += "CPU cores: ${Platform.numberOfProcessors}\n";
-    Globals.diagnosticcontroller.text += "Java executable: ${Globals.javapathcontroller.text}\n";
-    Globals.diagnosticcontroller.text += "Java Ram: ${Globals.javaramcontroller.text}\n";
-    Globals.diagnosticcontroller.text += "Java advanced settings: ${Globals.javaAdvSet}\n";
-    Globals.diagnosticcontroller.text += "Java args: ${Globals.javavmcontroller.text}\n";
-    Globals.diagnosticcontroller.text += "Launcher args: ${Globals.javalaunchercontroller.text}\n";
-    Globals.diagnosticcontroller.text += "------- Installed versions -------\n";
+    Globals.diagnosticcontroller.appendLine("------- System info -------");
+    Globals.diagnosticcontroller.appendLine("Build: ${Globals.buildVersion}");
+    Globals.diagnosticcontroller.appendLine("Platform: ${Platform.version}");
+    Globals.diagnosticcontroller.appendLine("Operating system: ${Platform.operatingSystemVersion}");
+    Globals.diagnosticcontroller.appendLine("Locale: ${Platform.localeName}");
+    Globals.diagnosticcontroller.appendLine("Machine name: ${Platform.localHostname}");
+    Globals.diagnosticcontroller.appendLine("CPU cores: ${Platform.numberOfProcessors}");
+    Globals.diagnosticcontroller.appendLine("Java executable: ${Globals.javapathcontroller.text}");
+    Globals.diagnosticcontroller.appendLine("Java Ram: ${Globals.javaramcontroller.text}");
+    Globals.diagnosticcontroller.appendLine("Java advanced settings: ${Globals.javaAdvSet}");
+    Globals.diagnosticcontroller.appendLine("Java args: ${Globals.javavmcontroller.text}");
+    Globals.diagnosticcontroller.appendLine("Launcher args: ${Globals.javalaunchercontroller.text}");
+    Globals.diagnosticcontroller.appendLine("------- Installed versions -------");
     for (var version in VersionUtils.getMinecraftOfflineVersions(false)) {
-      Globals.diagnosticcontroller.text += "Type: ${version["type"]}, Version: ${version["id"]}\n";
+      Globals.diagnosticcontroller.appendLine("Type: ${version["type"]}, Version: ${version["id"]}");
     }
     for (var version in VersionUtils.getMinecraftOfflineVersions(true)) {
-      Globals.diagnosticcontroller.text += "Type: ${version["type"]}, Version: ${version["id"]}\n";
+      Globals.diagnosticcontroller.appendLine("Type: ${version["type"]}, Version: ${version["id"]}");
     }
     if (Globals.accounts.isNotEmpty) {
-      Globals.diagnosticcontroller.text += "------- Accounts -------\n";
+      Globals.diagnosticcontroller.appendLine("------- Accounts -------");
       for (var account in Globals.accounts) {
-        Globals.diagnosticcontroller.text += "Username: ${account.username}, UUID: ${account.uuid}, Premium: ${account.isPremium}, Slim skin: ${account.isSlimSkin}\n";
+        Globals.diagnosticcontroller.appendLine("Username: ${account.username}, UUID: ${account.uuid}, Premium: ${account.isPremium}, Slim skin: ${account.isSlimSkin}");
       }
     }
-    Globals.diagnosticcontroller.text += "------- Game crashlog -------\n";
-    List<String> lines = Globals.consolecontroller.text.split('\n');
-    for (String line in lines) {
-      Globals.diagnosticcontroller.text += line + "\n";
+    Globals.diagnosticcontroller.appendLine("------- Game crashlog -------");
+    for (final line in Globals.consolecontroller.lines) {
+      Globals.diagnosticcontroller.appendLine(line);
     }
 
     WidgetUtils.showPopup(
       context,
       AppLocalizations.of(context)!.settings_diagnostic_title,
       <Widget>[
-        Container(
-          color: Colors.white.withAlpha(128),
-          padding: new EdgeInsets.all(2.0),
-          child: TextField(
-            keyboardType: TextInputType.multiline,
-            maxLines: null,
+        SizedBox(
+          width: double.maxFinite,
+          height: 400,
+          child: VirtualizedLogView(
             controller: Globals.diagnosticcontroller,
-            readOnly: true,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w400,
-              fontFamily: "JetbrainsMono",
-              color: Colors.black,
-            ),
+            backgroundColor: Colors.white.withAlpha(128),
+            textColor: Colors.black,
+            fontSize: 10,
+            fontFamily: 'JetBrainsMono',
+            autoScroll: false,
           ),
         ),
       ],
@@ -600,9 +549,7 @@ class WidgetUtils {
               color: ColorUtils.dynamicAccentColor.withAlpha(255),
             ),
           ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ],
     );
@@ -613,20 +560,13 @@ class WidgetUtils {
       context: context,
       builder: (context) {
         return Center(
-          child: Image.asset(
-            'assets/morpheus-animated.gif',
-            width: 64,
-          ),
+          child: Image.asset('assets/morpheus-animated.gif', width: 64),
         );
       },
     );
   }
 
-  static TextStyle customTextStyle(
-    double size,
-    FontWeight weight,
-    Color textColor,
-  ) {
+  static TextStyle customTextStyle(double size, FontWeight weight, Color textColor) {
     return TextStyle(
       fontSize: size,
       fontFamily: 'Comfortaa',
@@ -637,11 +577,7 @@ class WidgetUtils {
           color: ColorUtils.defaultShadowColor,
           // Choose the color of the shadow
           blurRadius: 15.0,
-          // Adjust the blur radius for the shadow effect
-          offset: Offset(
-            2.0,
-            2.0,
-          ), // Set the horizontal and vertical offset for the shadow
+          offset: Offset(2.0, 2.0),
         ),
       ],
     );
@@ -652,11 +588,7 @@ class WidgetUtils {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(radius),
         boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: color,
-            blurRadius: radius,
-            offset: Offset(0, 0),
-          ),
+          BoxShadow(color: color, blurRadius: radius, offset: Offset(0, 0)),
         ],
       ),
       child: child,
