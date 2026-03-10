@@ -16,9 +16,7 @@
 
   "modded_empty_title": "Keine modifizierten Minecraft-Versionen gefunden",
   "modded_installed_title": "Installiert",
-  "modded_fabric_download_available": "Stoffe für die Installation verfügbar",
-  "modded_forge_download_available": "Forge verfügbar für die Installation",
-  "modded_optifine_download_available": "Optifine verfügbar zur Installation",
+  "modded_available_versions_title": "Modifizierte Versionen verfügbar",
 
   "settings_only_release_switch": "Nur Veröffentlichungen anzeigen",
   "settings_dark_mode_switch": "Dunkles Thema aktivieren",

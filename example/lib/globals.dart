@@ -12,7 +12,7 @@ import 'package:morpheus_launcher_gui/account/account_utils.dart';
 import 'package:morpheus_launcher_gui/account/encryption.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_theme/system_theme.dart';
-import 'package:morpheus_launcher_gui/utils/log_controller.dart';
+import 'package:morpheus_launcher_gui/utils/logging/log_controller.dart';
 
 class Globals {
   static final buildVersion = "Ver 3.0.0";

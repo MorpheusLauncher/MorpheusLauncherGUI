@@ -16,9 +16,7 @@
 
   "modded_empty_title": "Nessuna versione moddata trovata",
   "modded_installed_title": "Installate",
-  "modded_fabric_download_available": "Fabric disponibili per l'installazione",
-  "modded_forge_download_available": "Forge disponibili per l'installazione",
-  "modded_optifine_download_available": "Optifine disponibili per l'installazione",
+  "modded_available_versions_title": "Versioni moddate disponibili",
 
   "settings_only_release_switch": "Mostra solo release",
   "settings_dark_mode_switch": "Usa tema scuro",

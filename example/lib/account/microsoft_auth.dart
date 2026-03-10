@@ -40,13 +40,38 @@ Future<String> doMicrosoftConsent(dynamic context) async {
   return '[MS]: ${AppLocalizations.of(context)!.account_post_fail}: ${response.statusCode}';
 }
 
-Future<dynamic> doMicrosoftRefresh(dynamic context, String refresh_token) async {
-  var data = await getToken(context, 'refresh_token', refresh_token, null);
-  if (data != null) {
-    return doXboxLiveAuth(context, data['access_token']);
+Future<dynamic> doMicrosoftRefresh(dynamic context, String refresh_token, {int maxRetries = 3}) async {
+  for (int attempt = 1; attempt <= maxRetries; attempt++) {
+    final data = await getToken(context, 'refresh_token', refresh_token, null);
+
+    // Se getToken ha restituito una stringa è un errore, usciamo subito
+    if (data == null || data is String) return data;
+
+    final xboxResult = await doXboxLiveAuth(context, data['access_token']);
+
+    // Se il risultato non è una Map con access_token, è un errore
+    if (xboxResult is! Map || !xboxResult.containsKey('access_token')) {
+      return xboxResult;
+    }
+
+    final mcToken = xboxResult['access_token'] as String;
+
+    // Verifichiamo che il token MC funzioni davvero
+    final profile = await fetchMinecraftProfile(context, mcToken);
+
+    if (profile is Map && profile.containsKey('id')) {
+      // Token valido, restituiamo i dati completi
+      return xboxResult;
+    }
+
+    // Token non valido: se abbiamo altri tentativi, riproviamo
+    if (attempt < maxRetries) {
+      await Future.delayed(Duration(seconds: 2 * attempt)); // backoff
+      continue;
+    }
   }
 
-  return data;
+  return '[MS]: ${AppLocalizations.of(context)!.account_post_fail}: max retries reached';
 }
 
 Future getToken(dynamic context, String grantType, var refreshToken, var deviceCode) async {
@@ -190,7 +215,9 @@ Future<String> uploadSkin(dynamic context, String variant, Account account, Stri
 
   final stream = http.ByteStream(file.openRead());
   final length = await file.length();
-  final multipartFile = http.MultipartFile('file', stream, length, filename: filePath.split("/").last, contentType: MediaType('image', 'png'));
+  final multipartFile = http.MultipartFile('file', stream, length, filename: filePath
+      .split("/")
+      .last, contentType: MediaType('image', 'png'));
 
   // Add the file to the request
   request.files.add(multipartFile);

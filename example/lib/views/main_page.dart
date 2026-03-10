@@ -19,11 +19,11 @@ import 'package:morpheus_launcher_gui/globals.dart';
 import 'package:morpheus_launcher_gui/main.dart';
 import 'package:morpheus_launcher_gui/utils/circle_utils.dart';
 import 'package:morpheus_launcher_gui/utils/glass_morphism.dart';
-import 'package:morpheus_launcher_gui/utils/launch_utils.dart';
+import 'package:morpheus_launcher_gui/utils/launcher/launch_utils.dart';
 import 'package:morpheus_launcher_gui/utils/morpheus_icons_icons.dart';
 import 'package:morpheus_launcher_gui/utils/skinmodel/skin_utils.dart';
 import 'package:morpheus_launcher_gui/utils/skinmodel/skin_viewer.dart';
-import 'package:morpheus_launcher_gui/utils/version_utils.dart';
+import 'package:morpheus_launcher_gui/utils/launcher//version_utils.dart';
 import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
 import 'package:morpheus_launcher_gui/views/widget_news.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -107,7 +107,8 @@ class _MainPageState extends State<MainPage> {
         const SizedBox(width: 8),
         Expanded(
           child: ScrollConfiguration(
-            behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+            behavior:
+            ScrollConfiguration.of(context).copyWith(scrollbars: false),
             child: child,
           ),
         ),
@@ -165,7 +166,9 @@ class _MainPageState extends State<MainPage> {
         child: Icon(
           icon,
           size: 30,
-          color: selected ? ColorUtils.primaryFontColor : ColorUtils.primaryFontColor.withAlpha(128),
+          color: selected
+              ? ColorUtils.primaryFontColor
+              : ColorUtils.primaryFontColor.withAlpha(128),
         ),
       ),
     );
@@ -345,9 +348,13 @@ class _MainPageState extends State<MainPage> {
         /** Changelog */
         if (LauncherUtils.isOnline()) ...[
           for (var version in Globals.vanillaNewsResponse) ...[
-            if ((version["type"] == "release" && Globals.showOnlyReleases) || !Globals.showOnlyReleases) ...[
+            if ((version["type"] == "release" && Globals.showOnlyReleases) ||
+                !Globals.showOnlyReleases) ...[
               buildNewsItem(
-                version["title"].toString().replaceAll(": Java Edition", "").replaceAll(" Aquatic", ""),
+                version["title"]
+                    .toString()
+                    .replaceAll(": Java Edition", "")
+                    .replaceAll(" Aquatic", ""),
                 version["body"],
                 version["image"]["url"],
               ),
@@ -425,7 +432,8 @@ class _MainPageState extends State<MainPage> {
                         blur: 4,
                         blurColor: Colors.black,
                         colorOpacity: 0.1,
-                        borderRadius: BorderRadius.circular(Globals.borderRadius - 2),
+                        borderRadius:
+                        BorderRadius.circular(Globals.borderRadius - 2),
                       ),
                       Text(
                         title,
@@ -520,7 +528,8 @@ class _MainPageState extends State<MainPage> {
                     blur: 0,
                     blurColor: Colors.black,
                     colorOpacity: 0.1,
-                    borderRadius: BorderRadius.circular(Globals.borderRadius + 2),
+                    borderRadius:
+                    BorderRadius.circular(Globals.borderRadius + 2),
                   ),
                 ),
               ),
@@ -594,7 +603,9 @@ class _MainPageState extends State<MainPage> {
                                       context,
                                       config,
                                       onAccountRequired: () {
-                                        setState(() => Globals.navSelected = NavSection.accounts);
+                                        setState(() =>
+                                        Globals.navSelected =
+                                            NavSection.accounts);
                                       },
                                     );
                                   },
@@ -640,13 +651,17 @@ class _MainPageState extends State<MainPage> {
         /** Ultime versioni */
         buildVanillaItem(
           AppLocalizations.of(context)!.vanilla_release_title,
-          Globals.vanillaVersionsResponse != null ? Globals.vanillaVersionsResponse["latest"]["release"] : "",
+          Globals.vanillaVersionsResponse != null
+              ? Globals.vanillaVersionsResponse["latest"]["release"]
+              : "",
           "",
           true,
         ),
         buildVanillaItem(
           AppLocalizations.of(context)!.vanilla_snapshot_title,
-          Globals.vanillaVersionsResponse != null ? Globals.vanillaVersionsResponse["latest"]["snapshot"] : "",
+          Globals.vanillaVersionsResponse != null
+              ? Globals.vanillaVersionsResponse["latest"]["snapshot"]
+              : "",
           "",
           true,
         ),
@@ -660,7 +675,8 @@ class _MainPageState extends State<MainPage> {
 
         /** Lista completa delle versioni solo vanilla (misto) */
         for (var version in VersionUtils.getMinecraftVersions(false))
-          if ((version["type"] == "release" && Globals.showOnlyReleases) || !Globals.showOnlyReleases)
+          if ((version["type"] == "release" && Globals.showOnlyReleases) ||
+              !Globals.showOnlyReleases)
             buildVanillaItem(
               version["type"],
               version["id"],
@@ -675,72 +691,65 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget buildVanillaItem(String gameType,
-      String gameVersion,
-      String releaseDate,
-      bool compatible,) {
-    final bool compatible = VersionUtils.isCompatible(
-      gameType,
-      gameVersion,
-      context,
-    );
-    final String? incompatibilityReason = compatible ? null : VersionUtils.getIncompatibilityReason(gameType, gameVersion, context);
+  Widget buildVanillaItem(String gameType, String gameVersion,
+      String releaseDate, bool compatible) {
+    final bool compatible =
+    VersionUtils.isCompatible(gameType, gameVersion, context);
+    final String? incompatibilityReason = compatible
+        ? null
+        : VersionUtils.getIncompatibilityReason(gameType, gameVersion, context);
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
-      child: Container(
+      padding: EdgeInsets.fromLTRB(0, 4, 0, 0),
+      child: SizedBox(
         height: 55,
-        width: (MediaQuery
-            .of(context)
-            .size
-            .width / 5) - 5,
+        width: double.infinity,
         child: Material(
           elevation: 15,
           color: ColorUtils.dynamicPrimaryForegroundColor,
           shadowColor: ColorUtils.defaultShadowColor,
           borderRadius: BorderRadius.circular(Globals.borderRadius),
-          child: Stack(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Icona
               Padding(
-                padding: EdgeInsets.fromLTRB(10, 12, 0, 0),
+                padding: EdgeInsets.symmetric(horizontal: 10),
                 child: Tooltip(
                   message: incompatibilityReason ?? "",
-                  textStyle: WidgetUtils.customTextStyle(12, FontWeight.w500, ColorUtils.primaryFontColor),
+                  textStyle: WidgetUtils.customTextStyle(
+                      12, FontWeight.w500, ColorUtils.primaryFontColor),
                   decoration: BoxDecoration(
                     color: ColorUtils.dynamicBackgroundColor,
-                    borderRadius: BorderRadius.all(const Radius.circular(5)),
+                    borderRadius: BorderRadius.all(Radius.circular(5)),
                   ),
                   waitDuration: Duration(milliseconds: 500),
                   child: ColorFiltered(
                     colorFilter: compatible
                         ? const ColorFilter.mode(
-                      Colors.transparent,
-                      BlendMode.multiply,
-                    )
-                        : const ColorFilter.matrix(
-                      <double>[
-                        0.2126,
-                        0.7152,
-                        0.0722,
-                        0,
-                        0,
-                        0.2126,
-                        0.7152,
-                        0.0722,
-                        0,
-                        0,
-                        0.2126,
-                        0.7152,
-                        0.0722,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        1,
-                        0,
-                      ],
-                    ),
+                        Colors.transparent, BlendMode.multiply)
+                        : const ColorFilter.matrix(<double>[
+                      0.2126,
+                      0.7152,
+                      0.0722,
+                      0,
+                      0,
+                      0.2126,
+                      0.7152,
+                      0.0722,
+                      0,
+                      0,
+                      0.2126,
+                      0.7152,
+                      0.0722,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0,
+                    ]),
                     child: Container(
                       height: 30,
                       width: 30,
@@ -748,8 +757,8 @@ class _MainPageState extends State<MainPage> {
                         shape: BoxShape.circle,
                         image: DecorationImage(
                           filterQuality: FilterQuality.none,
-                          opacity: 1,
-                          image: AssetImage(_getVersionIcon(gameType, gameVersion)),
+                          image: AssetImage(
+                              _getVersionIcon(gameType, gameVersion)),
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -758,14 +767,17 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
 
-              /** Info delle Versione */
-              Padding(
-                padding: EdgeInsets.fromLTRB(48, releaseDate != "" ? 5 : 14, 10, 0),
+              // Testo
+              Expanded(
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      "${gameType.substring(0, 1).toUpperCase() + gameType.substring(1)} ${gameVersion}",
+                      "${gameType.substring(0, 1).toUpperCase()}${gameType.substring(1)} $gameVersion",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: WidgetUtils.customTextStyle(
                         releaseDate.isNotEmpty ? 18 : 20,
                         FontWeight.w500,
@@ -784,6 +796,8 @@ class _MainPageState extends State<MainPage> {
                             .parse(releaseDate)
                             .toLocal()
                             .year}",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: WidgetUtils.customTextStyle(
                           14,
                           FontWeight.w500,
@@ -794,66 +808,60 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
 
-              /** Sezione pulsanti */
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  /** Pulsante Preferiti */
-                  if (!gameType.contains(AppLocalizations.of(context)!.vanilla_release_title) && !gameType.contains(AppLocalizations.of(context)!.vanilla_snapshot_title)) ...[
-                    WidgetUtils.buildButton(
-                      Globals.pinnedVersions.contains(gameVersion) ? Icons.favorite : Icons.favorite_border,
-                      ColorUtils.dynamicSecondaryForegroundColor,
-                      ColorUtils.primaryFontColor,
-                          () async {
-                        setState(() {
-                          if (!Globals.pinnedVersions.contains(gameVersion)) {
-                            Globals.pinnedVersions.add(gameVersion);
-                          } else {
-                            Globals.pinnedVersions.remove(gameVersion);
-                          }
-                        });
-                        await VersionUtils.updateLauncherProfiles(
-                          Globals.pinnedVersions,
-                        );
-                      },
+              // Pulsanti
+              if (!gameType.contains(
+                  AppLocalizations.of(context)!.vanilla_release_title) &&
+                  !gameType.contains(
+                      AppLocalizations.of(context)!.vanilla_snapshot_title))
+                WidgetUtils.buildButton(
+                  Globals.pinnedVersions.contains(gameVersion)
+                      ? Icons.favorite
+                      : Icons.favorite_border,
+                  ColorUtils.dynamicSecondaryForegroundColor,
+                  ColorUtils.primaryFontColor,
+                      () async {
+                    setState(() {
+                      if (!Globals.pinnedVersions.contains(gameVersion)) {
+                        Globals.pinnedVersions.add(gameVersion);
+                      } else {
+                        Globals.pinnedVersions.remove(gameVersion);
+                      }
+                    });
+                    await VersionUtils.updateLauncherProfiles(
+                        Globals.pinnedVersions);
+                  },
+                ),
+
+              WidgetUtils.buildButton(
+                Icons.rocket_launch,
+                ColorUtils.dynamicAccentColor,
+                Colors.white,
+                    () async {
+                  var modLoaderConfig =
+                  versionResolver(gameType, gameVersion, context);
+                  final config = LaunchConfig(
+                    gameVersion: modLoaderConfig.gameVersion,
+                    productId: null,
+                    isModded: modLoaderConfig.isModded,
+                    realGameVersion: modLoaderConfig.realGameVersion,
+                    enableClassPath: LaunchUtils.shouldEnableClassPath(
+                      modLoaderConfig.gameVersion,
+                      modLoaderConfig.enableClassPath,
                     ),
-                  ],
-
-                  /** Pulsante Play */
-                  WidgetUtils.buildButton(
-                    Icons.rocket_launch,
-                    ColorUtils.dynamicAccentColor,
-                    Colors.white,
-                        () async {
-                      var modLoaderConfig = versionResolver(gameType, gameVersion, context);
-
-                      final config = LaunchConfig(
-                        gameVersion: modLoaderConfig.gameVersion,
-                        productId: null,
-                        isModded: modLoaderConfig.isModded,
-                        realGameVersion: modLoaderConfig.realGameVersion,
-                        enableClassPath: LaunchUtils.shouldEnableClassPath(
-                          modLoaderConfig.gameVersion,
-                          modLoaderConfig.enableClassPath,
-                        ),
-                        startOnFirstThread: LaunchUtils.shouldUseStartOnFirstThread(
-                          modLoaderConfig.realGameVersion,
-                        ),
-                        jvmArgs: modLoaderConfig.additionalArgs,
-                        launcherArgs: [],
-                      );
-
-                      await LaunchUtils.launchMinecraft(
-                        context,
-                        config,
-                        onAccountRequired: () {
-                          setState(() => Globals.navSelected = NavSection.accounts);
-                        },
-                      );
+                    startOnFirstThread: LaunchUtils.shouldUseStartOnFirstThread(
+                      modLoaderConfig.realGameVersion,
+                    ),
+                    jvmArgs: modLoaderConfig.additionalArgs,
+                    launcherArgs: [],
+                  );
+                  await LaunchUtils.launchMinecraft(
+                    context,
+                    config,
+                    onAccountRequired: () {
+                      setState(() => Globals.navSelected = NavSection.accounts);
                     },
-                  ),
-                ],
+                  );
+                },
               ),
             ],
           ),
@@ -869,10 +877,14 @@ class _MainPageState extends State<MainPage> {
     if (type.contains("alpha")) return 'assets/alpha.png';
     if (type.contains("beta")) return 'assets/beta.png';
     if (type.contains("snapshot")) return 'assets/snapshot.png';
-    if (type.contains("optifine") || version.contains("optifine")) return 'assets/optifine.png';
-    if (type.contains("optiforge") || version.contains("optiforge")) return 'assets/optiforge.png';
-    if (type.contains("forge") || version.contains("forge")) return 'assets/forge.png';
-    if (type.contains("fabric") || version.contains("fabric")) return 'assets/fabric.png';
+    if (type.contains("optifine") || version.contains("optifine"))
+      return 'assets/optifine.png';
+    if (type.contains("optiforge") || version.contains("optiforge"))
+      return 'assets/optiforge.png';
+    if (type.contains("forge") || version.contains("forge"))
+      return 'assets/forge.png';
+    if (type.contains("fabric") || version.contains("fabric"))
+      return 'assets/fabric.png';
 
     return 'assets/release.png';
   }
@@ -884,9 +896,11 @@ class _MainPageState extends State<MainPage> {
     var enableClassPath = Globals.forceClasspath;
 
     // Latest Release
-    if (gameType.contains(AppLocalizations
-        .of(context)
-        ?.vanilla_release_title as Pattern) || gameVersion.contains("latest")) {
+    if (gameType.contains(
+        AppLocalizations
+            .of(context)
+            ?.vanilla_release_title as Pattern) ||
+        gameVersion.contains("latest")) {
       return ModLoaderConfig(
         gameVersion: "latest",
         realGameVersion: realGameVersion,
@@ -896,9 +910,11 @@ class _MainPageState extends State<MainPage> {
     }
 
     // Latest Snapshot
-    if (gameType.contains(AppLocalizations
-        .of(context)
-        ?.vanilla_snapshot_title as Pattern) || gameVersion.contains("snapshot")) {
+    if (gameType.contains(
+        AppLocalizations
+            .of(context)
+            ?.vanilla_snapshot_title as Pattern) ||
+        gameVersion.contains("snapshot")) {
       return ModLoaderConfig(
         gameVersion: "snapshot",
         realGameVersion: realGameVersion,
@@ -908,7 +924,8 @@ class _MainPageState extends State<MainPage> {
     }
 
     // Fabric
-    if (gameType.toLowerCase().contains("fabric") || gameVersion.toLowerCase().contains("fabric")) {
+    if (gameType.toLowerCase().contains("fabric") ||
+        gameVersion.toLowerCase().contains("fabric")) {
       if (gameVersion.toLowerCase().startsWith("fabric")) {
         realGameVersion = gameVersion.split("-")[3];
       } else {
@@ -925,7 +942,8 @@ class _MainPageState extends State<MainPage> {
     }
 
     // OptiFine
-    if (gameType.toLowerCase().contains("optifine") || gameVersion.toLowerCase().contains("optifine")) {
+    if (gameType.toLowerCase().contains("optifine") ||
+        gameVersion.toLowerCase().contains("optifine")) {
       if (gameType.toLowerCase().contains("optifine")) {
         realGameVersion = gameVersion.toLowerCase();
         for (var version in Globals.optifineVersions) {
@@ -947,7 +965,8 @@ class _MainPageState extends State<MainPage> {
     }
 
     // OptiForge
-    if (gameType.toLowerCase().contains("optiforge") || gameVersion.toLowerCase().contains("optiforge")) {
+    if (gameType.toLowerCase().contains("optiforge") ||
+        gameVersion.toLowerCase().contains("optiforge")) {
       if (gameType.toLowerCase().contains("optiforge")) {
         realGameVersion = gameVersion.toLowerCase();
         for (var version in Globals.forgeVersions) {
@@ -972,7 +991,8 @@ class _MainPageState extends State<MainPage> {
     }
 
     // Forge
-    if (gameType.toLowerCase().contains("forge") || gameVersion.toLowerCase().contains("forge")) {
+    if (gameType.toLowerCase().contains("forge") ||
+        gameVersion.toLowerCase().contains("forge")) {
       if (gameType.toLowerCase().contains("forge")) {
         realGameVersion = gameVersion.toLowerCase();
         for (var version in Globals.forgeVersions) {
@@ -1007,34 +1027,197 @@ class _MainPageState extends State<MainPage> {
 
   /////////// MODDING //////////////
 
-  ListView buildModdedList() {
+  final Set<String> _selectedFilters = {}; // vuoto = tutti visibili
+
+  bool _isVisible(String label) {
+    if (_selectedFilters.isEmpty) return true;
+    return _selectedFilters.contains(label);
+  }
+
+  Widget _buildDivider(String label) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 5),
+      child: TextDivider(
+        color: ColorUtils.secondaryFontColor.withAlpha(80),
+        thickness: 2,
+        text: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: WidgetUtils.customTextStyle(
+            20,
+            FontWeight.w300,
+            ColorUtils.primaryFontColor,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModloaderSection({
+    required String label,
+    required List<Widget> children,
+    required int count,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+      decoration: BoxDecoration(
+        color: ColorUtils.dynamicAcrylicColor,
+        borderRadius: BorderRadius.circular(Globals.borderRadius),
+        border: Border.all(
+          color: ColorUtils.secondaryFontColor.withAlpha(50),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header
+          Padding(
+            padding: EdgeInsets.fromLTRB(16, 10, 16, 4),
+            child: Row(
+              children: [
+                Text(
+                  label,
+                  style: WidgetUtils.customTextStyle(
+                    16,
+                    FontWeight.w500,
+                    ColorUtils.primaryFontColor,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Container(
+                  padding: EdgeInsets.fromLTRB(8, 6, 8, 2),
+                  decoration: BoxDecoration(
+                    color: ColorUtils.dynamicAcrylicColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    "$count",
+                    style: WidgetUtils.customTextStyle(
+                      12,
+                      FontWeight.w600,
+                      ColorUtils.primaryFontColor.withAlpha(200),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Children
+          Padding(
+            padding: EdgeInsets.fromLTRB(8, 0, 8, 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: children,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickChip({
+    required String label,
+    required IconData icon,
+    bool isActive = true,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 180),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: ColorUtils.dynamicAcrylicColor,
+          borderRadius: BorderRadius.circular(Globals.borderRadius - 2),
+          border: Border.all(
+            color: isActive
+                ? ColorUtils.primaryFontColor.withAlpha(200)
+                : ColorUtils.secondaryFontColor.withAlpha(80),
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 13,
+              color: isActive
+                  ? ColorUtils.primaryFontColor.withAlpha(200)
+                  : ColorUtils.secondaryFontColor.withAlpha(80),
+            ),
+            SizedBox(width: 5),
+            Text(
+              label,
+              style: WidgetUtils.customTextStyle(
+                12,
+                isActive ? FontWeight.w600 : FontWeight.w300,
+                isActive
+                    ? ColorUtils.primaryFontColor.withAlpha(200)
+                    : ColorUtils.secondaryFontColor.withAlpha(80),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChips() {
+    final filters = ["OptiFine", "OptiForge", "Forge", "Fabric"];
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: filters.map((label) {
+            final isActive = _selectedFilters.contains(label);
+            return Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: _buildQuickChip(
+                label: label,
+                icon: isActive ? Icons.visibility : Icons.visibility_off,
+                isActive: isActive || _selectedFilters.isEmpty,
+                onTap: () {
+                  setState(() {
+                    if (isActive) {
+                      _selectedFilters.remove(label);
+                    } else {
+                      _selectedFilters.add(label);
+                    }
+                  });
+                },
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget buildModdedList() {
+    final fabricFiltered = Globals.fabricGameVersionsResponse != null
+        ? Globals.fabricGameVersionsResponse.where((v) {
+      if (Globals.showOnlyReleases != true) return true;
+      return v["stable"] == true ||
+          (v["type"] is String &&
+              v["type"].toString().toLowerCase() == "release");
+    }).toList()
+        : [];
+
     return ListView(
       children: [
-        /** Separatore versioni moddate istallate */
         if (VersionUtils
             .getMinecraftVersions(true)
             .isNotEmpty)
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 5),
-            child: TextDivider(
-              color: ColorUtils.secondaryFontColor.withAlpha(80),
-              thickness: 2,
-              text: Text(
-                AppLocalizations.of(context)!.modded_installed_title,
-                textAlign: TextAlign.center,
-                style: WidgetUtils.customTextStyle(
-                  20,
-                  FontWeight.w300,
-                  ColorUtils.primaryFontColor,
-                ),
-              ),
-            ),
-          ),
-
-        /** Avvisa l'utente che non ha versioni moddate */
+          _buildDivider(AppLocalizations.of(context)!.modded_installed_title),
         if (VersionUtils
             .getMinecraftVersions(true)
-            .isEmpty && !LauncherUtils.isOnline())
+            .isEmpty &&
+            !LauncherUtils.isOnline())
           Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Text(
@@ -1047,144 +1230,74 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
           ),
-
-        /** Lista completa delle versioni moddate istallate */
         for (var version in VersionUtils.getMinecraftVersions(true))
           buildVanillaItem(
             version["type"],
             version["id"],
             "",
-            VersionUtils.isCompatible(
-              version["type"],
-              version["id"],
-              context,
-            ),
+            VersionUtils.isCompatible(version["type"], version["id"], context),
           ),
 
-        /** Lista delle optifine installabili */
-        if (Globals.optifineVersions != null) ...[
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 5),
-            child: TextDivider(
-              color: ColorUtils.secondaryFontColor.withAlpha(80),
-              thickness: 2,
-              text: Text(
-                AppLocalizations.of(context)!.modded_optifine_download_available,
-                textAlign: TextAlign.center,
-                style: WidgetUtils.customTextStyle(
-                  20,
-                  FontWeight.w300,
-                  ColorUtils.primaryFontColor,
+        /* Separatore*/
+        _buildDivider(AppLocalizations.of(context)!.modded_available_versions_title),
+
+        /* Filtri */
+        _buildFilterChips(),
+        SizedBox(height: 4),
+        if (_isVisible("OptiFine") && Globals.optifineVersions != null)
+          _buildModloaderSection(
+            label: "OptiFine",
+            count: Globals.optifineVersions.length,
+            children: [
+              for (var version in Globals.optifineVersions)
+                buildVanillaItem(
+                  "Optifine",
+                  version.split("-")[0],
+                  "",
+                  VersionUtils.isCompatible(
+                      "Optifine", version.split("-")[0], context),
                 ),
-              ),
-            ),
+            ],
           ),
-          for (var version in Globals.optifineVersions)
-            buildVanillaItem(
-              "Optifine",
-              version.split("-")[0],
-              "",
-              VersionUtils.isCompatible(
-                "Optifine",
-                version.split("-")[0],
-                context,
-              ),
-            ),
-        ],
-
-        /** Lista dei forge optifine installabili */
-        if (Globals.forgeVersions != null) ...[
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 5),
-            child: TextDivider(
-              color: ColorUtils.secondaryFontColor.withAlpha(80),
-              thickness: 2,
-              text: Text(
-                AppLocalizations.of(context)!.modded_forge_download_available,
-                textAlign: TextAlign.center,
-                style: WidgetUtils.customTextStyle(
-                  20,
-                  FontWeight.w300,
-                  ColorUtils.primaryFontColor,
+        if (_isVisible("OptiForge") && Globals.optiforgeVersions != null)
+          _buildModloaderSection(
+            label: "OptiForge",
+            count: Globals.optiforgeVersions.length,
+            children: [
+              for (var version in Globals.optiforgeVersions)
+                buildVanillaItem(
+                  "OptiForge",
+                  version.split("-")[0],
+                  "",
+                  VersionUtils.isCompatible(
+                      "OptiForge", version.split("-")[0], context),
                 ),
-              ),
-            ),
+            ],
           ),
-          for (var version in Globals.optiforgeVersions)
-            buildVanillaItem(
-              "OptiForge",
-              version.split("-")[0],
-              "",
-              VersionUtils.isCompatible(
-                "OptiForge",
-                version.split("-")[0],
-                context,
-              ),
-            ),
-        ],
-
-        /** Lista dei forge installabili */
-        if (Globals.forgeVersions != null) ...[
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 5),
-            child: TextDivider(
-              color: ColorUtils.secondaryFontColor.withAlpha(80),
-              thickness: 2,
-              text: Text(
-                AppLocalizations.of(context)!.modded_forge_download_available,
-                textAlign: TextAlign.center,
-                style: WidgetUtils.customTextStyle(
-                  20,
-                  FontWeight.w300,
-                  ColorUtils.primaryFontColor,
+        if (_isVisible("Forge") && Globals.forgeVersions != null)
+          _buildModloaderSection(
+            label: "Forge",
+            count: Globals.forgeVersions.length,
+            children: [
+              for (var version in Globals.forgeVersions)
+                buildVanillaItem(
+                  "Forge",
+                  version.split("-")[0],
+                  "",
+                  VersionUtils.isCompatible(
+                      "Forge", version.split("-")[0], context),
                 ),
-              ),
-            ),
+            ],
           ),
-          for (var version in Globals.forgeVersions)
-            buildVanillaItem(
-              "Forge",
-              version.split("-")[0],
-              "",
-              VersionUtils.isCompatible(
-                "Forge",
-                version.split("-")[0],
-                context,
-              ),
-            ),
-        ],
-
-        /** Lista dei fabric installabili */
-        if (Globals.fabricGameVersionsResponse != null) ...[
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 5),
-            child: TextDivider(
-              color: ColorUtils.secondaryFontColor.withAlpha(80),
-              thickness: 2,
-              text: Text(
-                AppLocalizations.of(context)!.modded_fabric_download_available,
-                textAlign: TextAlign.center,
-                style: WidgetUtils.customTextStyle(
-                  20,
-                  FontWeight.w300,
-                  ColorUtils.primaryFontColor,
-                ),
-              ),
-            ),
+        if (_isVisible("Fabric") && Globals.fabricGameVersionsResponse != null)
+          _buildModloaderSection(
+            label: "Fabric",
+            count: fabricFiltered.length,
+            children: [
+              for (var version in fabricFiltered)
+                buildVanillaItem("Fabric", version["version"], "", true),
+            ],
           ),
-          for (var version in Globals.fabricGameVersionsResponse.where((v) {
-            if (Globals.showOnlyReleases != true) return true;
-
-            final stable = v["stable"];
-            final type = v["type"];
-
-            if (stable == true) return true;
-            if (type is String && type.toLowerCase() == "release") return true;
-
-            return false;
-          }))
-            buildVanillaItem("Fabric", version["version"], "", true),
-        ],
       ],
     );
   }
@@ -1221,7 +1334,9 @@ class _MainPageState extends State<MainPage> {
             bgColor: ColorUtils.dynamicPrimaryForegroundColor,
             shadowColor: ColorUtils.defaultShadowColor,
             fontColor: ColorUtils.primaryFontColor,
-            toggleColor: ColorUtils.isMaterial ? ColorUtils.dynamicPrimaryForegroundColor : Colors.white,
+            toggleColor: ColorUtils.isMaterial
+                ? ColorUtils.dynamicPrimaryForegroundColor
+                : Colors.white,
             activeColor: ColorUtils.dynamicAccentColor,
             inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
           ),
@@ -1273,7 +1388,8 @@ class _MainPageState extends State<MainPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          AppLocalizations.of(context)!.settings_follow_system_color,
+                          AppLocalizations.of(context)!
+                              .settings_follow_system_color,
                           style: WidgetUtils.customTextStyle(
                             16,
                             FontWeight.w500,
@@ -1304,11 +1420,13 @@ class _MainPageState extends State<MainPage> {
                               onTap: () async =>
                               {
                                 Globals.accentColor = 0,
-                                (await SharedPreferences.getInstance()).setInt('accentColor', Globals.accentColor),
+                                (await SharedPreferences.getInstance())
+                                    .setInt('accentColor', Globals.accentColor),
                                 setState(() =>
-                                ColorUtils.dynamicAccentColor = ColorUtils.getColorFromAccent(
-                                  Globals.accentColor,
-                                )),
+                                ColorUtils.dynamicAccentColor =
+                                    ColorUtils.getColorFromAccent(
+                                      Globals.accentColor,
+                                    )),
                                 ColorUtils.reloadColors(),
                                 Window.setEffect(
                                   effect: getWindowEffect(),
@@ -1325,8 +1443,11 @@ class _MainPageState extends State<MainPage> {
                                 children: [
                                   ColoredCircle(
                                     size: 20,
-                                    color: SystemTheme.accentColor.light.withAlpha(200),
-                                    outlineColor: Globals.accentColor == 0 ? SystemTheme.accentColor.light : Colors.transparent,
+                                    color: SystemTheme.accentColor.light
+                                        .withAlpha(200),
+                                    outlineColor: Globals.accentColor == 0
+                                        ? SystemTheme.accentColor.light
+                                        : Colors.transparent,
                                     outlineWidth: 2,
                                     distance: 3,
                                   ),
@@ -1355,14 +1476,16 @@ class _MainPageState extends State<MainPage> {
                                 onTap: () async =>
                                 {
                                   Globals.accentColor = i,
-                                  (await SharedPreferences.getInstance()).setInt(
+                                  (await SharedPreferences.getInstance())
+                                      .setInt(
                                     'accentColor',
                                     Globals.accentColor,
                                   ),
                                   setState(() =>
-                                  ColorUtils.dynamicAccentColor = ColorUtils.getColorFromAccent(
-                                    Globals.accentColor,
-                                  )),
+                                  ColorUtils.dynamicAccentColor =
+                                      ColorUtils.getColorFromAccent(
+                                        Globals.accentColor,
+                                      )),
                                   ColorUtils.reloadColors(),
                                   Window.setEffect(
                                     effect: getWindowEffect(),
@@ -1481,11 +1604,15 @@ class _MainPageState extends State<MainPage> {
                             value: Globals.selectedWindowTheme,
                             onChanged: (String? value) async {
                               Globals.selectedWindowTheme = value!;
-                              ColorUtils.isMaterial = (Globals.selectedWindowTheme.contains('Material'));
+                              ColorUtils.isMaterial = (Globals
+                                  .selectedWindowTheme
+                                  .contains('Material'));
 
-                              if (ColorUtils.isMaterial) Globals.fullTransparent = false;
+                              if (ColorUtils.isMaterial)
+                                Globals.fullTransparent = false;
 
-                              SharedPreferences prefs = await SharedPreferences.getInstance();
+                              SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
                               await prefs.setString(
                                 "themeSet",
                                 Globals.selectedWindowTheme,
@@ -1514,7 +1641,8 @@ class _MainPageState extends State<MainPage> {
                                 borderRadius: BorderRadius.circular(
                                   Globals.borderRadius - 4,
                                 ),
-                                color: ColorUtils.dynamicSecondaryForegroundColor,
+                                color:
+                                ColorUtils.dynamicSecondaryForegroundColor,
                               ),
                             ),
                             menuItemStyleData: MenuItemStyleData(
@@ -1559,7 +1687,9 @@ class _MainPageState extends State<MainPage> {
               bgColor: ColorUtils.dynamicPrimaryForegroundColor,
               shadowColor: ColorUtils.defaultShadowColor,
               fontColor: ColorUtils.primaryFontColor,
-              toggleColor: ColorUtils.isMaterial ? ColorUtils.dynamicPrimaryForegroundColor : Colors.white,
+              toggleColor: ColorUtils.isMaterial
+                  ? ColorUtils.dynamicPrimaryForegroundColor
+                  : Colors.white,
               activeColor: ColorUtils.dynamicAccentColor,
               inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
             ),
@@ -1597,7 +1727,9 @@ class _MainPageState extends State<MainPage> {
             bgColor: ColorUtils.dynamicPrimaryForegroundColor,
             shadowColor: ColorUtils.defaultShadowColor,
             fontColor: ColorUtils.primaryFontColor,
-            toggleColor: ColorUtils.isMaterial ? ColorUtils.dynamicPrimaryForegroundColor : Colors.white,
+            toggleColor: ColorUtils.isMaterial
+                ? ColorUtils.dynamicPrimaryForegroundColor
+                : Colors.white,
             activeColor: ColorUtils.dynamicAccentColor,
             inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
           ),
@@ -1614,7 +1746,9 @@ class _MainPageState extends State<MainPage> {
             bgColor: ColorUtils.dynamicPrimaryForegroundColor,
             shadowColor: ColorUtils.defaultShadowColor,
             fontColor: ColorUtils.primaryFontColor,
-            toggleColor: ColorUtils.isMaterial ? ColorUtils.dynamicPrimaryForegroundColor : Colors.white,
+            toggleColor: ColorUtils.isMaterial
+                ? ColorUtils.dynamicPrimaryForegroundColor
+                : Colors.white,
             activeColor: ColorUtils.dynamicAccentColor,
             inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
           ),
@@ -1634,7 +1768,9 @@ class _MainPageState extends State<MainPage> {
                   bgColor: Colors.transparent,
                   shadowColor: Colors.transparent,
                   fontColor: ColorUtils.primaryFontColor,
-                  toggleColor: ColorUtils.isMaterial ? ColorUtils.dynamicPrimaryForegroundColor : Colors.white,
+                  toggleColor: ColorUtils.isMaterial
+                      ? ColorUtils.dynamicPrimaryForegroundColor
+                      : Colors.white,
                   activeColor: ColorUtils.dynamicAccentColor,
                   inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
                 ),
@@ -1658,11 +1794,14 @@ class _MainPageState extends State<MainPage> {
                                 ColorUtils.dynamicAccentColor,
                                 Colors.white,
                                     () async {
-                                  FilePickerResult? result = await FilePicker.platform.pickFiles();
+                                  FilePickerResult? result =
+                                  await FilePicker.platform.pickFiles();
                                   if (result != null) {
                                     File file = File(result.files.single.path!);
-                                    Globals.javapathcontroller.text = file.path.replaceAll("\\", "/");
-                                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                                    Globals.javapathcontroller.text =
+                                        file.path.replaceAll("\\", "/");
+                                    SharedPreferences prefs =
+                                    await SharedPreferences.getInstance();
                                     await prefs.setString(
                                       "javaPath",
                                       Globals.javapathcontroller.text,
@@ -1675,10 +1814,12 @@ class _MainPageState extends State<MainPage> {
                                 ColorUtils.dynamicAccentColor,
                                 Colors.white,
                                     () async {
-                                  final result = await LauncherUtils.checkJava();
+                                  final result =
+                                  await LauncherUtils.checkJava();
 
                                   // Titolo fisso localizzato
-                                  final title = AppLocalizations.of(context)!.settings_check_java_title;
+                                  final title = AppLocalizations.of(context)!
+                                      .settings_check_java_title;
 
                                   // Corpo del messaggio
                                   String message;
@@ -1686,16 +1827,23 @@ class _MainPageState extends State<MainPage> {
                                     final type = result['type'];
                                     final version = result['version'];
                                     final date = result['releaseDate'];
-                                    final lts = result['lts'] == 'true' ? 'LTS' : '';
+                                    final lts =
+                                    result['lts'] == 'true' ? 'LTS' : '';
 
                                     // Messaggio positivo + info JVM
-                                    message = AppLocalizations.of(context)!.settings_check_java_yes +
+                                    message = AppLocalizations.of(context)!
+                                        .settings_check_java_yes +
                                         '\n\n→ JVM: $type\n→ Versione: $version' +
-                                        (date != null && date.isNotEmpty ? '\n→ Data rilascio: $date' : '') +
-                                        (lts.isNotEmpty ? '\n→ Tipo: $lts' : '');
+                                        (date != null && date.isNotEmpty
+                                            ? '\n→ Data rilascio: $date'
+                                            : '') +
+                                        (lts.isNotEmpty
+                                            ? '\n→ Tipo: $lts'
+                                            : '');
                                   } else {
                                     // Messaggio negativo
-                                    message = AppLocalizations.of(context)!.settings_check_java_no;
+                                    message = AppLocalizations.of(context)!
+                                        .settings_check_java_no;
                                   }
 
                                   // Mostra dialog
@@ -1715,7 +1863,8 @@ class _MainPageState extends State<MainPage> {
                         AppLocalizations.of(context)!.settings_java_path_msg,
                         Globals.javapathcontroller,
                             (value) async {
-                          SharedPreferences prefs = await SharedPreferences.getInstance();
+                          SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
                           await prefs.setString(
                             "javaPath",
                             Globals.javapathcontroller.text,
@@ -1743,7 +1892,8 @@ class _MainPageState extends State<MainPage> {
                         AppLocalizations.of(context)!.settings_java_ram_msg,
                         Globals.javaramcontroller,
                             (value) async {
-                          SharedPreferences prefs = await SharedPreferences.getInstance();
+                          SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
                           await prefs.setString(
                             "javaRAM",
                             Globals.javaramcontroller.text,
@@ -1771,7 +1921,8 @@ class _MainPageState extends State<MainPage> {
                         "VM Args",
                         Globals.javavmcontroller,
                             (value) async {
-                          SharedPreferences prefs = await SharedPreferences.getInstance();
+                          SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
                           await prefs.setString(
                             "javaVMArgs",
                             Globals.javavmcontroller.text,
@@ -1799,7 +1950,8 @@ class _MainPageState extends State<MainPage> {
                         "Launcher args",
                         Globals.javalaunchercontroller,
                             (value) async {
-                          SharedPreferences prefs = await SharedPreferences.getInstance();
+                          SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
                           await prefs.setString(
                             "javaLauncherArgs",
                             Globals.javalaunchercontroller.text,
@@ -1815,12 +1967,16 @@ class _MainPageState extends State<MainPage> {
                           bgColor: Colors.transparent,
                           shadowColor: Colors.transparent,
                           fontColor: ColorUtils.primaryFontColor,
-                          toggleColor: ColorUtils.isMaterial ? ColorUtils.dynamicPrimaryForegroundColor : Colors.white,
+                          toggleColor: ColorUtils.isMaterial
+                              ? ColorUtils.dynamicPrimaryForegroundColor
+                              : Colors.white,
                           activeColor: ColorUtils.dynamicAccentColor,
-                          inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
+                          inactiveColor:
+                          ColorUtils.dynamicSecondaryForegroundColor,
                         ),
                         Globals.forceClasspath,
-                            (value) => setState(() => Globals.forceClasspath = value),
+                            (value) =>
+                            setState(() => Globals.forceClasspath = value),
                       ),
                     ],
                   ),
@@ -1842,7 +1998,9 @@ class _MainPageState extends State<MainPage> {
                   bgColor: Colors.transparent,
                   shadowColor: Colors.transparent,
                   fontColor: ColorUtils.primaryFontColor,
-                  toggleColor: ColorUtils.isMaterial ? ColorUtils.dynamicPrimaryForegroundColor : Colors.white,
+                  toggleColor: ColorUtils.isMaterial
+                      ? ColorUtils.dynamicPrimaryForegroundColor
+                      : Colors.white,
                   activeColor: ColorUtils.dynamicAccentColor,
                   inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
                 ),
@@ -1851,7 +2009,8 @@ class _MainPageState extends State<MainPage> {
                 {
                   setState(() => Globals.customFolderSet = value),
                   if (!Globals.customFolderSet) ...[
-                    Globals.gamefoldercontroller.text = LauncherUtils.getApplicationFolder("minecraft"),
+                    Globals.gamefoldercontroller.text =
+                        LauncherUtils.getApplicationFolder("minecraft"),
                     await (await SharedPreferences.getInstance()).setString(
                       "gameFolderPath",
                       Globals.gamefoldercontroller.text,
@@ -1873,10 +2032,13 @@ class _MainPageState extends State<MainPage> {
                             ColorUtils.dynamicAccentColor,
                             Colors.white,
                                 () async {
-                              final String? selectedDirectory = await getDirectoryPath();
+                              final String? selectedDirectory =
+                              await getDirectoryPath();
                               if (selectedDirectory != null) {
-                                Globals.gamefoldercontroller.text = selectedDirectory.replaceAll("\\", "/");
-                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                Globals.gamefoldercontroller.text =
+                                    selectedDirectory.replaceAll("\\", "/");
+                                SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
                                 await prefs.setString(
                                   "gameFolderPath",
                                   Globals.gamefoldercontroller.text,
@@ -1892,7 +2054,8 @@ class _MainPageState extends State<MainPage> {
                     AppLocalizations.of(context)!.settings_custom_folder,
                     Globals.gamefoldercontroller,
                         (value) async {
-                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
                       await prefs.setString(
                         "gameFolderPath",
                         Globals.gamefoldercontroller.text,
@@ -2081,7 +2244,8 @@ class _MainPageState extends State<MainPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           /** Mostra la skin del player a destra */
-          if (Globals.getAccount() != null && ThreeDimensionalViewer.objs.isNotEmpty) ...[
+          if (Globals.getAccount() != null &&
+              ThreeDimensionalViewer.objs.isNotEmpty) ...[
             Sp3dRenderer(
               const Size(150, 280),
               Sp3dV2D(75, 125),
@@ -2104,7 +2268,8 @@ class _MainPageState extends State<MainPage> {
               if (Globals.getAccount()!.isPremium) {
                 WidgetUtils.showPopup(
                   context,
-                  AppLocalizations.of(context)!.account_skin_uploader_type_title,
+                  AppLocalizations.of(context)!
+                      .account_skin_uploader_type_title,
                   <Widget>[
                     Text(
                       AppLocalizations.of(context)!.account_skin_uploader_msg,
@@ -2128,12 +2293,14 @@ class _MainPageState extends State<MainPage> {
                       ),
                       onPressed: () async {
                         Navigator.pop(context);
-                        FilePickerResult? result = await FilePicker.platform.pickFiles();
+                        FilePickerResult? result =
+                        await FilePicker.platform.pickFiles();
                         if (result != null) {
                           File file = File(result.files.single.path!);
                           WidgetUtils.showMessageDialog(
                             context,
-                            AppLocalizations.of(context)!.account_skin_uploader_title,
+                            AppLocalizations.of(context)!
+                                .account_skin_uploader_title,
                             "${await uploadSkin(context, "slim", Globals.getAccount()!, file.path.replaceAll("\\", "/"))}",
                                 () => Navigator.pop(context),
                           );
@@ -2151,12 +2318,14 @@ class _MainPageState extends State<MainPage> {
                       ),
                       onPressed: () async {
                         Navigator.pop(context);
-                        FilePickerResult? result = await FilePicker.platform.pickFiles();
+                        FilePickerResult? result =
+                        await FilePicker.platform.pickFiles();
                         if (result != null) {
                           File file = File(result.files.single.path!);
                           WidgetUtils.showMessageDialog(
                             context,
-                            AppLocalizations.of(context)!.account_skin_uploader_title,
+                            AppLocalizations.of(context)!
+                                .account_skin_uploader_title,
                             "${await uploadSkin(context, "classic", Globals.getAccount()!, file.path.replaceAll("\\", "/"))}",
                                 () => Navigator.pop(context),
                           );
@@ -2277,7 +2446,8 @@ class _MainPageState extends State<MainPage> {
                                       accessToken: "0",
                                       refreshToken: "",
                                       isPremium: false,
-                                      isSlimSkin: isOfflineSlimSkin(Globals.usernamecontroller.text),
+                                      isSlimSkin: isOfflineSlimSkin(
+                                          Globals.usernamecontroller.text),
                                       isElyBy: false,
                                     ),
                                   );
@@ -2434,85 +2604,71 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget buildAccountEntry(String username,
-      bool premium,
-      bool elyby,
-      int index,) {
+  Widget buildAccountEntry(String username, bool premium, bool elyby, int index) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
-      child: Container(
+      padding: EdgeInsets.symmetric(vertical: 4),
+      child: SizedBox(
         height: 55,
-        width: (MediaQuery
-            .of(context)
-            .size
-            .width / 5) - 5,
+        width: double.infinity,
         child: Material(
           elevation: 15,
           color: ColorUtils.dynamicPrimaryForegroundColor,
           shadowColor: ColorUtils.defaultShadowColor,
           borderRadius: BorderRadius.circular(Globals.borderRadius),
-          child: Stack(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              /** Skin, nomi e altro */
-              Row(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(8, 0, 8, 0),
-                    child: Container(
-                      height: 40,
-                      width: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          opacity: 0.8,
-                          image: CachedNetworkImageProvider(
-                            "${Urls.skinURL}/head/${username}",
-                          ),
-                        ),
-                      ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+                child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      opacity: 0.8,
+                      image: CachedNetworkImageProvider(
+                          "${Urls.skinURL}/head/${username}"),
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(0, 5, 10, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          username,
-                          style: WidgetUtils.customTextStyle(
-                            18,
-                            FontWeight.w500,
-                            ColorUtils.primaryFontColor,
-                          ),
-                        ),
-                        Text(
-                          premium ? "Premium" : (elyby ? "ElyBy" : "Offline"),
-                          style: WidgetUtils.customTextStyle(
-                            14,
-                            FontWeight.w300,
-                            ColorUtils.secondaryFontColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  /** Pulsante selezione */
-                  WidgetUtils.buildButton(
-                    Icons.check,
-                    Globals.AccountSelected == index ? ColorUtils.dynamicAccentColor : (ColorUtils.dynamicSecondaryForegroundColor),
-                    Globals.AccountSelected == index ? Colors.white : (Globals.darkModeTheme ? Colors.white.withAlpha(80) : Colors.black.withAlpha(80)),
-                        () {
-                      setState(() => Globals.AccountSelected = index);
-                      rebuild();
-                    },
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      username,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: WidgetUtils.customTextStyle(
+                          18, FontWeight.w500, ColorUtils.primaryFontColor),
+                    ),
+                    Text(
+                      premium ? "Premium" : (elyby ? "ElyBy" : "Offline"),
+                      maxLines: 1,
+                      style: WidgetUtils.customTextStyle(
+                          14, FontWeight.w300, ColorUtils.secondaryFontColor),
+                    ),
+                  ],
+                ),
+              ),
+              WidgetUtils.buildButton(
+                Icons.check,
+                Globals.AccountSelected == index
+                    ? ColorUtils.dynamicAccentColor
+                    : ColorUtils.dynamicSecondaryForegroundColor,
+                Globals.AccountSelected == index
+                    ? Colors.white
+                    : (Globals.darkModeTheme
+                    ? Colors.white.withAlpha(80)
+                    : Colors.black.withAlpha(80)),
+                    () {
+                  setState(() => Globals.AccountSelected = index);
+                  rebuild();
+                },
               ),
             ],
           ),
@@ -2526,7 +2682,8 @@ class HoverIcon extends StatefulWidget {
   final IconData icon;
   final String url;
 
-  const HoverIcon({Key? key, required this.icon, required this.url}) : super(key: key);
+  const HoverIcon({Key? key, required this.icon, required this.url})
+      : super(key: key);
 
   @override
   _HoverIconState createState() => _HoverIconState();
@@ -2549,8 +2706,12 @@ class _HoverIconState extends State<HoverIcon> {
         child: TweenAnimationBuilder<Color?>(
           duration: Duration(milliseconds: 100),
           tween: ColorTween(
-            begin: _hovering ? ColorUtils.secondaryFontColor.withAlpha(128) : ColorUtils.secondaryFontColor.withAlpha(255),
-            end: _hovering ? ColorUtils.secondaryFontColor.withAlpha(255) : ColorUtils.secondaryFontColor.withAlpha(128),
+            begin: _hovering
+                ? ColorUtils.secondaryFontColor.withAlpha(128)
+                : ColorUtils.secondaryFontColor.withAlpha(255),
+            end: _hovering
+                ? ColorUtils.secondaryFontColor.withAlpha(255)
+                : ColorUtils.secondaryFontColor.withAlpha(128),
           ),
           builder: (context, color, child) =>
               Icon(
@@ -2642,7 +2803,8 @@ class AccountUtils {
           continue;
         }
 
-        final htmlPage = await rootBundle.loadString('assets/pages/elyby_success.html');
+        final htmlPage =
+        await rootBundle.loadString('assets/pages/elyby_success.html');
 
         request.response
           ..statusCode = 200
@@ -2663,10 +2825,12 @@ class AccountUtils {
           bool isSlimSkin = false;
 
           try {
-            final skinUrl = Uri.parse('${Urls.elybySkinsURL}/textures/$username');
+            final skinUrl =
+            Uri.parse('${Urls.elybySkinsURL}/textures/$username');
             final skinResponse = await http.get(skinUrl);
 
-            if (skinResponse.statusCode == 200 && skinResponse.body.isNotEmpty) {
+            if (skinResponse.statusCode == 200 &&
+                skinResponse.body.isNotEmpty) {
               final data = jsonDecode(skinResponse.body);
 
               if (data.containsKey('SKIN')) {
@@ -2696,10 +2860,12 @@ class AccountUtils {
     if (Globals
         .getAccount()
         ?.isPremium == true) {
-      Globals.consolecontroller.append("[LAUNCHER]: ${AppLocalizations.of(context)!.account_token_refresh}\n");
+      Globals.consolecontroller.append(
+          "[LAUNCHER]: ${AppLocalizations.of(context)!.account_token_refresh}\n");
 
       try {
-        var minecraftAuth = await doMicrosoftRefresh(context, Globals.getAccount()!.refreshToken);
+        var minecraftAuth = await doMicrosoftRefresh(
+            context, Globals.getAccount()!.refreshToken);
         if (!minecraftAuth.toString().startsWith("[MC]:")) {
           var minecraftToken = minecraftAuth['access_token'];
           var minecraft = await fetchMinecraftProfile(context, minecraftToken);
@@ -2719,7 +2885,8 @@ class AccountUtils {
           }
         }
       } catch (e) {
-        Globals.consolecontroller.append("[LAUNCHER]: ${AppLocalizations.of(context)!.account_token_fail}\n");
+        Globals.consolecontroller.append(
+            "[LAUNCHER]: ${AppLocalizations.of(context)!.account_token_fail}\n");
       }
     }
   }
@@ -2809,7 +2976,8 @@ class AccountUtils {
             var minecraftAuth = await doXboxLiveAuth(context, microsoftAccess);
             if (!minecraftAuth.toString().startsWith("[MC]:")) {
               var minecraftToken = minecraftAuth['access_token'];
-              var minecraft = await fetchMinecraftProfile(context, minecraftToken);
+              var minecraft =
+              await fetchMinecraftProfile(context, minecraftToken);
 
               if (!minecraft.toString().startsWith("[MC]:")) {
                 // print('ID: ${minecraft['id']}');
@@ -2817,7 +2985,10 @@ class AccountUtils {
                 // print('Skins: ${minecraft['skins']}');
                 // print('Capes: ${minecraft['capes']}');
                 // print('Profile actions: ${minecraft['profileActions']}');
-                bool slim = minecraft['skins'][0]["variant"].toString().toUpperCase().contains("SLIM");
+                bool slim = minecraft['skins'][0]["variant"]
+                    .toString()
+                    .toUpperCase()
+                    .contains("SLIM");
                 callback(
                   minecraft['name'], // username
                   minecraft['id'], // uuid

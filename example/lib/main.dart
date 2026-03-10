@@ -8,7 +8,7 @@ import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:morpheus_launcher_gui/globals.dart';
-import 'package:morpheus_launcher_gui/utils/version_utils.dart';
+import 'package:morpheus_launcher_gui/utils/launcher/version_utils.dart';
 import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
 import 'package:morpheus_launcher_gui/views/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';

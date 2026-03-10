@@ -6,9 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:morpheus_launcher_gui/globals.dart';
-import 'package:morpheus_launcher_gui/utils/log_controller.dart';
-import 'package:morpheus_launcher_gui/utils/version_utils.dart';
-import 'package:morpheus_launcher_gui/utils/virtualized_log_view.dart';
+import 'package:morpheus_launcher_gui/utils/logging/log_controller.dart';
+import 'package:morpheus_launcher_gui/utils/launcher/version_utils.dart';
+import 'package:morpheus_launcher_gui/utils/logging/virtualized_log_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 

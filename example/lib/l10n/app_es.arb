@@ -16,9 +16,7 @@
 
   "modded_empty_title": "No se encontró ninguna versión modificada",
   "modded_installed_title": "Instaladas",
-  "modded_fabric_download_available": "Tejidos disponibles para la instalación",
-  "modded_forge_download_available": "Forge disponibles para la instalación",
-  "modded_optifine_download_available": "Optifine disponible para instalación",
+  "modded_available_versions_title": "Versiones modificadas disponibles",
 
   "settings_only_release_switch": "Mostrar solo versiones estables",
   "settings_dark_mode_switch": "Usar modo oscuro",

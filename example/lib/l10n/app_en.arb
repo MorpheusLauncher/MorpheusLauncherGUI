@@ -16,9 +16,7 @@
 
   "modded_empty_title": "No modded minecraft versions found",
   "modded_installed_title": "Installed",
-  "modded_fabric_download_available": "Fabric available for installation",
-  "modded_forge_download_available": "Forge available for installation",
-  "modded_optifine_download_available": "Optifine available for installation",
+  "modded_available_versions_title": "Modded versions available",
 
   "settings_only_release_switch": "Show only releases",
   "settings_dark_mode_switch": "Enable dark theme",
