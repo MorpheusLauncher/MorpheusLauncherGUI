@@ -152,9 +152,7 @@ class _VirtualizedLogViewState extends State<VirtualizedLogView> {
   }
 
   Widget _buildItem(String line) {
-    final color = widget.colorRules.isEmpty
-        ? widget.textColor
-        : _colorForLine(line, widget.colorRules, widget.textColor);
+    final color = widget.colorRules.isEmpty ? widget.textColor : _colorForLine(line, widget.colorRules, widget.textColor);
 
     return Align(
       alignment: Alignment.centerLeft,
