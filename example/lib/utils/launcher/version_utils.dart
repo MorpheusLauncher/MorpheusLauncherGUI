@@ -241,10 +241,7 @@ class VersionUtils {
     List<Map<String, dynamic>> versions = [];
     directory.listSync().forEach((entity) {
       if (entity is Directory) {
-        String version = entity.path
-            .replaceAll("\\", "/")
-            .split('/')
-            .last;
+        String version = entity.path.replaceAll("\\", "/").split('/').last;
         String jsonPath = '${versionsFolder}/$version/$version.json';
         File jsonFile = File(jsonPath);
 
@@ -333,9 +330,7 @@ class VersionUtils {
     var gameVer = versionId.toLowerCase();
 
     if (gameVer.contains("pre-release")) {
-      gameVer = gameVer
-          .split(" ")
-          .first;
+      gameVer = gameVer.split(" ").first;
     }
 
     if (gameVer.contains("optifine")) {
@@ -365,14 +360,8 @@ class VersionUtils {
     var gameType = type.toLowerCase();
 
     // We assume that latest vanilla's are good and compatible
-    if (gameType.contains(AppLocalizations
-        .of(context)
-        ?.vanilla_release_title
-        .toLowerCase() as Pattern)) return true;
-    if (gameType.contains(AppLocalizations
-        .of(context)
-        ?.vanilla_snapshot_title
-        .toLowerCase() as Pattern)) return true;
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title.toLowerCase() as Pattern)) return true;
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title.toLowerCase() as Pattern)) return true;
 
     final normalized = _normalizeTypeAndVersion(type, versionId, context);
 
@@ -383,14 +372,8 @@ class VersionUtils {
     var gameType = type.toLowerCase();
 
     // Le versioni vanilla sono sempre compatibili
-    if (gameType.contains(AppLocalizations
-        .of(context)
-        ?.vanilla_release_title
-        .toLowerCase() as Pattern)) return null;
-    if (gameType.contains(AppLocalizations
-        .of(context)
-        ?.vanilla_snapshot_title
-        .toLowerCase() as Pattern)) return null;
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title.toLowerCase() as Pattern)) return null;
+    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title.toLowerCase() as Pattern)) return null;
 
     final normalized = _normalizeTypeAndVersion(type, versionId, context);
 
