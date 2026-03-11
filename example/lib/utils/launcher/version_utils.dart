@@ -117,8 +117,14 @@ class VersionUtils {
       if (value.isNotEmpty) {
         var parts = value.last.split('-');
         if (parts.length >= 2) {
-          if (keys.indexOf(key) != keys.indexOf("1.7.10_pre4") && keys.indexOf(key) >= keys.indexOf("1.6.4") && keys.indexOf(key) <= keys.indexOf("1.12.2"))
+          int idx = keys.indexOf(key);
+          if (idx >= keys.indexOf("1.6.4") &&
+              idx != keys.indexOf("1.7.10_pre4") &&
+              idx != keys.indexOf("1.18") &&
+              idx != keys.indexOf("1.19") &&
+              (idx < keys.indexOf("1.13.2") || idx > keys.indexOf("1.16.5"))) {
             resultList.add("${parts[0]}-forge-${parts[1]}");
+          }
         }
       }
     });
@@ -235,7 +241,10 @@ class VersionUtils {
     List<Map<String, dynamic>> versions = [];
     directory.listSync().forEach((entity) {
       if (entity is Directory) {
-        String version = entity.path.replaceAll("\\", "/").split('/').last;
+        String version = entity.path
+            .replaceAll("\\", "/")
+            .split('/')
+            .last;
         String jsonPath = '${versionsFolder}/$version/$version.json';
         File jsonFile = File(jsonPath);
 
@@ -324,7 +333,9 @@ class VersionUtils {
     var gameVer = versionId.toLowerCase();
 
     if (gameVer.contains("pre-release")) {
-      gameVer = gameVer.split(" ").first;
+      gameVer = gameVer
+          .split(" ")
+          .first;
     }
 
     if (gameVer.contains("optifine")) {
@@ -354,8 +365,14 @@ class VersionUtils {
     var gameType = type.toLowerCase();
 
     // We assume that latest vanilla's are good and compatible
-    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title.toLowerCase() as Pattern)) return true;
-    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title.toLowerCase() as Pattern)) return true;
+    if (gameType.contains(AppLocalizations
+        .of(context)
+        ?.vanilla_release_title
+        .toLowerCase() as Pattern)) return true;
+    if (gameType.contains(AppLocalizations
+        .of(context)
+        ?.vanilla_snapshot_title
+        .toLowerCase() as Pattern)) return true;
 
     final normalized = _normalizeTypeAndVersion(type, versionId, context);
 
@@ -366,8 +383,14 @@ class VersionUtils {
     var gameType = type.toLowerCase();
 
     // Le versioni vanilla sono sempre compatibili
-    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title.toLowerCase() as Pattern)) return null;
-    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title.toLowerCase() as Pattern)) return null;
+    if (gameType.contains(AppLocalizations
+        .of(context)
+        ?.vanilla_release_title
+        .toLowerCase() as Pattern)) return null;
+    if (gameType.contains(AppLocalizations
+        .of(context)
+        ?.vanilla_snapshot_title
+        .toLowerCase() as Pattern)) return null;
 
     final normalized = _normalizeTypeAndVersion(type, versionId, context);
 
