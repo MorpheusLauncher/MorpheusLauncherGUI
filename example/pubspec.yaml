@@ -115,6 +115,7 @@ flutter:
     - assets/optiforge.png
     - assets/forge.png
     - assets/fabric.png
+    - assets/modrinth.png
 
   fonts:
     - family: MorpheusIcons

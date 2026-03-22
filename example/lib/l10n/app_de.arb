@@ -16,7 +16,28 @@
 
   "modded_empty_title": "Keine modifizierten Minecraft-Versionen gefunden",
   "modded_installed_title": "Installiert",
-  "modded_available_versions_title": "Modifizierte Versionen verfügbar",
+  "modded_available_versions_title": "Verfügbare modifizierte Versionen",
+  "modded_modrinth_button": "Modpacks auf Modrinth",
+  "modded_modrinth_title": "Modrinth Modpacks",
+  "modded_modrinth_search": "Modpacks suchen...",
+  "modded_modrinth_section_title": "Modpacks",
+  "modded_modrinth_empty": "Keine Modpacks gefunden",
+
+  "modpack_details_title": "Modpack-Details",
+  "modpack_author_by": "von {author}",
+  "@modpack_author_by": {
+    "placeholders": {
+      "author": { "type": "String" }
+    }
+  },
+  "modpack_stats_downloads": "Downloads",
+  "modpack_stats_updated": "Aktualisiert",
+  "modpack_stats_size": "Größe",
+  "modpack_download_button": "Herunterladen",
+  "modpack_description_title": "Beschreibung",
+  "modpack_mod_list_title": "Mod-Liste",
+  "modpack_unknown_author": "Unbekannter Autor",
+  "modpack_unknown_mod": "Unbekannte Mod",
 
   "settings_only_release_switch": "Nur Veröffentlichungen anzeigen",
   "settings_dark_mode_switch": "Dunkles Thema aktivieren",
@@ -33,6 +54,7 @@
   "settings_console_switch": "Konsole beim Spielstart anzeigen",
   "settings_custom_folder_title": "Benutzerdefinierter Spieleordner",
   "settings_custom_folder": "Spielverzeichnis",
+  "settings_open_game_folder": "Spielordner öffnen",
   "settings_credits_title": "Danksagungen",
   "settings_credits_content": "Diese Software wurde unter Verwendung verschiedener Open-Source-Bibliotheken entwickelt: \n\nmaterial_color_utilities, flutter_localization, cached_network_image, simple_3d_renderer, shared_preferences, flutter_markdown, dropdown_button2, bitsdojo_window, flutter_switch, url_launcher, system_theme, flutter_html, text_divider, file_picker, process_run, file_selector, http_parser, provider, archive, encrypt, crypto, image, http, intl, blur, cupertino_icons. \n\nWir danken allen herzlich, die zu der Entwicklung dieser Bibliotheken beigetragen haben und damit die Realisierung dieser Software ermöglicht haben.",
   "settings_diagnostic_title": "Diagnosedaten",

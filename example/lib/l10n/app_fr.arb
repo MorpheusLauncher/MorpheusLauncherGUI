@@ -17,6 +17,27 @@
   "modded_empty_title": "Aucune version modifiée de Minecraft trouvée",
   "modded_installed_title": "Installées",
   "modded_available_versions_title": "Versions modifiées disponibles",
+  "modded_modrinth_button": "Modpacks sur Modrinth",
+  "modded_modrinth_title": "Modpacks Modrinth",
+  "modded_modrinth_search": "Rechercher des modpacks...",
+  "modded_modrinth_section_title": "Modpacks",
+  "modded_modrinth_empty": "Aucun modpack trouvé",
+
+  "modpack_details_title": "Détails du Modpack",
+  "modpack_author_by": "par {author}",
+  "@modpack_author_by": {
+    "placeholders": {
+      "author": { "type": "String" }
+    }
+  },
+  "modpack_stats_downloads": "Téléchargements",
+  "modpack_stats_updated": "Mis à jour",
+  "modpack_stats_size": "Taille",
+  "modpack_download_button": "Télécharger",
+  "modpack_description_title": "Description",
+  "modpack_mod_list_title": "Liste des mods",
+  "modpack_unknown_author": "Auteur inconnu",
+  "modpack_unknown_mod": "Mod inconnue",
 
   "settings_only_release_switch": "Afficher uniquement les versions stables",
   "settings_dark_mode_switch": "Activer le thème sombre",
@@ -33,6 +54,7 @@
   "settings_console_switch": "Afficher la console au démarrage du jeu",
   "settings_custom_folder_title": "Dossier de jeu personnalisé",
   "settings_custom_folder": "Répertoire du jeu",
+  "settings_open_game_folder": "Ouvrir le dossier du jeu",
   "settings_credits_title": "Remerciements",
   "settings_credits_content": "Ce logiciel a été développé en utilisant diverses bibliothèques open source: \n\nmaterial_color_utilities, flutter_localization, cached_network_image, simple_3d_renderer, shared_preferences, flutter_markdown, dropdown_button2, bitsdojo_window, flutter_switch, url_launcher, system_theme, flutter_html, text_divider, file_picker, process_run, file_selector, http_parser, provider, archive, encrypt, crypto, image, http, intl, blur, cupertino_icons. \n\nNous remercions sincèrement tous ceux qui ont contribué au développement de ces bibliothèques, rendant possible la création de ce logiciel.",
   "settings_diagnostic_title": "Données de diagnostic",

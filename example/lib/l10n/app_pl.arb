@@ -17,6 +17,27 @@
   "modded_empty_title": "Nie znaleziono zmodowanych wersji Minecrafta",
   "modded_installed_title": "Zainstalowane",
   "modded_available_versions_title": "Dostępne zmodyfikowane wersje",
+  "modded_modrinth_button": "Paczki modów na Modrinth",
+  "modded_modrinth_title": "Paczki modów Modrinth",
+  "modded_modrinth_search": "Szukaj paczek modów...",
+  "modded_modrinth_section_title": "Paczki modów",
+  "modded_modrinth_empty": "Nie znaleziono paczek modów",
+
+  "modpack_details_title": "Szczegóły paczki modów",
+  "modpack_author_by": "przez {author}",
+  "@modpack_author_by": {
+    "placeholders": {
+      "author": { "type": "String" }
+    }
+  },
+  "modpack_stats_downloads": "Pobierania",
+  "modpack_stats_updated": "Zaktualizowano",
+  "modpack_stats_size": "Rozmiar",
+  "modpack_download_button": "Pobierz",
+  "modpack_description_title": "Opis",
+  "modpack_mod_list_title": "Lista modów",
+  "modpack_unknown_author": "Nieznany autor",
+  "modpack_unknown_mod": "Nieznana modyfikacja",
 
   "settings_only_release_switch": "Pokaż tylko wydania",
   "settings_dark_mode_switch": "Włącz ciemny motyw",
@@ -33,6 +54,7 @@
   "settings_console_switch": "Pokaż konsolę przy uruchamianiu gry",
   "settings_custom_folder_title": "Niestandardowy folder gry",
   "settings_custom_folder": "Katalog gry",
+  "settings_open_game_folder": "Otwórz folder gry",
   "settings_credits_title": "Podziękowania",
   "settings_credits_content": "To oprogramowanie zostało opracowane przy użyciu różnych bibliotek open source: \n\nmaterial_color_utilities, flutter_localization, cached_network_image, simple_3d_renderer, shared_preferences, flutter_markdown, dropdown_button2, bitsdojo_window, flutter_switch, url_launcher, system_theme, flutter_html, text_divider, file_picker, process_run, file_selector, http_parser, provider, archive, encrypt, crypto, image, http, intl, blur, cupertino_icons. \n\nSzczerze dziękujemy wszystkim, którzy przyczynili się do rozwoju tych bibliotek, umożliwiając stworzenie tego oprogramowania.",
   "settings_diagnostic_title": "Dane diagnostyczne",

@@ -1,14 +1,12 @@
-import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:http/http.dart' as http;
 import 'package:morpheus_launcher_gui/globals.dart';
 import 'package:morpheus_launcher_gui/utils/launcher/version_utils.dart';
+import 'package:morpheus_launcher_gui/utils/launcher/news_utils.dart';
 import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
 import 'package:morpheus_launcher_gui/views/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -63,8 +61,7 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       localeResolutionCallback: (locale, supportedLocales) {
-        return supportedLocales.firstWhere(
-          (supportedLocale) => supportedLocale.languageCode == locale?.languageCode,
+        return supportedLocales.firstWhere((supportedLocale) => supportedLocale.languageCode == locale?.languageCode,
           orElse: () => Locale('en'),
         );
       },
@@ -136,51 +133,71 @@ class MyAppBodyState extends State<MyAppBody> {
       Window.overrideMacOSBrightness(dark: Globals.darkModeTheme);
     }
 
-    try {
-      Globals.pinnedVersions = await VersionUtils.getPinnedVersions();
-    } catch (e) {
-      print(e);
-    }
-    try {
-      await getNews();
-    } catch (e) {
-      print(e);
-    }
-    try {
-      await VersionUtils.fetchMorpheusProducts();
-    } catch (e) {
-      print(e);
-    }
-    try {
-      await VersionUtils.getVersions();
-    } catch (e) {
-      print(e);
-    }
-    try {
-      await VersionUtils.getFabric();
-    } catch (e) {
-      print(e);
-    }
-    try {
-      Globals.forgeVersions = await VersionUtils.getForge();
-    } catch (e) {
-      print(e);
-    }
-    try {
-      Globals.optiforgeVersions = await VersionUtils.getOptiForge();
-    } catch (e) {
-      print(e);
-    }
-    try {
-      Globals.optifineVersions = await VersionUtils.getOptifine();
-    } catch (e) {
-      print(e);
-    }
-    try {
-      await VersionUtils.fetchIncompatibleVersions();
-    } catch (e) {
-      print(e);
-    }
+    await Future.wait([
+      (() async {
+        try {
+          Globals.pinnedVersions = await VersionUtils.getPinnedVersions();
+        } catch (e) {
+          print(e);
+        }
+      })(),
+      (() async {
+        try {
+          await NewsUtils.getNews();
+        } catch (e) {
+          print(e);
+        }
+      })(),
+      (() async {
+        try {
+          await VersionUtils.fetchMorpheusProducts();
+        } catch (e) {
+          print(e);
+        }
+      })(),
+      (() async {
+        try {
+          await VersionUtils.getVersions();
+        } catch (e) {
+          print(e);
+        }
+      })(),
+      (() async {
+        try {
+          await VersionUtils.getFabric();
+        } catch (e) {
+          print(e);
+        }
+      })(),
+      (() async {
+        try {
+          Globals.forgeVersions = await VersionUtils.getForge();
+        } catch (e) {
+          print(e);
+        }
+      })(),
+      (() async {
+        try {
+          Globals.optiforgeVersions = await VersionUtils.getOptiForge();
+        } catch (e) {
+          print(e);
+        }
+      })(),
+      (() async {
+        try {
+          Globals.optifineVersions = await VersionUtils.getOptifine();
+        } catch (e) {
+          print(e);
+        }
+      })(),
+      (() async {
+        try {
+          await VersionUtils.fetchIncompatibleVersions();
+        } catch (e) {
+          print(e);
+        }
+      })(),
+    ]);
 
     isLoading = false;
 
@@ -191,13 +208,13 @@ class MyAppBodyState extends State<MyAppBody> {
   Widget build(BuildContext context) {
     return isLoading
         ? Column(
-            children: [
-              drawTitleCustomBar(),
-              Expanded(
-                child: Center(child: Image.asset('assets/morpheus-animated.gif', width: 96)),
-              ),
-            ],
-          )
+      children: [
+        drawTitleCustomBar(),
+        Expanded(
+          child: Center(child: Image.asset('assets/morpheus-animated.gif', width: 96)),
+        ),
+      ],
+    )
         : MainPage();
   }
 }
@@ -248,113 +265,5 @@ int? getBuildNumber(String version) {
     return int.tryParse(buildNumberString ?? '');
   } else {
     return null;
-  }
-}
-
-Widget drawTitleCustomBar() {
-  return WindowTitleBarBox(
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (!Platform.isMacOS) ...[
-          SizedBox(width: 10),
-          WidgetUtils.backShadow(
-            Image.asset("assets/morpheus.png", width: 18),
-            40.0,
-            ColorUtils.defaultShadowColor,
-          ),
-          SizedBox(width: 5),
-        ],
-        Material(
-          color: Colors.transparent,
-          child: WidgetUtils.backShadow(
-            Text(Globals.windowTitle, style: WidgetUtils.customTextStyle(12, FontWeight.w400, ColorUtils.primaryFontColor)),
-            40.0,
-            ColorUtils.defaultShadowColor,
-          ),
-        ),
-        if (!Platform.isMacOS) ...[
-          Expanded(child: MoveWindow()),
-          WidgetUtils.backShadow(
-            WindowButtons(),
-            40.0,
-            ColorUtils.defaultShadowColor,
-          ),
-        ],
-      ],
-    ),
-  );
-}
-
-Future<void> getNews() async {
-  final oldResponse = await http.get(
-    Uri.parse("${Urls.mojangContentURL}/javaPatchNotes.json"),
-    headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-    },
-  );
-  final newResponse = await http.get(
-    Uri.parse("${Urls.mojangContentURL}/v2/javaPatchNotes.json"),
-    headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-    },
-  );
-  final oldJson = json.decode(oldResponse.body);
-  final newJson = json.decode(newResponse.body);
-  final Map<String, dynamic> oldEntriesById = {
-    for (var entry in oldJson["entries"]) entry["id"]: entry,
-  };
-  List<Map<String, dynamic>> mergedEntries = [];
-  for (var entry in oldJson["entries"]) {
-    mergedEntries.add(entry);
-  }
-  for (var newEntry in newJson["entries"]) {
-    if (!oldEntriesById.containsKey(newEntry["id"])) {
-      newEntry["body"] = "${newEntry["shortText"]}";
-      mergedEntries.add(newEntry);
-    }
-  }
-  mergedEntries.sort((a, b) => b["version"].compareTo(a["version"]));
-  Globals.vanillaNewsResponse = mergedEntries;
-}
-
-class WindowButtons extends StatefulWidget {
-  const WindowButtons({Key? key}) : super(key: key);
-
-  @override
-  _WindowButtonsState createState() => _WindowButtonsState();
-}
-
-class _WindowButtonsState extends State<WindowButtons> {
-  void maximizeOrRestore() {
-    setState(() {
-      appWindow.maximizeOrRestore();
-    });
-  }
-
-  final buttonColors = WindowButtonColors(
-    iconNormal: ColorUtils.primaryFontColor,
-    mouseOver: const Color(0x66FFFFFF),
-    mouseDown: const Color(0xCCFFFFFF),
-    iconMouseOver: Colors.white,
-    iconMouseDown: Colors.white,
-  );
-
-  final closeButtonColors = WindowButtonColors(
-    iconNormal: ColorUtils.primaryFontColor,
-    mouseOver: const Color(0xFFD32F2F),
-    mouseDown: const Color(0xFFB71C1C),
-    iconMouseOver: Colors.white,
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        MinimizeWindowButton(colors: buttonColors),
-        MaximizeWindowButton(colors: buttonColors, onPressed: maximizeOrRestore),
-        CloseWindowButton(colors: closeButtonColors),
-      ],
-    );
   }
 }

@@ -15,7 +15,7 @@ import 'package:system_theme/system_theme.dart';
 import 'package:morpheus_launcher_gui/utils/logging/log_controller.dart';
 
 class Globals {
-  static final buildVersion = "Ver 3.0.0";
+  static final buildVersion = "Ver 3.1.0";
   static final windowTitle = "Morpheus Launcher";
   static final borderRadius = 14.0;
 
@@ -73,6 +73,11 @@ class Globals {
   /** Incompatible versions blacklist */
   static late Map<String, dynamic> incompatibleJson;
 
+  static bool get isNewsAvailable => Globals.vanillaNewsResponse != null;
+  static bool get isVersionsAvailable => Globals.vanillaVersionsResponse != null;
+
+  static bool get isOnline => isNewsAvailable || isVersionsAvailable;
+
   static Account? getAccount() {
     if (Globals.accounts.isEmpty) return null;
 
@@ -97,6 +102,7 @@ class Urls {
   static final forgeVersionsURL = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
   static final optifineVersionsURL = "${morpheusBaseURL}/downloads/optifine.json";
   static final morpheusProductsURL = "${morpheusBaseURL}/downloads/morpheus-lite/index.json";
+  static final modrinthApiURL = "https://api.modrinth.com/v2";
 
   // Roba inerente a ElyBy
   static final elybyBaseURL = "https://account.ely.by";
@@ -326,7 +332,7 @@ class LauncherUtils {
 
     if (requiredJavaVersion != null) {
       try {
-        if (isOnline() && !Directory(javaBinPath).existsSync()) {
+        if (Globals.isOnline && !Directory(javaBinPath).existsSync()) {
           String downloadURL;
           String fileName;
 
@@ -454,13 +460,6 @@ class LauncherUtils {
     await prefs.setString("javaPath", Globals.javapathcontroller.text);
 
     return true;
-  }
-
-  static bool isOnline() {
-    if (Globals.vanillaNewsResponse != null) return true;
-    if (Globals.vanillaVersionsResponse != null) return true;
-
-    return false;
   }
 }
 

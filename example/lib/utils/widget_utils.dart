@@ -11,6 +11,9 @@ import 'package:morpheus_launcher_gui/utils/launcher/version_utils.dart';
 import 'package:morpheus_launcher_gui/utils/logging/virtualized_log_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class CustomSettingSwitchStyle {
   final IconData icon;
@@ -34,13 +37,11 @@ class CustomSettingSwitchStyle {
 
 class WidgetUtils {
   /** Switch impostazioni */
-  static Widget buildSettingSwitchItem(
-    String name,
-    String name2,
-    CustomSettingSwitchStyle style,
-    var set,
-    Function(dynamic value) callback,
-  ) {
+  static Widget buildSettingSwitchItem(String name,
+      String name2,
+      CustomSettingSwitchStyle style,
+      var set,
+      Function(dynamic value) callback,) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
@@ -133,14 +134,12 @@ class WidgetUtils {
   }
 
   /** Textfield */
-  static Widget buildSettingTextItem(
-    dynamic child,
-    Color background,
-    Color foreground,
-    String hint,
-    TextEditingController controller,
-    Function(dynamic value) callback,
-  ) {
+  static Widget buildSettingTextItem(dynamic child,
+      Color background,
+      Color foreground,
+      String hint,
+      TextEditingController controller,
+      Function(dynamic value) callback,) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
@@ -211,12 +210,10 @@ class WidgetUtils {
   //// ALTRI ELEMENTI GRAFICI /////
   /////////////////////////////////
 
-  static Widget buildButton(
-    IconData icon,
-    Color color,
-    Color iconColor,
-    VoidCallback onPressed,
-  ) {
+  static Widget buildButton(IconData icon,
+      Color color,
+      Color iconColor,
+      VoidCallback onPressed,) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 5, 6, 5),
       child: GestureDetector(
@@ -244,12 +241,10 @@ class WidgetUtils {
     );
   }
 
-  static Widget buildTextButton(
-    Color color,
-    Color textColor,
-    VoidCallback onPressed,
-    String text,
-  ) {
+  static Widget buildTextButton(Color color,
+      Color textColor,
+      VoidCallback onPressed,
+      String text,) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(7, 7, 0, 7),
       child: GestureDetector(
@@ -277,12 +272,10 @@ class WidgetUtils {
     );
   }
 
-  static void showPopup(
-    dynamic context,
-    String title,
-    List<Widget> content,
-    List<Widget> actions,
-  ) {
+  static void showPopup(dynamic context,
+      String title,
+      List<Widget> content,
+      List<Widget> actions,) {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -312,12 +305,10 @@ class WidgetUtils {
     );
   }
 
-  static void showMessageDialog(
-    dynamic context,
-    String title,
-    String content,
-    VoidCallback callback,
-  ) {
+  static void showMessageDialog(dynamic context,
+      String title,
+      String content,
+      VoidCallback callback,) {
     WidgetUtils.showPopup(
       context,
       title,
@@ -348,15 +339,23 @@ class WidgetUtils {
     );
   }
 
-  static Future<void> showConsole(dynamic context, dynamic process) async {
+  static Future<void> showConsole(dynamic context, dynamic process, {String? gameDirectory}) async {
+    final String targetDirectory = gameDirectory ?? Globals.gamefoldercontroller.text;
+
     WidgetUtils.showPopup(
       context,
       "Console",
       <Widget>[
         // Un solo scroll gestito internamente da VirtualizedLogView
         SizedBox(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height * 0.6,
+          width: MediaQuery
+              .of(context)
+              .size
+              .width,
+          height: MediaQuery
+              .of(context)
+              .size
+              .height * 0.6,
           child: VirtualizedLogView(
             controller: Globals.consolecontroller,
             backgroundColor: Colors.white.withAlpha(128),
@@ -364,7 +363,10 @@ class WidgetUtils {
             fontSize: 10,
             fontFamily: 'JetBrainsMono',
             wrapLines: true,
-            minWidth: MediaQuery.of(context).size.width - 20,
+            minWidth: MediaQuery
+                .of(context)
+                .size
+                .width - 20,
           ),
         ),
       ],
@@ -390,9 +392,9 @@ class WidgetUtils {
           onPressed: () async {
             final Uri _url;
             if (Platform.isWindows) {
-              _url = Uri.parse('file:///${Globals.gamefoldercontroller.text}');
+              _url = Uri.parse('file:///$targetDirectory');
             } else {
-              _url = Uri.parse('file://${Globals.gamefoldercontroller.text}');
+              _url = Uri.parse('file://$targetDirectory');
             }
             if (!await launchUrl(_url)) {
               throw Exception('Could not launch $_url');
@@ -595,6 +597,83 @@ class WidgetUtils {
         ],
       ),
       child: child,
+    );
+  }
+}
+
+Widget drawTitleCustomBar() {
+  return WindowTitleBarBox(
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (!Platform.isMacOS) ...[
+          const SizedBox(width: 10),
+          WidgetUtils.backShadow(
+            Image.asset("assets/morpheus.png", width: 18),
+            40.0,
+            ColorUtils.defaultShadowColor,
+          ),
+          const SizedBox(width: 5),
+        ],
+        Material(
+          color: Colors.transparent,
+          child: WidgetUtils.backShadow(
+            Text(Globals.windowTitle,
+                style: WidgetUtils.customTextStyle(12, FontWeight.w400, ColorUtils.primaryFontColor)),
+            40.0,
+            ColorUtils.defaultShadowColor,
+          ),
+        ),
+        if (!Platform.isMacOS) ...[
+          Expanded(child: MoveWindow()),
+          WidgetUtils.backShadow(
+            const WindowButtons(),
+            40.0,
+            ColorUtils.defaultShadowColor,
+          ),
+        ],
+      ],
+    ),
+  );
+}
+
+class WindowButtons extends StatefulWidget {
+  const WindowButtons({Key? key}) : super(key: key);
+
+  @override
+  _WindowButtonsState createState() => _WindowButtonsState();
+}
+
+class _WindowButtonsState extends State<WindowButtons> {
+  void maximizeOrRestore() {
+    setState(() {
+      appWindow.maximizeOrRestore();
+    });
+  }
+
+  final buttonColors = WindowButtonColors(
+    iconNormal: ColorUtils.primaryFontColor,
+    mouseOver: const Color(0x66FFFFFF),
+    mouseDown: const Color(0xCCFFFFFF),
+    iconMouseOver: Colors.white,
+    iconMouseDown: Colors.white,
+  );
+
+  final closeButtonColors = WindowButtonColors(
+    iconNormal: ColorUtils.primaryFontColor,
+    mouseOver: const Color(0xFFD32F2F),
+    mouseDown: const Color(0xFFB71C1C),
+    iconMouseOver: Colors.white,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        MinimizeWindowButton(colors: buttonColors),
+        MaximizeWindowButton(colors: buttonColors, onPressed: maximizeOrRestore),
+        CloseWindowButton(colors: closeButtonColors),
+      ],
     );
   }
 }

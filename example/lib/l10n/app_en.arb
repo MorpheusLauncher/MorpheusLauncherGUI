@@ -17,6 +17,27 @@
   "modded_empty_title": "No modded minecraft versions found",
   "modded_installed_title": "Installed",
   "modded_available_versions_title": "Modded versions available",
+  "modded_modrinth_button": "Modpacks on Modrinth",
+  "modded_modrinth_title": "Modrinth Modpacks",
+  "modded_modrinth_search": "Search modpacks...",
+  "modded_modrinth_section_title": "Modpacks",
+  "modded_modrinth_empty": "No modpacks found",
+
+  "modpack_details_title": "Modpack Details",
+  "modpack_author_by": "by {author}",
+  "@modpack_author_by": {
+    "placeholders": {
+      "author": { "type": "String" }
+    }
+  },
+  "modpack_stats_downloads": "Downloads",
+  "modpack_stats_updated": "Updated",
+  "modpack_stats_size": "Size",
+  "modpack_download_button": "Download",
+  "modpack_description_title": "Description",
+  "modpack_mod_list_title": "Mod List",
+  "modpack_unknown_author": "Unknown author",
+  "modpack_unknown_mod": "Unknown mod",
 
   "settings_only_release_switch": "Show only releases",
   "settings_dark_mode_switch": "Enable dark theme",
@@ -33,6 +54,7 @@
   "settings_console_switch": "Show console on game start",
   "settings_custom_folder_title": "Custom game folder",
   "settings_custom_folder": "Game directory",
+  "settings_open_game_folder": "Open game folder",
   "settings_credits_title": "Acknowledgments",
   "settings_credits_content": "This software has been developed using various open-source libraries: \n\nmaterial_color_utilities, flutter_localization, cached_network_image, simple_3d_renderer, shared_preferences, flutter_markdown, dropdown_button2, bitsdojo_window, flutter_switch, url_launcher, system_theme, flutter_html, text_divider, file_picker, process_run, file_selector, http_parser, provider, archive, encrypt, crypto, image, http, intl, blur, cupertino_icons. \n\nWe sincerely thank everyone who contributed to the development of these libraries, making the creation of this software possible.",
   "settings_diagnostic_title": "Diagnostic data",

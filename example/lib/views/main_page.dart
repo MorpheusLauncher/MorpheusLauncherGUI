@@ -32,6 +32,8 @@ import 'package:simple_3d_renderer/simple_3d_renderer.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:text_divider/text_divider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:morpheus_launcher_gui/utils/launcher/modrinth_utils.dart';
+import 'package:morpheus_launcher_gui/views/modrinth_view.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({Key? key}) : super(key: key);
@@ -196,33 +198,33 @@ class _MainPageState extends State<MainPage> {
             return ColorFiltered(
               colorFilter: selected
                   ? const ColorFilter.mode(
-                      Colors.transparent,
-                      BlendMode.multiply,
-                    )
+                Colors.transparent,
+                BlendMode.multiply,
+              )
                   : const ColorFilter.matrix(
-                      <double>[
-                        0.2126,
-                        0.7152,
-                        0.0722,
-                        0,
-                        0,
-                        0.2126,
-                        0.7152,
-                        0.0722,
-                        0,
-                        0,
-                        0.2126,
-                        0.7152,
-                        0.0722,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        1,
-                        0,
-                      ],
-                    ),
+                <double>[
+                  0.2126,
+                  0.7152,
+                  0.0722,
+                  0,
+                  0,
+                  0.2126,
+                  0.7152,
+                  0.0722,
+                  0,
+                  0,
+                  0.2126,
+                  0.7152,
+                  0.0722,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                ],
+              ),
               child: Container(
                 height: 30,
                 width: 30,
@@ -343,7 +345,7 @@ class _MainPageState extends State<MainPage> {
         ],
 
         /** Changelog */
-        if (LauncherUtils.isOnline()) ...[
+        if (Globals.isNewsAvailable) ...[
           for (var version in Globals.vanillaNewsResponse) ...[
             if ((version["type"] == "release" && Globals.showOnlyReleases) || !Globals.showOnlyReleases) ...[
               buildNewsItem(
@@ -353,34 +355,36 @@ class _MainPageState extends State<MainPage> {
               ),
             ],
           ],
-        ] else ...[
-          /** quando non può mostrare le news */
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-            child: Text(
-              AppLocalizations.of(context)!.home_news_empty_msg,
-              textAlign: TextAlign.center,
-              style: WidgetUtils.customTextStyle(
-                14,
-                FontWeight.w300,
-                ColorUtils.primaryFontColor,
+        ] else
+          ...[
+            /** quando non può mostrare le news */
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              child: Text(
+                AppLocalizations.of(context)!.home_news_empty_msg,
+                textAlign: TextAlign.center,
+                style: WidgetUtils.customTextStyle(
+                  14,
+                  FontWeight.w300,
+                  ColorUtils.primaryFontColor,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
       ],
     );
   }
 
-  Widget buildNewsItem(
-    String title,
-    String body,
-    String url,
-  ) {
+  Widget buildNewsItem(String title,
+      String body,
+      String url,) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
-        width: (MediaQuery.of(context).size.width / 5) - 5,
+        width: (MediaQuery
+            .of(context)
+            .size
+            .width / 5) - 5,
         child: Material(
           elevation: 15,
           color: ColorUtils.dynamicPrimaryForegroundColor,
@@ -393,11 +397,12 @@ class _MainPageState extends State<MainPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => NewsScreen(
-                        title: title,
-                        body: body,
-                        url: url,
-                      ),
+                      builder: (context) =>
+                          NewsScreen(
+                            title: title,
+                            body: body,
+                            url: url,
+                          ),
                     ),
                   );
                 },
@@ -409,8 +414,14 @@ class _MainPageState extends State<MainPage> {
                     children: [
                       Image.network(
                         "${Urls.mojangContentURL}${url}",
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height / 4,
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width,
+                        height: MediaQuery
+                            .of(context)
+                            .size
+                            .height / 4,
                         fit: BoxFit.cover,
                       ).blurred(
                         blur: 4,
@@ -421,7 +432,10 @@ class _MainPageState extends State<MainPage> {
                       Text(
                         title,
                         style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width / 25,
+                          fontSize: MediaQuery
+                              .of(context)
+                              .size
+                              .width / 25,
                           fontFamily: 'Comfortaa',
                           fontWeight: FontWeight.w300,
                           color: Colors.white.withAlpha(160),
@@ -452,30 +466,29 @@ class _MainPageState extends State<MainPage> {
               prodotto['img'],
             ),
           ],
-        ] else ...[
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Text(
-              AppLocalizations.of(context)!.morpheus_products_empty,
-              textAlign: TextAlign.center,
-              style: WidgetUtils.customTextStyle(
-                22,
-                FontWeight.w300,
-                ColorUtils.primaryFontColor,
+        ] else
+          ...[
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                AppLocalizations.of(context)!.morpheus_products_empty,
+                textAlign: TextAlign.center,
+                style: WidgetUtils.customTextStyle(
+                  22,
+                  FontWeight.w300,
+                  ColorUtils.primaryFontColor,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
       ],
     );
   }
 
-  Widget buildMorpheusItem(
-    String productName,
-    String gameVersion,
-    String productId,
-    String image,
-  ) {
+  Widget buildMorpheusItem(String productName,
+      String gameVersion,
+      String productId,
+      String image,) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
@@ -488,13 +501,22 @@ class _MainPageState extends State<MainPage> {
             children: [
               /** Immagine del client */
               Container(
-                height: MediaQuery.of(context).size.height * 0.5,
+                height: MediaQuery
+                    .of(context)
+                    .size
+                    .height * 0.5,
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 3, horizontal: 3),
                   child: Image.network(
                     "${image}",
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
+                    width: MediaQuery
+                        .of(context)
+                        .size
+                        .width,
+                    height: MediaQuery
+                        .of(context)
+                        .size
+                        .height,
                     fit: BoxFit.cover,
                   ).blurred(
                     blur: 0,
@@ -507,7 +529,10 @@ class _MainPageState extends State<MainPage> {
               Column(
                 children: [
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.5 - 74,
+                    height: MediaQuery
+                        .of(context)
+                        .size
+                        .height * 0.5 - 74,
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -555,7 +580,7 @@ class _MainPageState extends State<MainPage> {
                                   Icons.rocket_launch,
                                   ColorUtils.dynamicAccentColor,
                                   Colors.white,
-                                  () async {
+                                      () async {
                                     final config = LaunchConfig(
                                       gameVersion: gameVersion,
                                       productId: productId,
@@ -598,7 +623,9 @@ class _MainPageState extends State<MainPage> {
     return ListView(
       children: [
         /** Avvisa l'utente che non ha versioni vanilla */
-        if (VersionUtils.getMinecraftVersions(false).isEmpty)
+        if (VersionUtils
+            .getMinecraftVersions(false)
+            .isEmpty)
           Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Text(
@@ -682,27 +709,27 @@ class _MainPageState extends State<MainPage> {
                     colorFilter: compatible
                         ? const ColorFilter.mode(Colors.transparent, BlendMode.multiply)
                         : const ColorFilter.matrix(<double>[
-                            0.2126,
-                            0.7152,
-                            0.0722,
-                            0,
-                            0,
-                            0.2126,
-                            0.7152,
-                            0.0722,
-                            0,
-                            0,
-                            0.2126,
-                            0.7152,
-                            0.0722,
-                            0,
-                            0,
-                            0,
-                            0,
-                            0,
-                            1,
-                            0,
-                          ]),
+                      0.2126,
+                      0.7152,
+                      0.0722,
+                      0,
+                      0,
+                      0.2126,
+                      0.7152,
+                      0.0722,
+                      0,
+                      0,
+                      0.2126,
+                      0.7152,
+                      0.0722,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0,
+                    ]),
                     child: Container(
                       height: 30,
                       width: 30,
@@ -738,7 +765,16 @@ class _MainPageState extends State<MainPage> {
                     ),
                     if (releaseDate.isNotEmpty)
                       Text(
-                        "${DateTime.parse(releaseDate).toLocal().day}/${DateTime.parse(releaseDate).toLocal().month}/${DateTime.parse(releaseDate).toLocal().year}",
+                        "${DateTime
+                            .parse(releaseDate)
+                            .toLocal()
+                            .day}/${DateTime
+                            .parse(releaseDate)
+                            .toLocal()
+                            .month}/${DateTime
+                            .parse(releaseDate)
+                            .toLocal()
+                            .year}",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: WidgetUtils.customTextStyle(
@@ -757,7 +793,7 @@ class _MainPageState extends State<MainPage> {
                   Globals.pinnedVersions.contains(gameVersion) ? Icons.favorite : Icons.favorite_border,
                   ColorUtils.dynamicSecondaryForegroundColor,
                   ColorUtils.primaryFontColor,
-                  () async {
+                      () async {
                     setState(() {
                       if (!Globals.pinnedVersions.contains(gameVersion)) {
                         Globals.pinnedVersions.add(gameVersion);
@@ -773,7 +809,7 @@ class _MainPageState extends State<MainPage> {
                 Icons.rocket_launch,
                 ColorUtils.dynamicAccentColor,
                 Colors.white,
-                () async {
+                    () async {
                   var modLoaderConfig = versionResolver(gameType, gameVersion, context);
                   final config = LaunchConfig(
                     gameVersion: modLoaderConfig.gameVersion,
@@ -821,16 +857,16 @@ class _MainPageState extends State<MainPage> {
     return 'assets/release.png';
   }
 
-  ModLoaderConfig versionResolver(
-    String gameType,
-    String gameVersion,
-    BuildContext context,
-  ) {
+  ModLoaderConfig versionResolver(String gameType,
+      String gameVersion,
+      BuildContext context,) {
     var realGameVersion = gameVersion;
     var enableClassPath = Globals.forceClasspath;
 
     // Latest Release
-    if (gameType.contains(AppLocalizations.of(context)?.vanilla_release_title as Pattern) || gameVersion.contains("latest")) {
+    if (gameType.contains(AppLocalizations
+        .of(context)
+        ?.vanilla_release_title as Pattern) || gameVersion.contains("latest")) {
       return ModLoaderConfig(
         gameVersion: "latest",
         realGameVersion: realGameVersion,
@@ -840,7 +876,9 @@ class _MainPageState extends State<MainPage> {
     }
 
     // Latest Snapshot
-    if (gameType.contains(AppLocalizations.of(context)?.vanilla_snapshot_title as Pattern) || gameVersion.contains("snapshot")) {
+    if (gameType.contains(AppLocalizations
+        .of(context)
+        ?.vanilla_snapshot_title as Pattern) || gameVersion.contains("snapshot")) {
       return ModLoaderConfig(
         gameVersion: "snapshot",
         realGameVersion: realGameVersion,
@@ -1117,25 +1155,89 @@ class _MainPageState extends State<MainPage> {
   Widget buildModdedList() {
     final fabricFiltered = Globals.fabricGameVersionsResponse != null
         ? Globals.fabricGameVersionsResponse.where((v) {
-            if (Globals.showOnlyReleases != true) return true;
-            return v["stable"] == true || (v["type"] is String && v["type"].toString().toLowerCase() == "release");
-          }).toList()
+      if (Globals.showOnlyReleases != true) return true;
+      return v["stable"] == true || (v["type"] is String && v["type"].toString().toLowerCase() == "release");
+    }).toList()
         : [];
+
+    // Loaded from .morpheus/modrinth-packs/index.json — works fully offline
+    final installedModpacks = ModrinthUtils.readIndex();
 
     return ListView(
       children: [
-        if (VersionUtils.getMinecraftVersions(true).isNotEmpty) _buildDivider(AppLocalizations.of(context)!.modded_installed_title),
-        if (VersionUtils.getMinecraftVersions(true).isEmpty && !LauncherUtils.isOnline())
+        // ── Modrinth browser button (online only) ──────────────────────────
+        if (Globals.isVersionsAvailable) ...[
+          _buildDivider(AppLocalizations.of(context)!.modded_modrinth_section_title),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.fromLTRB(0, 4, 0, 0),
+            child: SizedBox(
+              height: 55,
+              width: double.infinity,
+              child: Material(
+                elevation: 0,
+                color: ColorUtils.dynamicPrimaryForegroundColor,
+                shadowColor: ColorUtils.defaultShadowColor,
+                borderRadius: BorderRadius.circular(Globals.borderRadius),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ModrinthView()),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(Globals.borderRadius),
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Container(
+                          height: 30,
+                          width: 30,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                              filterQuality: FilterQuality.none,
+                              image: AssetImage("assets/modrinth.png"),
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        AppLocalizations.of(context)!.modded_modrinth_button,
+                        style: WidgetUtils.customTextStyle(16, FontWeight.w500, ColorUtils.primaryFontColor),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+
+        // ── Installed Modrinth modpacks (offline-friendly) ─────────────────
+        if (installedModpacks.isNotEmpty) ...[
+          _buildDivider(AppLocalizations.of(context)!.modded_modrinth_title),
+          for (final pack in installedModpacks)
+            _buildModrinthPackItem(pack),
+        ],
+
+        // ── Installed modded versions (Forge/Fabric/etc.) ──────────────────
+        if (VersionUtils
+            .getMinecraftVersions(true)
+            .isNotEmpty)
+          _buildDivider(AppLocalizations.of(context)!.modded_installed_title),
+        if (VersionUtils
+            .getMinecraftVersions(true)
+            .isEmpty &&
+            !Globals.isVersionsAvailable &&
+            installedModpacks.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
             child: Text(
               AppLocalizations.of(context)!.modded_empty_title,
               textAlign: TextAlign.center,
-              style: WidgetUtils.customTextStyle(
-                22,
-                FontWeight.w300,
-                ColorUtils.primaryFontColor,
-              ),
+              style: WidgetUtils.customTextStyle(22, FontWeight.w300, ColorUtils.primaryFontColor),
             ),
           ),
         for (var version in VersionUtils.getMinecraftVersions(true))
@@ -1146,12 +1248,10 @@ class _MainPageState extends State<MainPage> {
             VersionUtils.isCompatible(version["type"], version["id"], context),
           ),
 
-        /* Separatore*/
+        // ── Available modloader versions ───────────────────────────────────
         _buildDivider(AppLocalizations.of(context)!.modded_available_versions_title),
-
-        /* Filtri */
         _buildFilterChips(),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         if (_isVisible("OptiFine") && Globals.optifineVersions != null)
           _buildModloaderSection(
             label: "OptiFine",
@@ -1199,10 +1299,215 @@ class _MainPageState extends State<MainPage> {
             label: "Fabric",
             count: fabricFiltered.length,
             children: [
-              for (var version in fabricFiltered) buildVanillaItem("Fabric", version["version"], "", true),
+              for (var version in fabricFiltered)
+                buildVanillaItem("Fabric", version["version"], "", true),
             ],
           ),
       ],
+    );
+  }
+
+  /// Builds a single row for an installed Modrinth modpack.
+  /// Reads all data from index.json — no network needed.
+  Widget _buildModrinthPackItem(Map<String, dynamic> pack) {
+    final slug = pack['slug']?.toString() ?? '';
+    final title = pack['title']?.toString() ?? slug;
+    final iconUrl = pack['iconUrl']?.toString() ?? '';
+    final mcVersion = pack['minecraft']?.toString() ?? '';
+    final loader = pack['loader']?.toString() ?? '';
+    final versionName = pack['versionName']?.toString() ?? '';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 4, 0, 0),
+      child: SizedBox(
+        height: 55,
+        width: double.infinity,
+        child: Material(
+          elevation: 15,
+          color: ColorUtils.dynamicPrimaryForegroundColor,
+          shadowColor: ColorUtils.defaultShadowColor,
+          borderRadius: BorderRadius.circular(Globals.borderRadius),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Icon
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: iconUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                    imageUrl: iconUrl,
+                    width: 30,
+                    height: 30,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => _modrinthIconPlaceholder(),
+                    errorWidget: (_, __, ___) => _modrinthIconPlaceholder(),
+                  )
+                      : _modrinthIconPlaceholder(),
+                ),
+              ),
+
+              // Title + subtitle
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: WidgetUtils.customTextStyle(16, FontWeight.w500, ColorUtils.primaryFontColor),
+                    ),
+                    Text(
+                      '$loader $mcVersion, ver. $versionName',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: WidgetUtils.customTextStyle(12, FontWeight.w300, ColorUtils.secondaryFontColor),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Delete button
+              WidgetUtils.buildButton(
+                Icons.delete_outline,
+                ColorUtils.dynamicSecondaryForegroundColor,
+                Colors.redAccent,
+                    () {
+                  WidgetUtils.showPopup(
+                    context,
+                    title,
+                    <Widget>[
+                      const Text(
+                        'Remove this modpack and all its files?',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'Comfortaa',
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                    <Widget>[
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          AppLocalizations.of(context)!.generic_cancel,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontFamily: 'Comfortaa',
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          await ModrinthUtils.removeInstance(slug);
+                          setState(() {});
+                        },
+                        child: const Text(
+                          'Remove',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: 'Comfortaa',
+                            fontWeight: FontWeight.w700,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+
+              // Launch button
+              WidgetUtils.buildButton(
+                Icons.rocket_launch,
+                ColorUtils.dynamicAccentColor,
+                Colors.white,
+                    () async {
+                  final deps = ModrinthUtils.getDependencies(slug);
+                  final mcVer = deps['minecraft'] ?? mcVersion;
+                  final loaderName = loader;
+
+                  String gameVersion;
+                  bool isModded = true;
+
+                  switch (loaderName) {
+                    case 'fabric':
+                      final loaderVer = deps['fabric-loader'] ??
+                          (Globals.fabricLoaderVersionsResponse?.isNotEmpty == true
+                              ? Globals.fabricLoaderVersionsResponse[0]['version'].toString()
+                              : '');
+                      gameVersion = loaderVer.isNotEmpty
+                          ? 'fabric-loader-$loaderVer-$mcVer'
+                          : mcVer;
+                      break;
+                    case 'forge':
+                      final forgeVer = deps['forge'] ?? '';
+                      gameVersion = forgeVer.isNotEmpty ? '$mcVer-forge-$forgeVer' : mcVer;
+                      break;
+                    case 'quilt':
+                      final quiltVer = deps['quilt-loader'] ?? '';
+                      gameVersion = quiltVer.isNotEmpty
+                          ? 'quilt-loader-$quiltVer-$mcVer'
+                          : mcVer;
+                      break;
+                    case 'neoforge':
+                      final neoVer = deps['neoforge'] ?? '';
+                      gameVersion = neoVer.isNotEmpty ? 'neoforge-$neoVer' : mcVer;
+                      break;
+                    default:
+                      gameVersion = mcVer;
+                      isModded = false;
+                  }
+
+                  // Redirect game folder to the modpack instance.
+                  // LaunchUtils uses Globals.gamefoldercontroller.text for:
+                  //   workingDirectory, -Duser.dir, -Djava.library.path, -gameFolder
+                  // Save and restore it: launchMinecraft returns as soon as the
+                  // process is spawned, so the restore is safe.
+                  final config = LaunchConfig(
+                    gameVersion: gameVersion,
+                    productId: null,
+                    isModded: isModded,
+                    realGameVersion: mcVer,
+                    enableClassPath: LaunchUtils.shouldEnableClassPath(gameVersion, true),
+                    startOnFirstThread: LaunchUtils.shouldUseStartOnFirstThread(mcVer),
+                    jvmArgs: [],
+                    launcherArgs: [],
+                  );
+
+                  await LaunchUtils.launchMinecraft(
+                    context,
+                    config,
+                    onAccountRequired: () {
+                      setState(() => Globals.navSelected = NavSection.accounts);
+                    },
+                    gameDirectory: ModrinthUtils.gameDir(slug),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _modrinthIconPlaceholder() {
+    return Container(
+      width: 30,
+      height: 30,
+      decoration: BoxDecoration(
+        color: ColorUtils.dynamicSecondaryForegroundColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Icon(Icons.extension_outlined, size: 16, color: ColorUtils.secondaryFontColor),
     );
   }
 
@@ -1243,7 +1548,7 @@ class _MainPageState extends State<MainPage> {
             inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
           ),
           Globals.darkModeTheme,
-          (value) {
+              (value) {
             setState(() => Globals.darkModeTheme = value);
             ColorUtils.reloadColors();
 
@@ -1318,12 +1623,14 @@ class _MainPageState extends State<MainPage> {
                           MouseRegion(
                             onEnter: (e) => {},
                             child: GestureDetector(
-                              onTap: () async => {
+                              onTap: () async =>
+                              {
                                 Globals.accentColor = 0,
                                 (await SharedPreferences.getInstance()).setInt('accentColor', Globals.accentColor),
-                                setState(() => ColorUtils.dynamicAccentColor = ColorUtils.getColorFromAccent(
-                                      Globals.accentColor,
-                                    )),
+                                setState(() =>
+                                ColorUtils.dynamicAccentColor = ColorUtils.getColorFromAccent(
+                                  Globals.accentColor,
+                                )),
                                 ColorUtils.reloadColors(),
                                 Window.setEffect(
                                   effect: getWindowEffect(),
@@ -1367,15 +1674,17 @@ class _MainPageState extends State<MainPage> {
                             MouseRegion(
                               onEnter: (e) => {},
                               child: GestureDetector(
-                                onTap: () async => {
+                                onTap: () async =>
+                                {
                                   Globals.accentColor = i,
                                   (await SharedPreferences.getInstance()).setInt(
                                     'accentColor',
                                     Globals.accentColor,
                                   ),
-                                  setState(() => ColorUtils.dynamicAccentColor = ColorUtils.getColorFromAccent(
-                                        Globals.accentColor,
-                                      )),
+                                  setState(() =>
+                                  ColorUtils.dynamicAccentColor = ColorUtils.getColorFromAccent(
+                                    Globals.accentColor,
+                                  )),
                                   ColorUtils.reloadColors(),
                                   Window.setEffect(
                                     effect: getWindowEffect(),
@@ -1393,8 +1702,8 @@ class _MainPageState extends State<MainPage> {
                                   color: ColorUtils.getColorFromAccent(i),
                                   outlineColor: Globals.accentColor == i
                                       ? ColorUtils.getColorFromAccent(
-                                          Globals.accentColor,
-                                        )
+                                    Globals.accentColor,
+                                  )
                                       : Colors.transparent,
                                   outlineWidth: 2,
                                   distance: 3,
@@ -1478,17 +1787,18 @@ class _MainPageState extends State<MainPage> {
                               ),
                             ),
                             items: Globals.WindowThemes.map(
-                              (String item) => DropdownMenuItem<String>(
-                                value: item,
-                                child: Text(
-                                  item,
-                                  style: WidgetUtils.customTextStyle(
-                                    16,
-                                    FontWeight.w500,
-                                    ColorUtils.primaryFontColor,
+                                  (String item) =>
+                                  DropdownMenuItem<String>(
+                                    value: item,
+                                    child: Text(
+                                      item,
+                                      style: WidgetUtils.customTextStyle(
+                                        16,
+                                        FontWeight.w500,
+                                        ColorUtils.primaryFontColor,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
                             ).toList(),
                             value: Globals.selectedWindowTheme,
                             onChanged: (String? value) async {
@@ -1576,7 +1886,7 @@ class _MainPageState extends State<MainPage> {
               inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
             ),
             Globals.fullTransparent,
-            (value) {
+                (value) {
               setState(() => Globals.fullTransparent = value);
             },
           ),
@@ -1614,7 +1924,7 @@ class _MainPageState extends State<MainPage> {
             inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
           ),
           Globals.showOnlyReleases,
-          (value) => setState(() => Globals.showOnlyReleases = value),
+              (value) => setState(() => Globals.showOnlyReleases = value),
         ),
 
         /** Setting per mostrare la console */
@@ -1631,7 +1941,7 @@ class _MainPageState extends State<MainPage> {
             inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
           ),
           Globals.showConsole,
-          (value) => setState(() => Globals.showConsole = value),
+              (value) => setState(() => Globals.showConsole = value),
         ),
 
         /** Setting Java */
@@ -1651,7 +1961,7 @@ class _MainPageState extends State<MainPage> {
                   inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
                 ),
                 Globals.javaAdvSet,
-                (value) => setState(() => Globals.javaAdvSet = value),
+                    (value) => setState(() => Globals.javaAdvSet = value),
               ),
               if (Globals.javaAdvSet) ...[
                 Padding(
@@ -1669,7 +1979,7 @@ class _MainPageState extends State<MainPage> {
                                 Icons.folder,
                                 ColorUtils.dynamicAccentColor,
                                 Colors.white,
-                                () async {
+                                    () async {
                                   FilePickerResult? result = await FilePicker.platform.pickFiles();
                                   if (result != null) {
                                     File file = File(result.files.single.path!);
@@ -1686,7 +1996,7 @@ class _MainPageState extends State<MainPage> {
                                 Icons.checklist,
                                 ColorUtils.dynamicAccentColor,
                                 Colors.white,
-                                () async {
+                                    () async {
                                   final result = await LauncherUtils.checkJava();
 
                                   // Titolo fisso localizzato
@@ -1715,7 +2025,7 @@ class _MainPageState extends State<MainPage> {
                                     context,
                                     title,
                                     message,
-                                    () => Navigator.pop(context),
+                                        () => Navigator.pop(context),
                                   );
                                 },
                               ),
@@ -1726,7 +2036,7 @@ class _MainPageState extends State<MainPage> {
                         ColorUtils.primaryFontColor,
                         AppLocalizations.of(context)!.settings_java_path_msg,
                         Globals.javapathcontroller,
-                        (value) async {
+                            (value) async {
                           SharedPreferences prefs = await SharedPreferences.getInstance();
                           await prefs.setString(
                             "javaPath",
@@ -1745,7 +2055,7 @@ class _MainPageState extends State<MainPage> {
                                 Icons.memory,
                                 ColorUtils.dynamicAccentColor,
                                 Colors.white,
-                                () => {},
+                                    () => {},
                               ),
                             ],
                           ),
@@ -1754,7 +2064,7 @@ class _MainPageState extends State<MainPage> {
                         ColorUtils.primaryFontColor,
                         AppLocalizations.of(context)!.settings_java_ram_msg,
                         Globals.javaramcontroller,
-                        (value) async {
+                            (value) async {
                           SharedPreferences prefs = await SharedPreferences.getInstance();
                           await prefs.setString(
                             "javaRAM",
@@ -1773,7 +2083,7 @@ class _MainPageState extends State<MainPage> {
                                 MorpheusIcons.java,
                                 ColorUtils.dynamicAccentColor,
                                 Colors.white,
-                                () => {},
+                                    () => {},
                               ),
                             ],
                           ),
@@ -1782,7 +2092,7 @@ class _MainPageState extends State<MainPage> {
                         ColorUtils.primaryFontColor,
                         "VM Args",
                         Globals.javavmcontroller,
-                        (value) async {
+                            (value) async {
                           SharedPreferences prefs = await SharedPreferences.getInstance();
                           await prefs.setString(
                             "javaVMArgs",
@@ -1801,7 +2111,7 @@ class _MainPageState extends State<MainPage> {
                                 Icons.terminal,
                                 ColorUtils.dynamicAccentColor,
                                 Colors.white,
-                                () => {},
+                                    () => {},
                               ),
                             ],
                           ),
@@ -1810,7 +2120,7 @@ class _MainPageState extends State<MainPage> {
                         ColorUtils.primaryFontColor,
                         "Launcher args",
                         Globals.javalaunchercontroller,
-                        (value) async {
+                            (value) async {
                           SharedPreferences prefs = await SharedPreferences.getInstance();
                           await prefs.setString(
                             "javaLauncherArgs",
@@ -1832,7 +2142,7 @@ class _MainPageState extends State<MainPage> {
                           inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
                         ),
                         Globals.forceClasspath,
-                        (value) => setState(() => Globals.forceClasspath = value),
+                            (value) => setState(() => Globals.forceClasspath = value),
                       ),
                     ],
                   ),
@@ -1859,7 +2169,8 @@ class _MainPageState extends State<MainPage> {
                   inactiveColor: ColorUtils.dynamicSecondaryForegroundColor,
                 ),
                 Globals.customFolderSet,
-                (value) async => {
+                    (value) async =>
+                {
                   setState(() => Globals.customFolderSet = value),
                   if (!Globals.customFolderSet) ...[
                     Globals.gamefoldercontroller.text = LauncherUtils.getApplicationFolder("minecraft"),
@@ -1883,7 +2194,7 @@ class _MainPageState extends State<MainPage> {
                             Icons.folder,
                             ColorUtils.dynamicAccentColor,
                             Colors.white,
-                            () async {
+                                () async {
                               final String? selectedDirectory = await getDirectoryPath();
                               if (selectedDirectory != null) {
                                 Globals.gamefoldercontroller.text = selectedDirectory.replaceAll("\\", "/");
@@ -1902,7 +2213,7 @@ class _MainPageState extends State<MainPage> {
                     ColorUtils.primaryFontColor,
                     AppLocalizations.of(context)!.settings_custom_folder,
                     Globals.gamefoldercontroller,
-                    (value) async {
+                        (value) async {
                       SharedPreferences prefs = await SharedPreferences.getInstance();
                       await prefs.setString(
                         "gameFolderPath",
@@ -1924,10 +2235,38 @@ class _MainPageState extends State<MainPage> {
               WidgetUtils.buildTextButton(
                 ColorUtils.dynamicSecondaryForegroundColor,
                 ColorUtils.primaryFontColor,
-                () {
+                    () {
                   WidgetUtils.showDiagnostic(context);
                 },
                 AppLocalizations.of(context)!.settings_diagnostic_title,
+              ),
+
+              /** Apri cartella di gioco */
+              WidgetUtils.buildTextButton(
+                ColorUtils.dynamicSecondaryForegroundColor,
+                ColorUtils.primaryFontColor,
+                    () async {
+                  final folder = Globals.gamefoldercontroller.text;
+                  if (folder.isEmpty) return;
+
+                  try {
+                    if (Platform.isWindows) {
+                      await Process.start('explorer', [folder.replaceAll('/', '\\')]);
+                    } else if (Platform.isMacOS) {
+                      await Process.start('open', [folder]);
+                    } else if (Platform.isLinux) {
+                      await Process.start('xdg-open', [folder]);
+                    }
+                  } catch (e) {
+                    WidgetUtils.showMessageDialog(
+                      context,
+                      AppLocalizations.of(context)!.generic_error_msg,
+                      e.toString(),
+                          () => Navigator.pop(context),
+                    );
+                  }
+                },
+                AppLocalizations.of(context)!.settings_open_game_folder,
               ),
             ],
           ),
@@ -1958,7 +2297,7 @@ class _MainPageState extends State<MainPage> {
             WidgetUtils.buildTextButton(
               Colors.red.withAlpha(160),
               Colors.white,
-              () async {
+                  () async {
                 await DefaultCacheManager().emptyCache();
               },
               AppLocalizations.of(context)!.settings_clear_cache,
@@ -1968,7 +2307,7 @@ class _MainPageState extends State<MainPage> {
             WidgetUtils.buildTextButton(
               ColorUtils.dynamicSecondaryForegroundColor,
               Colors.white,
-              () async {
+                  () async {
                 final result = await FilePicker.platform.pickFiles(
                   type: FileType.custom,
                   allowedExtensions: ['json'],
@@ -1987,7 +2326,7 @@ class _MainPageState extends State<MainPage> {
             WidgetUtils.buildTextButton(
               ColorUtils.dynamicSecondaryForegroundColor,
               Colors.white,
-              () async {
+                  () async {
                 final result = await FilePicker.platform.saveFile(
                   dialogTitle: 'Save accounts as JSON',
                   fileName: 'accounts_plain.json',
@@ -2030,7 +2369,7 @@ class _MainPageState extends State<MainPage> {
                 context,
                 AppLocalizations.of(context)!.settings_credits_title,
                 AppLocalizations.of(context)!.settings_credits_content,
-                () => Navigator.pop(context),
+                    () => Navigator.pop(context),
               );
             },
           ),
@@ -2111,7 +2450,7 @@ class _MainPageState extends State<MainPage> {
             Icons.brush,
             ColorUtils.dynamicPrimaryForegroundColor,
             ColorUtils.primaryFontColor,
-            () async {
+                () async {
               if (Globals.getAccount()!.isPremium) {
                 WidgetUtils.showPopup(
                   context,
@@ -2146,7 +2485,7 @@ class _MainPageState extends State<MainPage> {
                             context,
                             AppLocalizations.of(context)!.account_skin_uploader_title,
                             "${await uploadSkin(context, "slim", Globals.getAccount()!, file.path.replaceAll("\\", "/"))}",
-                            () => Navigator.pop(context),
+                                () => Navigator.pop(context),
                           );
                         }
                       },
@@ -2169,7 +2508,7 @@ class _MainPageState extends State<MainPage> {
                             context,
                             AppLocalizations.of(context)!.account_skin_uploader_title,
                             "${await uploadSkin(context, "classic", Globals.getAccount()!, file.path.replaceAll("\\", "/"))}",
-                            () => Navigator.pop(context),
+                                () => Navigator.pop(context),
                           );
                         }
                       },
@@ -2246,7 +2585,7 @@ class _MainPageState extends State<MainPage> {
                 Icons.add,
                 ColorUtils.dynamicPrimaryForegroundColor,
                 ColorUtils.primaryFontColor,
-                () {
+                    () {
                   /** Selezione tipo di account */
                   WidgetUtils.showPopup(
                     context,
@@ -2275,7 +2614,8 @@ class _MainPageState extends State<MainPage> {
                         onPressed: () {
                           AccountUtils.addSP(
                             context,
-                            () => {
+                                () =>
+                            {
                               setState(() {
                                 if (Globals.usernamecontroller.text.isNotEmpty)
                                   Globals.accounts.add(
@@ -2311,16 +2651,14 @@ class _MainPageState extends State<MainPage> {
                         onPressed: () {
                           AccountUtils.addElyBy(
                             context,
-                            (
-                              username,
-                              uuid,
-                              accesstoken,
-                              refreshtoken,
-                              isSlimSkin,
-                            ) =>
-                                {
+                                (username,
+                                uuid,
+                                accesstoken,
+                                refreshtoken,
+                                isSlimSkin,) =>
+                            {
                               setState(
-                                () {
+                                    () {
                                   Globals.accounts.add(
                                     new Account(
                                       username: username,
@@ -2352,17 +2690,15 @@ class _MainPageState extends State<MainPage> {
                         onPressed: () {
                           AccountUtils.addPremium(
                             context,
-                            (
-                              username,
-                              uuid,
-                              accesstoken,
-                              refreshtoken,
-                              isPremium,
-                              isSlimSkin,
-                            ) =>
-                                {
+                                (username,
+                                uuid,
+                                accesstoken,
+                                refreshtoken,
+                                isPremium,
+                                isSlimSkin,) =>
+                            {
                               setState(
-                                () {
+                                    () {
                                   Globals.accounts.add(
                                     new Account(
                                       username: username,
@@ -2390,7 +2726,7 @@ class _MainPageState extends State<MainPage> {
                 Icons.remove,
                 ColorUtils.dynamicPrimaryForegroundColor,
                 ColorUtils.primaryFontColor,
-                () {
+                    () {
                   setState(() {
                     if (Globals.accounts.isNotEmpty) {
                       Globals.accounts.removeAt(Globals.AccountSelected);
@@ -2400,7 +2736,7 @@ class _MainPageState extends State<MainPage> {
                         context,
                         AppLocalizations.of(context)!.generic_error_msg,
                         AppLocalizations.of(context)!.account_remove_error,
-                        () => Navigator.pop(context),
+                            () => Navigator.pop(context),
                       );
                     }
                     Globals.AccountSelected = 0;
@@ -2428,21 +2764,22 @@ class _MainPageState extends State<MainPage> {
               account.isElyBy,
               Globals.accounts.indexOf(account),
             ),
-        ] else ...[
-          /** mostra il messaggio quando non ci sono account */
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-            child: Text(
-              AppLocalizations.of(context)!.account_empty_msg,
-              textAlign: TextAlign.center,
-              style: WidgetUtils.customTextStyle(
-                14,
-                FontWeight.w300,
-                ColorUtils.primaryFontColor,
+        ] else
+          ...[
+            /** mostra il messaggio quando non ci sono account */
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              child: Text(
+                AppLocalizations.of(context)!.account_empty_msg,
+                textAlign: TextAlign.center,
+                style: WidgetUtils.customTextStyle(
+                  14,
+                  FontWeight.w300,
+                  ColorUtils.primaryFontColor,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
       ],
     );
   }
@@ -2499,7 +2836,7 @@ class _MainPageState extends State<MainPage> {
                 Icons.check,
                 Globals.AccountSelected == index ? ColorUtils.dynamicAccentColor : ColorUtils.dynamicSecondaryForegroundColor,
                 Globals.AccountSelected == index ? Colors.white : (Globals.darkModeTheme ? Colors.white.withAlpha(80) : Colors.black.withAlpha(80)),
-                () {
+                    () {
                   setState(() => Globals.AccountSelected = index);
                   rebuild();
                 },
@@ -2542,10 +2879,11 @@ class _HoverIconState extends State<HoverIcon> {
             begin: _hovering ? ColorUtils.secondaryFontColor.withAlpha(128) : ColorUtils.secondaryFontColor.withAlpha(255),
             end: _hovering ? ColorUtils.secondaryFontColor.withAlpha(255) : ColorUtils.secondaryFontColor.withAlpha(128),
           ),
-          builder: (context, color, child) => Icon(
-            widget.icon,
-            color: color,
-          ),
+          builder: (context, color, child) =>
+              Icon(
+                widget.icon,
+                color: color,
+              ),
         ),
       ),
     );
@@ -2557,10 +2895,8 @@ class AccountUtils {
   /////// ACCOUNT MANAGER //////////
   //////////////////////////////////
 
-  static void addSP(
-    dynamic context,
-    Function callback,
-  ) {
+  static void addSP(dynamic context,
+      Function callback,) {
     Navigator.pop(context);
     WidgetUtils.showPopup(
       context,
@@ -2577,7 +2913,7 @@ class AccountUtils {
             Colors.black /* Colore del font della textbox */,
             "Username",
             Globals.usernamecontroller,
-            (value) => null,
+                (value) => null,
           ),
         ),
       ],
@@ -2600,16 +2936,14 @@ class AccountUtils {
     );
   }
 
-  static Future<void> addElyBy(
-    context,
-    Function(
-      dynamic username,
-      dynamic uuid,
-      dynamic accessToken,
-      dynamic refreshToken,
-      dynamic isSlimSkin,
-    ) callback,
-  ) async {
+  static Future<void> addElyBy(context,
+      Function(
+          dynamic username,
+          dynamic uuid,
+          dynamic accessToken,
+          dynamic refreshToken,
+          dynamic isSlimSkin,
+          ) callback,) async {
     final clientID = "morpheus-launcher3";
     final redirectUri = "${Urls.morpheusBaseURL}/elyby";
     final authUrl = "${Urls.elybyBaseURL}/oauth2/v1?client_id=${clientID}"
@@ -2685,10 +3019,10 @@ class AccountUtils {
     }
   }
 
-  static Future<void> refreshPremium(
-    dynamic context,
-  ) async {
-    if (Globals.getAccount()?.isPremium == true) {
+  static Future<void> refreshPremium(dynamic context,) async {
+    if (Globals
+        .getAccount()
+        ?.isPremium == true) {
       Globals.consolecontroller.append("[LAUNCHER]: ${AppLocalizations.of(context)!.account_token_refresh}\n");
 
       try {
@@ -2698,14 +3032,16 @@ class AccountUtils {
           var minecraft = await fetchMinecraftProfile(context, minecraftToken);
 
           if (!minecraft.toString().startsWith("[MC]:")) {
-            Globals.getAccount()?.accessToken = minecraftToken;
+            Globals
+                .getAccount()
+                ?.accessToken = minecraftToken;
             saveAccounts();
           } else {
             WidgetUtils.showMessageDialog(
               context,
               AppLocalizations.of(context)!.generic_error_msg,
               "${minecraft}",
-              () => Navigator.pop(context),
+                  () => Navigator.pop(context),
             );
           }
         }
@@ -2715,17 +3051,15 @@ class AccountUtils {
     }
   }
 
-  static Future<void> addPremium(
-    dynamic context,
-    Function(
-      dynamic username,
-      dynamic uuid,
-      dynamic accesstoken,
-      dynamic refreshtoken,
-      bool isPremium,
-      bool isSlimSkin,
-    ) callback,
-  ) async {
+  static Future<void> addPremium(dynamic context,
+      Function(
+          dynamic username,
+          dynamic uuid,
+          dynamic accesstoken,
+          dynamic refreshtoken,
+          bool isPremium,
+          bool isSlimSkin,
+          ) callback,) async {
     String str = await doMicrosoftConsent(context);
 
     if (!str.startsWith("[MS]:")) {
@@ -2826,7 +3160,7 @@ class AccountUtils {
                   context,
                   AppLocalizations.of(context)!.generic_error_msg,
                   "${minecraft}",
-                  () => Navigator.pop(context),
+                      () => Navigator.pop(context),
                 );
               }
             } else {
@@ -2834,7 +3168,7 @@ class AccountUtils {
                 context,
                 AppLocalizations.of(context)!.generic_error_msg,
                 "${minecraftAuth}",
-                () => Navigator.pop(context),
+                    () => Navigator.pop(context),
               );
             }
             timer.cancel();
@@ -2846,7 +3180,7 @@ class AccountUtils {
         context,
         AppLocalizations.of(context)!.generic_error_msg,
         "$str",
-        () => Navigator.pop(context),
+            () => Navigator.pop(context),
       );
     }
   }

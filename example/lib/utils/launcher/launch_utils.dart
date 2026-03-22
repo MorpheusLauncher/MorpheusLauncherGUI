@@ -32,11 +32,11 @@ class LaunchConfig {
 
 class LaunchUtils {
   /// Lancia Minecraft con i parametri di LaunchConfig
-  static Future<void> launchMinecraft(
-    BuildContext context,
-    LaunchConfig config, {
-    required VoidCallback onAccountRequired,
-  }) async {
+  static Future<void> launchMinecraft(BuildContext context,
+      LaunchConfig config, {
+        required VoidCallback onAccountRequired,
+        String? gameDirectory,
+      }) async {
     // Verifica account
     final account = Globals.getAccount();
     if (account == null) {
@@ -44,7 +44,7 @@ class LaunchUtils {
         context,
         AppLocalizations.of(context)!.account_required_title,
         AppLocalizations.of(context)!.account_required_msg,
-        () {
+            () {
           Navigator.pop(context);
           onAccountRequired();
         },
@@ -68,7 +68,7 @@ class LaunchUtils {
       if (context.mounted) Navigator.pop(context);
 
       // Costruisci args di lancio
-      final args = await _buildLaunchArguments(context, config);
+      final args = await _buildLaunchArguments(context, config, gameDirectory: gameDirectory);
 
       final Process process;
 
@@ -85,7 +85,7 @@ class LaunchUtils {
           process = await Process.start(
             javaPath,
             args,
-            workingDirectory: Globals.gamefoldercontroller.text,
+            workingDirectory: gameDirectory ?? Globals.gamefoldercontroller.text,
           );
         }
       } else {
@@ -93,13 +93,13 @@ class LaunchUtils {
         process = await Process.start(
           Globals.javapathcontroller.text,
           args,
-          workingDirectory: Globals.gamefoldercontroller.text,
+          workingDirectory: gameDirectory ?? Globals.gamefoldercontroller.text,
         );
       }
 
       // Gestione console
       if (Globals.showConsole && context.mounted) {
-        WidgetUtils.showConsole(context, process);
+        WidgetUtils.showConsole(context, process, gameDirectory: gameDirectory);
       } else {
         // Consuma comunque stdout/stderr
         process.stdout.transform(systemEncoding.decoder).listen((data) {
@@ -122,7 +122,7 @@ class LaunchUtils {
           context,
           AppLocalizations.of(context)!.generic_error_msg,
           "$e",
-          () => Navigator.pop(context),
+              () => Navigator.pop(context),
         );
       }
     }
@@ -149,7 +149,7 @@ class LaunchUtils {
   }
 
   /// Costruisce args completi
-  static Future<List<String>> _buildLaunchArguments(BuildContext context, LaunchConfig config) async {
+  static Future<List<String>> _buildLaunchArguments(BuildContext context, LaunchConfig config, {String? gameDirectory}) async {
     final account = Globals.getAccount()!;
     final args = <String>[];
 
@@ -183,9 +183,10 @@ class LaunchUtils {
     }
 
     // JVM base
+    final workingDir = gameDirectory ?? Globals.gamefoldercontroller.text;
     args.addAll([
-      "-Duser.dir=${Globals.gamefoldercontroller.text}",
-      "-Djava.library.path=${Globals.gamefoldercontroller.text}/versions/${config.gameVersion}/natives/",
+      "-Duser.dir=$workingDir",
+      "-Djava.library.path=$workingDir/versions/${config.gameVersion}/natives/",
       ...LauncherUtils.buildJVMOptimizedArgs(Globals.javaramcontroller.text),
     ]);
 
@@ -213,8 +214,8 @@ class LaunchUtils {
     if (config.enableClassPath) args.add("-c");
     if (config.startOnFirstThread) args.add("-startOnFirstThread");
 
-    if (Globals.customFolderSet) {
-      args.addAll(["-gameFolder", Globals.gamefoldercontroller.text]);
+    if (Globals.customFolderSet || gameDirectory != null) {
+      args.addAll(["-gameFolder", gameDirectory ?? Globals.gamefoldercontroller.text]);
     }
 
     // Launcher args utente
@@ -277,10 +278,10 @@ class LaunchUtils {
 
     final verList = VersionUtils.getMinecraftVersions(false);
     final currentVersionIndex = verList.indexWhere(
-      (version) => version["id"] == resolvedGameVersion,
+          (version) => version["id"] == resolvedGameVersion,
     );
     final startingVersionIndex = verList.indexWhere(
-      (version) => version["id"] == "17w43a",
+          (version) => version["id"] == "17w43a",
     );
 
     return currentVersionIndex != -1 && startingVersionIndex != -1 && currentVersionIndex <= startingVersionIndex;
@@ -292,7 +293,7 @@ class LaunchUtils {
 
     final verList = VersionUtils.getMinecraftVersions(false);
     final classpathStartIndex = verList.indexWhere(
-      (version) => version["id"] == "25w18a",
+          (version) => version["id"] == "25w18a",
     );
 
     if (classpathStartIndex == -1) return false;
@@ -302,7 +303,7 @@ class LaunchUtils {
 
     if (baseVersion != null) {
       final baseIndex = verList.indexWhere(
-        (v) => v["id"] == baseVersion["id"],
+            (v) => v["id"] == baseVersion["id"],
       );
 
       return baseIndex != -1 && baseIndex <= classpathStartIndex;

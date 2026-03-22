@@ -17,6 +17,27 @@
   "modded_empty_title": "No se encontró ninguna versión modificada",
   "modded_installed_title": "Instaladas",
   "modded_available_versions_title": "Versiones modificadas disponibles",
+  "modded_modrinth_button": "Modpacks en Modrinth",
+  "modded_modrinth_title": "Modpacks de Modrinth",
+  "modded_modrinth_search": "Buscar modpacks...",
+  "modded_modrinth_section_title": "Modpacks",
+  "modded_modrinth_empty": "No se trovaron modpacks",
+
+  "modpack_details_title": "Detalles del Modpack",
+  "modpack_author_by": "por {author}",
+  "@modpack_author_by": {
+    "placeholders": {
+      "author": { "type": "String" }
+    }
+  },
+  "modpack_stats_downloads": "Descargas",
+  "modpack_stats_updated": "Actualizado",
+  "modpack_stats_size": "Tamaño",
+  "modpack_download_button": "Descargar",
+  "modpack_description_title": "Descripción",
+  "modpack_mod_list_title": "Lista de mods",
+  "modpack_unknown_author": "Autor desconocido",
+  "modpack_unknown_mod": "Mod desconocida",
 
   "settings_only_release_switch": "Mostrar solo versiones estables",
   "settings_dark_mode_switch": "Usar modo oscuro",
@@ -33,6 +54,7 @@
   "settings_console_switch": "Mostrar la consola al iniciar el juego",
   "settings_custom_folder_title": "Carpeta de juego personalizada",
   "settings_custom_folder": "Directorio del juego",
+  "settings_open_game_folder": "Abrir carpeta del juego",
   "settings_credits_title": "Agradecimientos",
   "settings_credits_content": "Este software ha sido desarrollado utilizando diversas bibliotecas de código abierto: \n\nmaterial_color_utilities, flutter_localization, cached_network_image, simple_3d_renderer, shared_preferences, flutter_markdown, dropdown_button2, bitsdojo_window, flutter_switch, url_launcher, system_theme, flutter_html, text_divider, file_picker, process_run, file_selector, http_parser, provider, archive, encrypt, crypto, image, http, intl, blur, cupertino_icons. \n\nAgradecemos sinceramente a todos los que contribuyeron al desarrollo de estas bibliotecas, haciendo posible la creación de este software.",
   "settings_diagnostic_title": "Datos de diagnóstico",

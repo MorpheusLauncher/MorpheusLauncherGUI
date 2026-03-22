@@ -17,6 +17,27 @@
   "modded_empty_title": "Nessuna versione moddata trovata",
   "modded_installed_title": "Installate",
   "modded_available_versions_title": "Versioni moddate disponibili",
+  "modded_modrinth_button": "Modpacks su Modrinth",
+  "modded_modrinth_title": "Modpacks di Modrinth",
+  "modded_modrinth_search": "Cerca modpack...",
+  "modded_modrinth_section_title": "Modpack",
+  "modded_modrinth_empty": "Nessun modpack trovato",
+
+  "modpack_details_title": "Dettagli Modpack",
+  "modpack_author_by": "di {author}",
+  "@modpack_author_by": {
+    "placeholders": {
+      "author": { "type": "String" }
+    }
+  },
+  "modpack_stats_downloads": "Download",
+  "modpack_stats_updated": "Aggiornato",
+  "modpack_stats_size": "Dimensione",
+  "modpack_download_button": "Scarica",
+  "modpack_description_title": "Descrizione",
+  "modpack_mod_list_title": "Lista mod",
+  "modpack_unknown_author": "Autore sconosciuto",
+  "modpack_unknown_mod": "Mod sconosciuta",
 
   "settings_only_release_switch": "Mostra solo release",
   "settings_dark_mode_switch": "Usa tema scuro",
@@ -33,6 +54,7 @@
   "settings_console_switch": "Mostra la console all'avvio del gioco",
   "settings_custom_folder_title": "Cartella di gioco personalizzata",
   "settings_custom_folder": "Cartella del gioco",
+  "settings_open_game_folder": "Apri cartella di gioco",
   "settings_credits_title": "Ringraziamenti",
   "settings_credits_content": "Questo software è stato sviluppato utilizzando diverse librerie open source: \n\nmaterial_color_utilities, flutter_localization, cached_network_image, simple_3d_renderer, shared_preferences, flutter_markdown, dropdown_button2, bitsdojo_window, flutter_switch, url_launcher, system_theme, flutter_html, text_divider, file_picker, process_run, file_selector, http_parser, provider, archive, encrypt, crypto, image, http, intl, blur, cupertino_icons. \n\nRingraziamo sinceramente tutti coloro che hanno contribuito allo sviluppo di queste librerie, rendendo possibile la realizzazione di questo software.",
   "settings_diagnostic_title": "Dati diagnostici",

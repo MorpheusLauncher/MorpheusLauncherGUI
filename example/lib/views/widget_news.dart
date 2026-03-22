@@ -2,7 +2,7 @@ import 'package:blur/blur.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:morpheus_launcher_gui/globals.dart';
-import 'package:morpheus_launcher_gui/main.dart';
+import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
 
 class NewsScreen extends StatelessWidget {
   final String title;
@@ -14,7 +14,10 @@ class NewsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: (MediaQuery.of(context).size.width / 5) - 5,
+      width: (MediaQuery
+          .of(context)
+          .size
+          .width / 5) - 5,
       child: Material(
         elevation: 15,
         color: ColorUtils.dynamicWindowBackgroundColor,
@@ -33,8 +36,14 @@ class NewsScreen extends StatelessWidget {
                 children: [
                   Image.network(
                     "${Urls.mojangContentURL}${url}",
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height / 4,
+                    width: MediaQuery
+                        .of(context)
+                        .size
+                        .width,
+                    height: MediaQuery
+                        .of(context)
+                        .size
+                        .height / 4,
                     fit: BoxFit.cover,
                   ).blurred(
                     blur: 4,
@@ -44,7 +53,10 @@ class NewsScreen extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width / 20,
+                      fontSize: MediaQuery
+                          .of(context)
+                          .size
+                          .width / 20,
                       fontFamily: 'Comfortaa',
                       color: Colors.white.withAlpha(160),
                     ),
@@ -83,6 +95,12 @@ class NewsScreen extends StatelessWidget {
                           ),
                           "a": Style(
                             color: ColorUtils.dynamicAccentColor.withAlpha(255),
+                          ),
+                          "blockquote": Style(
+                            backgroundColor: ColorUtils.dynamicSecondaryForegroundColor.withAlpha(40),
+                            padding: HtmlPaddings.symmetric(horizontal: 16, vertical: 8),
+                            border: Border(left: BorderSide(color: ColorUtils.dynamicAccentColor, width: 4)),
+                            margin: Margins.symmetric(vertical: 10),
                           ),
                         },
                         data: body,
