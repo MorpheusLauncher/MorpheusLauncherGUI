@@ -71,11 +71,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
   Future<void> _fetchModDetails() async {
     if (mounted) setState(() => _isLoadingMods = true);
     try {
-      final ids = _dependencies
-          .map<String?>((dep) => dep["project_id"]?.toString())
-          .whereType<String>()
-          .toSet()
-          .toList();
+      final ids = _dependencies.map<String?>((dep) => dep["project_id"]?.toString()).whereType<String>().toSet().toList();
       if (ids.isEmpty) return;
 
       final idsParam = Uri.encodeQueryComponent(json.encode(ids));
@@ -133,7 +129,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
           context,
           AppLocalizations.of(context)!.generic_error_msg,
           e.toString(),
-              () => Navigator.pop(context),
+          () => Navigator.pop(context),
         );
       }
     } finally {
@@ -204,9 +200,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
           drawTitleCustomBar(),
           _buildTopBar(context),
           Expanded(
-            child: _isLoading
-                ? Center(child: Image.asset('assets/morpheus-animated.gif', width: 64))
-                : _buildContent(),
+            child: _isLoading ? Center(child: Image.asset('assets/morpheus-animated.gif', width: 64)) : _buildContent(),
           ),
         ],
       ),
@@ -264,8 +258,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
             height: 120,
             fit: BoxFit.cover,
             placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.05)),
-            errorWidget: (context, url, error) =>
-                Icon(Icons.apps, size: 60, color: ColorUtils.secondaryFontColor),
+            errorWidget: (context, url, error) => Icon(Icons.apps, size: 60, color: ColorUtils.secondaryFontColor),
           ),
         ),
         const SizedBox(width: 20),
@@ -273,8 +266,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(widget.modpack["title"] ?? "",
-                  style: WidgetUtils.customTextStyle(28, FontWeight.bold, ColorUtils.primaryFontColor)),
+              Text(widget.modpack["title"] ?? "", style: WidgetUtils.customTextStyle(28, FontWeight.bold, ColorUtils.primaryFontColor)),
               const SizedBox(height: 8),
               Text(
                 AppLocalizations.of(context)!.modpack_author_by(
@@ -284,7 +276,8 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
               ),
               const SizedBox(height: 12),
               Wrap(
-                spacing: 8, runSpacing: 8,
+                spacing: 8,
+                runSpacing: 8,
                 children: (widget.modpack["categories"] as List? ?? []).map<Widget>((cat) {
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -293,8 +286,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: ColorUtils.dynamicAccentColor.withOpacity(0.3)),
                     ),
-                    child: Text(cat.toString().toUpperCase(),
-                        style: WidgetUtils.customTextStyle(10, FontWeight.bold, ColorUtils.dynamicAccentColor)),
+                    child: Text(cat.toString().toUpperCase(), style: WidgetUtils.customTextStyle(10, FontWeight.bold, ColorUtils.dynamicAccentColor)),
                   );
                 }).toList(),
               ),
@@ -329,8 +321,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
       children: [
         Icon(icon, color: ColorUtils.dynamicAccentColor, size: 24),
         const SizedBox(height: 8),
-        Text(label.toUpperCase(),
-            style: WidgetUtils.customTextStyle(10, FontWeight.w500, ColorUtils.secondaryFontColor)),
+        Text(label.toUpperCase(), style: WidgetUtils.customTextStyle(10, FontWeight.w500, ColorUtils.secondaryFontColor)),
         const SizedBox(height: 4),
         Text(value, style: WidgetUtils.customTextStyle(16, FontWeight.w600, ColorUtils.primaryFontColor)),
       ],
@@ -391,8 +382,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
         child: ElevatedButton.icon(
           onPressed: _uninstall,
           icon: const Icon(Icons.delete_outline, size: 22, color: Colors.white),
-          label: Text('Remove modpack',
-              style: WidgetUtils.customTextStyle(16, FontWeight.bold, Colors.white)),
+          label: Text('Remove modpack', style: WidgetUtils.customTextStyle(16, FontWeight.bold, Colors.white)),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.redAccent,
             elevation: 0,
@@ -427,8 +417,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(AppLocalizations.of(context)!.modpack_description_title,
-            style: WidgetUtils.customTextStyle(20, FontWeight.bold, ColorUtils.primaryFontColor)),
+        Text(AppLocalizations.of(context)!.modpack_description_title, style: WidgetUtils.customTextStyle(20, FontWeight.bold, ColorUtils.primaryFontColor)),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(16),
@@ -444,8 +433,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
               h1: WidgetUtils.customTextStyle(22, FontWeight.bold, ColorUtils.primaryFontColor),
               h2: WidgetUtils.customTextStyle(20, FontWeight.bold, ColorUtils.primaryFontColor),
               h3: WidgetUtils.customTextStyle(18, FontWeight.bold, ColorUtils.primaryFontColor),
-              code: WidgetUtils.customTextStyle(14, FontWeight.w400, ColorUtils.primaryFontColor)
-                  .copyWith(backgroundColor: Colors.black26),
+              code: WidgetUtils.customTextStyle(14, FontWeight.w400, ColorUtils.primaryFontColor).copyWith(backgroundColor: Colors.black26),
               listBullet: WidgetUtils.customTextStyle(15, FontWeight.w300, ColorUtils.secondaryFontColor),
               blockquote: WidgetUtils.customTextStyle(14, FontWeight.w400, ColorUtils.primaryFontColor),
               blockquotePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -468,8 +456,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
       children: [
         Row(
           children: [
-            Text(AppLocalizations.of(context)!.modpack_mod_list_title,
-                style: WidgetUtils.customTextStyle(20, FontWeight.bold, ColorUtils.primaryFontColor)),
+            Text(AppLocalizations.of(context)!.modpack_mod_list_title, style: WidgetUtils.customTextStyle(20, FontWeight.bold, ColorUtils.primaryFontColor)),
             const SizedBox(width: 10),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -477,13 +464,13 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
                 color: ColorUtils.dynamicAccentColor.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text("${_dependencies.length}",
-                  style: WidgetUtils.customTextStyle(12, FontWeight.bold, ColorUtils.dynamicAccentColor)),
+              child: Text("${_dependencies.length}", style: WidgetUtils.customTextStyle(12, FontWeight.bold, ColorUtils.dynamicAccentColor)),
             ),
             if (_isLoadingMods) ...[
               const SizedBox(width: 10),
               SizedBox(
-                width: 14, height: 14,
+                width: 14,
+                height: 14,
                 child: CircularProgressIndicator(strokeWidth: 2, color: ColorUtils.dynamicAccentColor),
               ),
             ],
@@ -499,8 +486,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _dependencies.length,
-            separatorBuilder: (context, index) =>
-                Divider(color: Colors.white.withOpacity(0.05), height: 1),
+            separatorBuilder: (context, index) => Divider(color: Colors.white.withOpacity(0.05), height: 1),
             itemBuilder: (context, index) => _buildModItem(_dependencies[index]),
           ),
         ),
@@ -536,19 +522,17 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
         borderRadius: BorderRadius.circular(6),
         child: iconUrl != null && iconUrl.isNotEmpty
             ? CachedNetworkImage(
-          imageUrl: iconUrl,
-          width: 36,
-          height: 36,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => _modIconPlaceholder(),
-          errorWidget: (context, url, error) => _modIconPlaceholder(),
-        )
+                imageUrl: iconUrl,
+                width: 36,
+                height: 36,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => _modIconPlaceholder(),
+                errorWidget: (context, url, error) => _modIconPlaceholder(),
+              )
             : _modIconPlaceholder(),
       ),
-      title: Text(title,
-          style: WidgetUtils.customTextStyle(14, FontWeight.w500, ColorUtils.primaryFontColor)),
-      subtitle: Text(depType,
-          style: WidgetUtils.customTextStyle(11, FontWeight.w300, depColor)),
+      title: Text(title, style: WidgetUtils.customTextStyle(14, FontWeight.w500, ColorUtils.primaryFontColor)),
+      subtitle: Text(depType, style: WidgetUtils.customTextStyle(11, FontWeight.w300, depColor)),
       trailing: Icon(
         dep["dependency_type"] == "required" ? Icons.check_circle_outline : Icons.info_outline,
         color: depColor.withOpacity(0.7),
@@ -559,7 +543,8 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
 
   Widget _modIconPlaceholder() {
     return Container(
-      width: 36, height: 36,
+      width: 36,
+      height: 36,
       color: ColorUtils.dynamicSecondaryForegroundColor,
       child: Icon(Icons.extension_outlined, size: 20, color: ColorUtils.secondaryFontColor),
     );
@@ -570,9 +555,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
   // ──────────────────────────────────────────────
 
   int _getFileSize() {
-    if (_latestVersion != null &&
-        _latestVersion["files"] != null &&
-        (_latestVersion["files"] as List).isNotEmpty) {
+    if (_latestVersion != null && _latestVersion["files"] != null && (_latestVersion["files"] as List).isNotEmpty) {
       return _latestVersion["files"][0]["size"] ?? 0;
     }
     return 0;

@@ -37,11 +37,13 @@ class CustomSettingSwitchStyle {
 
 class WidgetUtils {
   /** Switch impostazioni */
-  static Widget buildSettingSwitchItem(String name,
-      String name2,
-      CustomSettingSwitchStyle style,
-      var set,
-      Function(dynamic value) callback,) {
+  static Widget buildSettingSwitchItem(
+    String name,
+    String name2,
+    CustomSettingSwitchStyle style,
+    var set,
+    Function(dynamic value) callback,
+  ) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
@@ -134,12 +136,14 @@ class WidgetUtils {
   }
 
   /** Textfield */
-  static Widget buildSettingTextItem(dynamic child,
-      Color background,
-      Color foreground,
-      String hint,
-      TextEditingController controller,
-      Function(dynamic value) callback,) {
+  static Widget buildSettingTextItem(
+    dynamic child,
+    Color background,
+    Color foreground,
+    String hint,
+    TextEditingController controller,
+    Function(dynamic value) callback,
+  ) {
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
       child: Container(
@@ -210,10 +214,12 @@ class WidgetUtils {
   //// ALTRI ELEMENTI GRAFICI /////
   /////////////////////////////////
 
-  static Widget buildButton(IconData icon,
-      Color color,
-      Color iconColor,
-      VoidCallback onPressed,) {
+  static Widget buildButton(
+    IconData icon,
+    Color color,
+    Color iconColor,
+    VoidCallback onPressed,
+  ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 5, 6, 5),
       child: GestureDetector(
@@ -241,10 +247,12 @@ class WidgetUtils {
     );
   }
 
-  static Widget buildTextButton(Color color,
-      Color textColor,
-      VoidCallback onPressed,
-      String text,) {
+  static Widget buildTextButton(
+    Color color,
+    Color textColor,
+    VoidCallback onPressed,
+    String text,
+  ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(7, 7, 0, 7),
       child: GestureDetector(
@@ -272,10 +280,12 @@ class WidgetUtils {
     );
   }
 
-  static void showPopup(dynamic context,
-      String title,
-      List<Widget> content,
-      List<Widget> actions,) {
+  static void showPopup(
+    dynamic context,
+    String title,
+    List<Widget> content,
+    List<Widget> actions,
+  ) {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -305,10 +315,12 @@ class WidgetUtils {
     );
   }
 
-  static void showMessageDialog(dynamic context,
-      String title,
-      String content,
-      VoidCallback callback,) {
+  static void showMessageDialog(
+    dynamic context,
+    String title,
+    String content,
+    VoidCallback callback,
+  ) {
     WidgetUtils.showPopup(
       context,
       title,
@@ -348,14 +360,8 @@ class WidgetUtils {
       <Widget>[
         // Un solo scroll gestito internamente da VirtualizedLogView
         SizedBox(
-          width: MediaQuery
-              .of(context)
-              .size
-              .width,
-          height: MediaQuery
-              .of(context)
-              .size
-              .height * 0.6,
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height * 0.6,
           child: VirtualizedLogView(
             controller: Globals.consolecontroller,
             backgroundColor: Colors.white.withAlpha(128),
@@ -363,10 +369,7 @@ class WidgetUtils {
             fontSize: 10,
             fontFamily: 'JetBrainsMono',
             wrapLines: true,
-            minWidth: MediaQuery
-                .of(context)
-                .size
-                .width - 20,
+            minWidth: MediaQuery.of(context).size.width - 20,
           ),
         ),
       ],
@@ -618,8 +621,7 @@ Widget drawTitleCustomBar() {
         Material(
           color: Colors.transparent,
           child: WidgetUtils.backShadow(
-            Text(Globals.windowTitle,
-                style: WidgetUtils.customTextStyle(12, FontWeight.w400, ColorUtils.primaryFontColor)),
+            Text(Globals.windowTitle, style: WidgetUtils.customTextStyle(12, FontWeight.w400, ColorUtils.primaryFontColor)),
             40.0,
             ColorUtils.defaultShadowColor,
           ),

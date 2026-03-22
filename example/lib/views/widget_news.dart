@@ -14,10 +14,7 @@ class NewsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: (MediaQuery
-          .of(context)
-          .size
-          .width / 5) - 5,
+      width: (MediaQuery.of(context).size.width / 5) - 5,
       child: Material(
         elevation: 15,
         color: ColorUtils.dynamicWindowBackgroundColor,
@@ -36,14 +33,8 @@ class NewsScreen extends StatelessWidget {
                 children: [
                   Image.network(
                     "${Urls.mojangContentURL}${url}",
-                    width: MediaQuery
-                        .of(context)
-                        .size
-                        .width,
-                    height: MediaQuery
-                        .of(context)
-                        .size
-                        .height / 4,
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height / 4,
                     fit: BoxFit.cover,
                   ).blurred(
                     blur: 4,
@@ -53,10 +44,7 @@ class NewsScreen extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: MediaQuery
-                          .of(context)
-                          .size
-                          .width / 20,
+                      fontSize: MediaQuery.of(context).size.width / 20,
                       fontFamily: 'Comfortaa',
                       color: Colors.white.withAlpha(160),
                     ),

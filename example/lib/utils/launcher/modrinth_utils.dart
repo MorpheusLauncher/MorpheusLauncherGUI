@@ -41,8 +41,7 @@ class ModrinthUtils {
   // ─────────────────────────────────────────
 
   /// Root directory for all modpack instances.
-  static String get packsRoot =>
-      '${LauncherUtils.getApplicationFolder("morpheus")}/modrinth-packs';
+  static String get packsRoot => '${LauncherUtils.getApplicationFolder("morpheus")}/modrinth-packs';
 
   /// Path to the global registry file.
   static String get indexFile => '$packsRoot/index.json';
@@ -95,8 +94,7 @@ class ModrinthUtils {
 
   /// Removes the entry for [slug] from index.json.
   static Future<void> _removeFromIndex(String slug) async {
-    final packs = readIndex()
-      ..removeWhere((p) => p['slug'] == slug);
+    final packs = readIndex()..removeWhere((p) => p['slug'] == slug);
     await _writeIndex(packs);
   }
 
@@ -104,8 +102,8 @@ class ModrinthUtils {
   static Map<String, dynamic>? getIndexEntry(String slug) {
     return readIndex().cast<Map<String, dynamic>?>().firstWhere(
           (p) => p?['slug'] == slug,
-      orElse: () => null,
-    );
+          orElse: () => null,
+        );
   }
 
   // ─────────────────────────────────────────
@@ -113,8 +111,7 @@ class ModrinthUtils {
   // ─────────────────────────────────────────
 
   /// Returns true if an instance for [slug] already exists on disk.
-  static bool instanceExists(String slug) =>
-      Directory(instanceDir(slug)).existsSync();
+  static bool instanceExists(String slug) => Directory(instanceDir(slug)).existsSync();
 
   /// Creates the directory skeleton for a new modpack instance.
   static void _createInstanceDirs(String slug) {
@@ -152,10 +149,7 @@ class ModrinthUtils {
     return root
         .listSync()
         .whereType<Directory>()
-        .map((d) =>
-    d.path
-        .split(Platform.pathSeparator)
-        .last)
+        .map((d) => d.path.split(Platform.pathSeparator).last)
         .where((name) => name != 'index.json') // just in case
         .toList();
   }
@@ -209,7 +203,7 @@ class ModrinthUtils {
     // Find the primary .mrpack file
     final files = (latest['files'] as List? ?? []);
     final primaryFile = files.firstWhere(
-          (f) => f['primary'] == true,
+      (f) => f['primary'] == true,
       orElse: () => files.isNotEmpty ? files.first : null,
     );
     if (primaryFile == null) throw Exception('No file found in version $versionId');
@@ -235,11 +229,10 @@ class ModrinthUtils {
 
     // Parse modrinth.index.json first
     final indexEntry = archive.files.firstWhere(
-          (f) => f.name == 'modrinth.index.json',
+      (f) => f.name == 'modrinth.index.json',
       orElse: () => throw Exception('modrinth.index.json not found in mrpack'),
     );
-    final index = json.decode(utf8.decode(indexEntry.content as List<int>))
-    as Map<String, dynamic>;
+    final index = json.decode(utf8.decode(indexEntry.content as List<int>)) as Map<String, dynamic>;
 
     // Extract overrides/ → instance root
     onStatus?.call('Extracting overrides…');
@@ -293,7 +286,7 @@ class ModrinthUtils {
     // modrinth.index.json deps example: { "minecraft": "1.20.1", "fabric-loader": "0.15.7" }
     final deps = Map<String, String>.from(
       (index['dependencies'] as Map? ?? {}).map(
-            (k, v) => MapEntry(k.toString(), v.toString()),
+        (k, v) => MapEntry(k.toString(), v.toString()),
       ),
     );
     final mcVersion = deps['minecraft'] ?? '';

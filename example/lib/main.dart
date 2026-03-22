@@ -61,7 +61,8 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       localeResolutionCallback: (locale, supportedLocales) {
-        return supportedLocales.firstWhere((supportedLocale) => supportedLocale.languageCode == locale?.languageCode,
+        return supportedLocales.firstWhere(
+          (supportedLocale) => supportedLocale.languageCode == locale?.languageCode,
           orElse: () => Locale('en'),
         );
       },
@@ -208,13 +209,13 @@ class MyAppBodyState extends State<MyAppBody> {
   Widget build(BuildContext context) {
     return isLoading
         ? Column(
-      children: [
-        drawTitleCustomBar(),
-        Expanded(
-          child: Center(child: Image.asset('assets/morpheus-animated.gif', width: 96)),
-        ),
-      ],
-    )
+            children: [
+              drawTitleCustomBar(),
+              Expanded(
+                child: Center(child: Image.asset('assets/morpheus-animated.gif', width: 96)),
+              ),
+            ],
+          )
         : MainPage();
   }
 }

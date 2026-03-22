@@ -74,6 +74,7 @@ class Globals {
   static late Map<String, dynamic> incompatibleJson;
 
   static bool get isNewsAvailable => Globals.vanillaNewsResponse != null;
+
   static bool get isVersionsAvailable => Globals.vanillaVersionsResponse != null;
 
   static bool get isOnline => isNewsAvailable || isVersionsAvailable;

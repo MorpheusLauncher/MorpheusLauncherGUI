@@ -82,9 +82,7 @@ class _ModrinthViewState extends State<ModrinthView> {
           _buildTopBar(context),
           _buildSearchBar(context),
           Expanded(
-            child: _isLoading
-                ? Center(child: Image.asset('assets/morpheus-animated.gif', width: 64))
-                : _buildModpackList(),
+            child: _isLoading ? Center(child: Image.asset('assets/morpheus-animated.gif', width: 64)) : _buildModpackList(),
           ),
         ],
       ),
@@ -129,12 +127,12 @@ class _ModrinthViewState extends State<ModrinthView> {
               icon: Icon(Icons.search, color: ColorUtils.secondaryFontColor),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                icon: const Icon(Icons.close, size: 20),
-                onPressed: () {
-                  _searchController.clear();
-                  _searchModpacks("");
-                },
-              )
+                      icon: const Icon(Icons.close, size: 20),
+                      onPressed: () {
+                        _searchController.clear();
+                        _searchModpacks("");
+                      },
+                    )
                   : null,
             ),
           ),
@@ -192,13 +190,12 @@ class _ModrinthViewState extends State<ModrinthView> {
                     height: 100,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.05)),
-                    errorWidget: (context, url, error) =>
-                        Container(
-                          width: 100,
-                          height: 100,
-                          color: Colors.white.withOpacity(0.05),
-                          child: Icon(Icons.apps, color: ColorUtils.secondaryFontColor),
-                        ),
+                    errorWidget: (context, url, error) => Container(
+                      width: 100,
+                      height: 100,
+                      color: Colors.white.withOpacity(0.05),
+                      child: Icon(Icons.apps, color: ColorUtils.secondaryFontColor),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -215,7 +212,8 @@ class _ModrinthViewState extends State<ModrinthView> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2), // was 4
-                      Flexible( // <-- wrap description in Flexible
+                      Flexible(
+                        // <-- wrap description in Flexible
                         child: Text(
                           modpack["description"] ?? "",
                           style: WidgetUtils.customTextStyle(13, FontWeight.w300, ColorUtils.secondaryFontColor),
