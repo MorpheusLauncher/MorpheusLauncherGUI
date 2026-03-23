@@ -8,7 +8,6 @@ import 'package:morpheus_launcher_gui/globals.dart';
 import 'package:morpheus_launcher_gui/utils/skinmodel/skin_viewer.dart';
 
 class SkinUtils {
-
   static Future<Uint8List> loadCroppedSkin() async {
     final rawSkin = await ThreeDimensionalViewer.getImageBytes(
       buildSkinModelImageProvider(),

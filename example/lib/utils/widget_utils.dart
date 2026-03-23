@@ -1,19 +1,16 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:morpheus_launcher_gui/globals.dart';
-import 'package:morpheus_launcher_gui/utils/logging/log_controller.dart';
+import 'package:morpheus_launcher_gui/l10n/app_localizations.dart';
 import 'package:morpheus_launcher_gui/utils/launcher/version_utils.dart';
 import 'package:morpheus_launcher_gui/utils/logging/virtualized_log_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class CustomSettingSwitchStyle {
   final IconData icon;
@@ -45,19 +42,19 @@ class WidgetUtils {
     Function(dynamic value) callback,
   ) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
-      child: Container(
+      padding: const EdgeInsets.fromLTRB(0, 2, 0, 2),
+      child: SizedBox(
         height: 55,
         child: Material(
           elevation: 15,
           color: style.bgColor,
           shadowColor: style.shadowColor,
-          borderRadius: BorderRadius.circular(Globals.borderRadius),
+          borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
           child: Stack(
             children: [
               Row(
                 children: [
-                  Container(
+                  SizedBox(
                     height: 55,
                     width: 45,
                     child: Center(
@@ -65,7 +62,7 @@ class WidgetUtils {
                         elevation: 10,
                         color: Colors.transparent,
                         shadowColor: ColorUtils.defaultShadowColor,
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        borderRadius: const BorderRadius.all(Radius.circular(10)),
                         child: Icon(
                           style.icon,
                           color: style.fontColor,
@@ -76,7 +73,7 @@ class WidgetUtils {
                   ),
                   /** Nome del setting */
                   Padding(
-                    padding: EdgeInsets.fromLTRB(0, 18, 10, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 18, 10, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -99,12 +96,12 @@ class WidgetUtils {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                     child: Material(
                       elevation: 15,
                       color: Colors.transparent,
                       shadowColor: Colors.transparent,
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
                       child: MouseRegion(
                         onEnter: (e) => {},
                         onExit: (e) => {},
@@ -145,50 +142,48 @@ class WidgetUtils {
     Function(dynamic value) callback,
   ) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
-      child: Container(
-        child: Material(
-          elevation: 15,
-          color: background,
-          shadowColor: ColorUtils.defaultShadowColor,
-          borderRadius: BorderRadius.circular(Globals.borderRadius - 2),
-          child: Stack(
-            children: [
-              Focus(
-                onFocusChange: (hasFocus) async {
-                  callback(hasFocus);
-                },
-                child: TextField(
-                  style: TextStyle(
-                    color: foreground,
-                    fontFamily: 'Comfortaa',
-                    shadows: [
-                      Shadow(
-                        color: ColorUtils.defaultShadowColor,
-                        blurRadius: 2.0,
-                        offset: Offset(2.0, 2.0),
-                      ),
-                    ],
-                  ),
-                  controller: controller,
-                  decoration: InputDecoration(
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.transparent),
-                      borderRadius: BorderRadius.circular(Globals.borderRadius - 2),
+      padding: const EdgeInsets.fromLTRB(0, 2, 0, 2),
+      child: Material(
+        elevation: 15,
+        color: background,
+        shadowColor: ColorUtils.defaultShadowColor,
+        borderRadius: BorderRadius.circular(Globals.borderRadius - 2),
+        child: Stack(
+          children: [
+            Focus(
+              onFocusChange: (hasFocus) async {
+                callback(hasFocus);
+              },
+              child: TextField(
+                style: TextStyle(
+                  color: foreground,
+                  fontFamily: 'Comfortaa',
+                  shadows: [
+                    Shadow(
+                      color: ColorUtils.defaultShadowColor,
+                      blurRadius: 2.0,
+                      offset: const Offset(2.0, 2.0),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                      borderRadius: BorderRadius.circular(Globals.borderRadius - 2),
-                    ),
-                    hintText: hint,
-                    hintStyle: customTextStyle(16, FontWeight.w300, foreground),
-                    filled: false,
+                  ],
+                ),
+                controller: controller,
+                decoration: InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.transparent),
+                    borderRadius: BorderRadius.circular(Globals.borderRadius - 2),
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white),
+                    borderRadius: BorderRadius.circular(Globals.borderRadius - 2),
+                  ),
+                  hintText: hint,
+                  hintStyle: customTextStyle(16, FontWeight.w300, foreground),
+                  filled: false,
                 ),
               ),
-              if (child != null) child,
-            ],
-          ),
+            ),
+            if (child != null) child,
+          ],
         ),
       ),
     );
@@ -197,15 +192,13 @@ class WidgetUtils {
   /** Container riempibile impostazioni */
   static Widget buildSettingContainerItem(dynamic widgets) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
-      child: Container(
-        child: Material(
-          elevation: 15,
-          color: ColorUtils.dynamicPrimaryForegroundColor,
-          shadowColor: ColorUtils.defaultShadowColor,
-          borderRadius: BorderRadius.circular(Globals.borderRadius),
-          child: widgets,
-        ),
+      padding: const EdgeInsets.fromLTRB(0, 2, 0, 2),
+      child: Material(
+        elevation: 15,
+        color: ColorUtils.dynamicPrimaryForegroundColor,
+        shadowColor: ColorUtils.defaultShadowColor,
+        borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
+        child: widgets,
       ),
     );
   }
@@ -233,7 +226,7 @@ class WidgetUtils {
               shadowColor: Colors.transparent,
               borderRadius: BorderRadius.circular(Globals.borderRadius - 4),
               child: Container(
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Center(
                   child: Icon(icon, color: iconColor, size: 20),
                 ),
@@ -266,7 +259,7 @@ class WidgetUtils {
               shadowColor: Colors.transparent,
               borderRadius: BorderRadius.circular(Globals.borderRadius - 4),
               child: Container(
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Center(
                   child: Text(text, style: customTextStyle(16, FontWeight.w500, textColor)),
                 ),
@@ -292,14 +285,14 @@ class WidgetUtils {
       barrierColor: Colors.black.withAlpha(80),
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
+          shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
           backgroundColor: Colors.white.withAlpha(230),
           shadowColor: Colors.transparent,
           title: Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
               fontFamily: 'Comfortaa',
               fontWeight: FontWeight.w700,
@@ -327,7 +320,7 @@ class WidgetUtils {
       <Widget>[
         Text(
           content,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
             fontFamily: 'Comfortaa',
             fontWeight: FontWeight.w500,
@@ -414,7 +407,7 @@ class WidgetUtils {
               <Widget>[
                 Text(
                   "${AppLocalizations.of(context)!.console_exit_msg1}\n${AppLocalizations.of(context)!.console_exit_msg2}",
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     fontFamily: 'Comfortaa',
                     fontWeight: FontWeight.w500,
@@ -426,7 +419,7 @@ class WidgetUtils {
                 TextButton(
                   child: Text(
                     AppLocalizations.of(context)!.generic_cancel,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       fontFamily: 'Comfortaa',
                       fontWeight: FontWeight.w700,
@@ -437,7 +430,7 @@ class WidgetUtils {
                 TextButton(
                   child: Text(
                     AppLocalizations.of(context)!.console_exit_kill,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       fontFamily: 'Comfortaa',
                       fontWeight: FontWeight.w700,
@@ -578,6 +571,15 @@ class WidgetUtils {
     return TextStyle(
       fontSize: size,
       fontFamily: 'Comfortaa',
+      fontFamilyFallback: const [
+        'Noto Sans CJK SC',
+        'PingFang SC',
+        'Hiragino Sans',
+        'Microsoft YaHei',
+        'Yu Gothic',
+        'Malgun Gothic',
+        'Noto Sans',
+      ],
       fontWeight: weight,
       color: textColor,
       shadows: [
@@ -585,7 +587,7 @@ class WidgetUtils {
           color: ColorUtils.defaultShadowColor,
           // Choose the color of the shadow
           blurRadius: 15.0,
-          offset: Offset(2.0, 2.0),
+          offset: const Offset(2.0, 2.0),
         ),
       ],
     );
@@ -596,7 +598,7 @@ class WidgetUtils {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(radius),
         boxShadow: <BoxShadow>[
-          BoxShadow(color: color, blurRadius: radius, offset: Offset(0, 0)),
+          BoxShadow(color: color, blurRadius: radius, offset: const Offset(0, 0)),
         ],
       ),
       child: child,
@@ -640,7 +642,7 @@ Widget drawTitleCustomBar() {
 }
 
 class WindowButtons extends StatefulWidget {
-  const WindowButtons({Key? key}) : super(key: key);
+  const WindowButtons({super.key});
 
   @override
   _WindowButtonsState createState() => _WindowButtonsState();

@@ -1,15 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:morpheus_launcher_gui/globals.dart';
+import 'package:morpheus_launcher_gui/l10n/app_localizations.dart';
 import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:morpheus_launcher_gui/views/modpack_detail_view.dart';
 
 class ModrinthView extends StatefulWidget {
-  const ModrinthView({Key? key}) : super(key: key);
+  const ModrinthView({super.key});
 
   @override
   State<ModrinthView> createState() => _ModrinthViewState();
@@ -48,7 +49,7 @@ class _ModrinthViewState extends State<ModrinthView> {
       );
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final data = json.decode(utf8.decode(response.bodyBytes));
         setState(() {
           _modpacks = data["hits"];
           _isLoading = false;
@@ -114,7 +115,7 @@ class _ModrinthViewState extends State<ModrinthView> {
       child: Material(
         elevation: 0,
         color: ColorUtils.dynamicPrimaryForegroundColor,
-        borderRadius: BorderRadius.circular(Globals.borderRadius),
+        borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: TextField(
@@ -156,6 +157,7 @@ class _ModrinthViewState extends State<ModrinthView> {
       itemCount: _modpacks.length,
       itemBuilder: (context, index) {
         final modpack = _modpacks[index];
+
         return _buildModpackItem(modpack);
       },
     );
@@ -168,7 +170,7 @@ class _ModrinthViewState extends State<ModrinthView> {
         elevation: 0,
         color: ColorUtils.dynamicPrimaryForegroundColor,
         shadowColor: ColorUtils.defaultShadowColor,
-        borderRadius: BorderRadius.circular(Globals.borderRadius),
+        borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
         child: InkWell(
           onTap: () {
             Navigator.push(
@@ -176,7 +178,7 @@ class _ModrinthViewState extends State<ModrinthView> {
               MaterialPageRoute(builder: (context) => ModpackDetailView(modpack: modpack)),
             );
           },
-          borderRadius: BorderRadius.circular(Globals.borderRadius),
+          borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
           child: Padding(
             padding: const EdgeInsets.all(8),
             child: Row(
@@ -211,6 +213,15 @@ class _ModrinthViewState extends State<ModrinthView> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(height: 2),
+                      Text(
+                        AppLocalizations.of(context)!.modpack_author_by(
+                          modpack["author"] ?? AppLocalizations.of(context)!.modpack_unknown_author,
+                        ),
+                        style: WidgetUtils.customTextStyle(12, FontWeight.w400, ColorUtils.dynamicAccentColor),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 2), // was 4
                       Flexible(
                         // <-- wrap description in Flexible
@@ -228,8 +239,6 @@ class _ModrinthViewState extends State<ModrinthView> {
                           Row(
                             children: [
                               _buildMetaData(Icons.download, _formatNumber(modpack["downloads"]), Colors.grey),
-                              const SizedBox(width: 12),
-                              _buildMetaData(Icons.code, modpack["latest_version"] ?? "N/A", ColorUtils.dynamicAccentColor),
                             ],
                           ),
                         ],
@@ -263,8 +272,10 @@ class _ModrinthViewState extends State<ModrinthView> {
     if (number is int) {
       if (number >= 1000000) return "${(number / 1000000).toStringAsFixed(1)}M";
       if (number >= 1000) return "${(number / 1000).toStringAsFixed(1)}K";
+
       return number.toString();
     }
+
     return number.toString();
   }
 }

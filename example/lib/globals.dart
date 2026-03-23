@@ -9,15 +9,15 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:material_color_utilities/material_color_utilities.dart';
 import 'package:morpheus_launcher_gui/account/account_utils.dart';
-import 'package:morpheus_launcher_gui/account/encryption.dart';
+import 'package:morpheus_launcher_gui/utils/logging/log_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_theme/system_theme.dart';
-import 'package:morpheus_launcher_gui/utils/logging/log_controller.dart';
 
 class Globals {
-  static final buildVersion = "Ver 3.1.0";
-  static final windowTitle = "Morpheus Launcher";
-  static final borderRadius = 14.0;
+  static const buildVersion = "Ver 4.0.0";
+  static const windowTitle = "Morpheus Launcher";
+  static const borderRadius = 14.0;
+  static const ms_client_id = "c2346197-42f1-4461-91a9-20f947a1cca8"; // if you fork this project, you are constrained to change this
 
   // Impostazioni del launcher: anche se sono settate su false il loro valore viene sempre sovrascritto dalla config
   static var showOnlyReleases = false;
@@ -33,9 +33,9 @@ class Globals {
   //////////////////////////////
   ///// Sezione Variabili //////
   //////////////////////////////
-  static late List<Account> accounts = readAccountListFromJson("${LauncherUtils.getApplicationFolder("morpheus")}/accounts.json");
-  static late List<String> pinnedVersions = [];
-  static late List<String> WindowThemes = [];
+  static List<Account> accounts = [];
+  static List<String> pinnedVersions = [];
+  static List<String> WindowThemes = [];
 
   static var navSelected = NavSection.home, AccountSelected = 0;
 
@@ -51,24 +51,24 @@ class Globals {
   static final LogController diagnosticcontroller = LogController();
 
   /** Fabric */
-  static late var fabricGameVersionsResponse = null;
-  static late var fabricLoaderVersionsResponse = null;
+  static var fabricGameVersionsResponse;
+  static var fabricLoaderVersionsResponse;
 
   /** Forge */
-  static late var forgeVersions = null;
+  static var forgeVersions;
 
   /** OptiForge */
-  static late var optiforgeVersions = null;
+  static var optiforgeVersions;
 
   /** Optifine */
-  static late var optifineVersions = null;
+  static var optifineVersions;
 
   /** Vanilla */
-  static late var vanillaVersionsResponse = null;
-  static late var vanillaNewsResponse = null;
+  static var vanillaVersionsResponse;
+  static var vanillaNewsResponse;
 
   /** Morpheus */
-  static late var morpheusVersionsResponse = null;
+  static var morpheusVersionsResponse;
 
   /** Incompatible versions blacklist */
   static late Map<String, dynamic> incompatibleJson;
@@ -97,35 +97,35 @@ enum NavSection {
 
 class Urls {
   // Vari
-  static final skinURL = "https://minepic.org";
-  static final morpheusBaseURL = "https://morpheuslauncher.it";
-  static final fabricApiURL = "https://meta.fabricmc.net/";
-  static final forgeVersionsURL = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
-  static final optifineVersionsURL = "${morpheusBaseURL}/downloads/optifine.json";
-  static final morpheusProductsURL = "${morpheusBaseURL}/downloads/morpheus-lite/index.json";
-  static final modrinthApiURL = "https://api.modrinth.com/v2";
+  static const skinURL = "https://minepic.org";
+  static const morpheusBaseURL = "https://morpheuslauncher.it";
+  static const fabricApiURL = "https://meta.fabricmc.net/";
+  static const forgeVersionsURL = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
+  static const optifineVersionsURL = "$morpheusBaseURL/downloads/optifine.json";
+  static const morpheusProductsURL = "$morpheusBaseURL/downloads/morpheus-lite/index.json";
+  static const modrinthApiURL = "https://api.modrinth.com/v2";
 
   // Roba inerente a ElyBy
-  static final elybyBaseURL = "https://account.ely.by";
-  static final elybySkinsURL = "http://skinsystem.ely.by";
+  static const elybyBaseURL = "https://account.ely.by";
+  static const elybySkinsURL = "https://skinsystem.ely.by";
 
   // Roba inerente al changelog mojang e alle vanilla
-  static final mojangContentURL = "https://launchercontent.mojang.com";
-  static final mojangVersionsURL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+  static const mojangContentURL = "https://launchercontent.mojang.com";
+  static const mojangVersionsURL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
 
   // Authenticazione Premium
-  static final msAuthURL = "https://login.microsoftonline.com/consumers/oauth2/v2.0";
-  static final xboxAuthURL = "https://user.auth.xboxlive.com/user/authenticate";
-  static final xstsAuthURL = "https://xsts.auth.xboxlive.com/xsts/authorize";
-  static final mcAuthURL = "https://api.minecraftservices.com/authentication/login_with_xbox";
-  static final mcSkinURL = "https://api.minecraftservices.com/minecraft/profile/skins";
+  static const msAuthURL = "https://login.microsoftonline.com/consumers/oauth2/v2.0";
+  static const xboxAuthURL = "https://user.auth.xboxlive.com/user/authenticate";
+  static const xstsAuthURL = "https://xsts.auth.xboxlive.com/xsts/authorize";
+  static const mcAuthURL = "https://api.minecraftservices.com/authentication/login_with_xbox";
+  static const mcSkinURL = "https://api.minecraftservices.com/minecraft/profile/skins";
 }
 
 class ColorUtils {
   static var isMaterial = false;
 
   /** Base accent color */
-  static late Color dynamicAccentColor = getColorFromAccent(Globals.accentColor);
+  static Color dynamicAccentColor = getColorFromAccent(Globals.accentColor);
 
   static Color getColorFromAccent(int accent) {
     List<Color> accentColors = [
@@ -148,7 +148,7 @@ class ColorUtils {
   /** Background */
   static late Hct dynamicBackgroundMaterialHct;
 
-  static Color get dynamicMaterialColor => Globals.darkModeTheme ? Color(dynamicBackgroundMaterialHct.toInt()) : Color(0xFFF0F0F5);
+  static Color get dynamicMaterialColor => Globals.darkModeTheme ? Color(dynamicBackgroundMaterialHct.toInt()) : const Color(0xFFF0F0F5);
 
   static Color get dynamicAcrylicColor {
     if (Platform.isMacOS) {
@@ -224,11 +224,11 @@ class ColorUtils {
 class LauncherUtils {
   static dynamic getApplicationFolder(String targetProgram) {
     if (Platform.isWindows) {
-      return ('${Platform.environment['APPDATA']}/.${targetProgram}').replaceAll("\\", "/");
+      return ('${Platform.environment['APPDATA']}/.$targetProgram').replaceAll("\\", "/");
     } else if (Platform.isLinux) {
-      return '${Platform.environment['HOME']}/.${targetProgram}';
+      return '${Platform.environment['HOME']}/.$targetProgram';
     } else if (Platform.isMacOS) {
-      return '${Platform.environment['HOME']}/Library/Application Support/${targetProgram}';
+      return '${Platform.environment['HOME']}/Library/Application Support/$targetProgram';
     } else {
       throw UnsupportedError('Unsupported operating system');
     }
@@ -413,7 +413,7 @@ class LauncherUtils {
               if (Platform.isLinux) {
                 // Decodifica TAR.GZ
                 final bytes = File(archivePath).readAsBytesSync();
-                final tarBytes = GZipDecoder().decodeBytes(bytes);
+                final tarBytes = const GZipDecoder().decodeBytes(bytes);
                 archive = TarDecoder().decodeBytes(tarBytes);
               } else {
                 // Decodifica ZIP (Windows)

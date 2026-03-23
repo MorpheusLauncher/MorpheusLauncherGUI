@@ -48,8 +48,8 @@ class Account {
       accessToken: json['accessToken'],
       refreshToken: json['refreshToken'],
       isPremium: json['isPremium'],
-      isSlimSkin: json['isSlimSkin'] != null ? json['isSlimSkin'] : false,
-      isElyBy: json['isElyBy'] != null ? json['isElyBy'] : false,
+      isSlimSkin: json['isSlimSkin'] ?? false,
+      isElyBy: json['isElyBy'] ?? false,
     );
   }
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
 
 import 'package:blur/blur.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -12,19 +11,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:http/http.dart' as http;
 import 'package:morpheus_launcher_gui/account/account_utils.dart';
 import 'package:morpheus_launcher_gui/account/microsoft_auth.dart';
 import 'package:morpheus_launcher_gui/globals.dart';
+import 'package:morpheus_launcher_gui/l10n/app_localizations.dart';
 import 'package:morpheus_launcher_gui/main.dart';
 import 'package:morpheus_launcher_gui/utils/circle_utils.dart';
 import 'package:morpheus_launcher_gui/utils/glass_morphism.dart';
+import 'package:morpheus_launcher_gui/utils/launcher//version_utils.dart';
 import 'package:morpheus_launcher_gui/utils/launcher/launch_utils.dart';
+import 'package:morpheus_launcher_gui/utils/launcher/modrinth_utils.dart';
 import 'package:morpheus_launcher_gui/utils/morpheus_icons_icons.dart';
 import 'package:morpheus_launcher_gui/utils/skinmodel/skin_utils.dart';
 import 'package:morpheus_launcher_gui/utils/skinmodel/skin_viewer.dart';
-import 'package:morpheus_launcher_gui/utils/launcher//version_utils.dart';
 import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
+import 'package:morpheus_launcher_gui/views/modrinth_view.dart';
 import 'package:morpheus_launcher_gui/views/widget_news.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simple_3d/simple_3d.dart';
@@ -32,21 +34,27 @@ import 'package:simple_3d_renderer/simple_3d_renderer.dart';
 import 'package:system_theme/system_theme.dart';
 import 'package:text_divider/text_divider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:morpheus_launcher_gui/utils/launcher/modrinth_utils.dart';
-import 'package:morpheus_launcher_gui/views/modrinth_view.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+  const MainPage({super.key});
 
   @override
   State<MainPage> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
+  late final ValueNotifier<String?> _themeNotifier = ValueNotifier(Globals.selectedWindowTheme);
+
   @override
   void initState() {
     super.initState();
     rebuild();
+  }
+
+  @override
+  void dispose() {
+    _themeNotifier.dispose();
+    super.dispose();
   }
 
   Future<void> rebuild() async {
@@ -54,7 +62,7 @@ class _MainPageState extends State<MainPage> {
       ThreeDimensionalViewer.objs.clear();
       ThreeDimensionalViewer.setupUV(Globals.getAccount()!.isSlimSkin);
       ThreeDimensionalViewer.texturizePlayerModel();
-      Timer.periodic(Duration(milliseconds: 100), (timer) async {
+      Timer.periodic(const Duration(milliseconds: 100), (timer) async {
         setState(() {
           ThreeDimensionalViewer.isLoaded = ThreeDimensionalViewer.isLoaded;
         });
@@ -127,7 +135,7 @@ class _MainPageState extends State<MainPage> {
       elevation: 15,
       color: ColorUtils.dynamicPrimaryForegroundColor,
       shadowColor: ColorUtils.defaultShadowColor,
-      borderRadius: BorderRadius.circular(Globals.borderRadius),
+      borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -161,7 +169,7 @@ class _MainPageState extends State<MainPage> {
           Globals.pinnedVersions = await VersionUtils.getPinnedVersions();
         }
       },
-      child: Container(
+      child: SizedBox(
         height: 70,
         width: 60,
         child: Icon(
@@ -228,7 +236,7 @@ class _MainPageState extends State<MainPage> {
               child: Container(
                 height: 30,
                 width: 30,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   image: DecorationImage(
                     filterQuality: FilterQuality.none,
@@ -297,7 +305,7 @@ class _MainPageState extends State<MainPage> {
         if (Globals.pinnedVersions.isNotEmpty) ...[
           /** Divider Versioni Preferite */
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 5),
+            padding: const EdgeInsets.symmetric(vertical: 5),
             child: TextDivider(
               color: ColorUtils.secondaryFontColor.withAlpha(80),
               thickness: 2,
@@ -327,7 +335,7 @@ class _MainPageState extends State<MainPage> {
             ],
           /** Divider News/Changelog mojang */
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 5),
+            padding: const EdgeInsets.symmetric(vertical: 5),
             child: TextDivider(
               color: ColorUtils.secondaryFontColor.withAlpha(80),
               thickness: 2,
@@ -358,7 +366,7 @@ class _MainPageState extends State<MainPage> {
         ] else ...[
           /** quando non può mostrare le news */
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
             child: Text(
               AppLocalizations.of(context)!.home_news_empty_msg,
               textAlign: TextAlign.center,
@@ -380,14 +388,14 @@ class _MainPageState extends State<MainPage> {
     String url,
   ) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
-      child: Container(
+      padding: const EdgeInsets.fromLTRB(0, 2, 0, 2),
+      child: SizedBox(
         width: (MediaQuery.of(context).size.width / 5) - 5,
         child: Material(
           elevation: 15,
           color: ColorUtils.dynamicPrimaryForegroundColor,
           shadowColor: ColorUtils.defaultShadowColor,
-          borderRadius: BorderRadius.circular(Globals.borderRadius),
+          borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
           child: Column(
             children: [
               GestureDetector(
@@ -405,12 +413,12 @@ class _MainPageState extends State<MainPage> {
                 },
                 /** Roba della miniatura e titolo */
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 3, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 3),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
                       Image.network(
-                        "${Urls.mojangContentURL}${url}",
+                        "${Urls.mojangContentURL}$url",
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height / 4,
                         fit: BoxFit.cover,
@@ -456,7 +464,7 @@ class _MainPageState extends State<MainPage> {
           ],
         ] else ...[
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(vertical: 20),
             child: Text(
               AppLocalizations.of(context)!.morpheus_products_empty,
               textAlign: TextAlign.center,
@@ -479,116 +487,114 @@ class _MainPageState extends State<MainPage> {
     String image,
   ) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
-      child: Container(
-        child: Material(
-          elevation: 15,
-          color: ColorUtils.dynamicPrimaryForegroundColor,
-          shadowColor: ColorUtils.defaultShadowColor,
-          borderRadius: BorderRadius.circular(Globals.borderRadius + 4),
-          child: Stack(
-            children: [
-              /** Immagine del client */
-              Container(
-                height: MediaQuery.of(context).size.height * 0.5,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 3, horizontal: 3),
-                  child: Image.network(
-                    "${image}",
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    fit: BoxFit.cover,
-                  ).blurred(
-                    blur: 0,
-                    blurColor: Colors.black,
-                    colorOpacity: 0.1,
-                    borderRadius: BorderRadius.circular(Globals.borderRadius + 2),
-                  ),
+      padding: const EdgeInsets.fromLTRB(0, 2, 0, 2),
+      child: Material(
+        elevation: 15,
+        color: ColorUtils.dynamicPrimaryForegroundColor,
+        shadowColor: ColorUtils.defaultShadowColor,
+        borderRadius: BorderRadius.circular(Globals.borderRadius + 4),
+        child: Stack(
+          children: [
+            /** Immagine del client */
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 3),
+                child: Image.network(
+                  image,
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  fit: BoxFit.cover,
+                ).blurred(
+                  blur: 0,
+                  blurColor: Colors.black,
+                  colorOpacity: 0.1,
+                  borderRadius: BorderRadius.circular(Globals.borderRadius + 2),
                 ),
               ),
-              Column(
-                children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.5 - 74,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    child: GlassMorphism(
-                      blur: 8,
-                      opacity: 0.15,
-                      radius: Globals.borderRadius,
-                      child: Stack(
-                        children: [
-                          /** Info del client */
-                          Padding(
-                            padding: EdgeInsets.fromLTRB(8, 5, 10, 5),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${productName}",
-                                  style: WidgetUtils.customTextStyle(
-                                    18,
-                                    FontWeight.w500,
-                                    Colors.white,
-                                  ),
-                                ),
-                                Text(
-                                  "minecraft ${gameVersion}",
-                                  style: WidgetUtils.customTextStyle(
-                                    14,
-                                    FontWeight.w500,
-                                    Colors.white.withAlpha(200),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          /** Sezione Pulsanti */
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            crossAxisAlignment: CrossAxisAlignment.center,
+            ),
+            Column(
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.5 - 74,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  child: GlassMorphism(
+                    blur: 8,
+                    opacity: 0.15,
+                    radius: Globals.borderRadius,
+                    child: Stack(
+                      children: [
+                        /** Info del client */
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 5, 10, 5),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              SizedBox(
-                                height: 55,
-                                child: WidgetUtils.buildButton(
-                                  Icons.rocket_launch,
-                                  ColorUtils.dynamicAccentColor,
+                              Text(
+                                productName,
+                                style: WidgetUtils.customTextStyle(
+                                  18,
+                                  FontWeight.w500,
                                   Colors.white,
-                                  () async {
-                                    final config = LaunchConfig(
-                                      gameVersion: gameVersion,
-                                      productId: productId,
-                                      isModded: false,
-                                      realGameVersion: gameVersion,
-                                      enableClassPath: false,
-                                      startOnFirstThread: false,
-                                      jvmArgs: [],
-                                      launcherArgs: [],
-                                    );
-
-                                    await LaunchUtils.launchMinecraft(
-                                      context,
-                                      config,
-                                      onAccountRequired: () {
-                                        setState(() => Globals.navSelected = NavSection.accounts);
-                                      },
-                                    );
-                                  },
+                                ),
+                              ),
+                              Text(
+                                "minecraft $gameVersion",
+                                style: WidgetUtils.customTextStyle(
+                                  14,
+                                  FontWeight.w500,
+                                  Colors.white.withAlpha(200),
                                 ),
                               ),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+
+                        /** Sezione Pulsanti */
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              height: 55,
+                              child: WidgetUtils.buildButton(
+                                Icons.rocket_launch,
+                                ColorUtils.dynamicAccentColor,
+                                Colors.white,
+                                () async {
+                                  final config = LaunchConfig(
+                                    gameVersion: gameVersion,
+                                    productId: productId,
+                                    isModded: false,
+                                    realGameVersion: gameVersion,
+                                    enableClassPath: false,
+                                    startOnFirstThread: false,
+                                    jvmArgs: [],
+                                    launcherArgs: [],
+                                  );
+
+                                  await LaunchUtils.launchMinecraft(
+                                    context,
+                                    config,
+                                    onAccountRequired: () {
+                                      setState(() => Globals.navSelected = NavSection.accounts);
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -602,7 +608,7 @@ class _MainPageState extends State<MainPage> {
         /** Avvisa l'utente che non ha versioni vanilla */
         if (VersionUtils.getMinecraftVersions(false).isEmpty)
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(vertical: 20),
             child: Text(
               AppLocalizations.of(context)!.vanilla_empty_title,
               textAlign: TextAlign.center,
@@ -629,7 +635,7 @@ class _MainPageState extends State<MainPage> {
         ),
         /** Separatore */
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Divider(
             color: ColorUtils.secondaryFontColor,
           ),
@@ -657,7 +663,7 @@ class _MainPageState extends State<MainPage> {
     final String? incompatibilityReason = compatible ? null : VersionUtils.getIncompatibilityReason(gameType, gameVersion, context);
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(0, 4, 0, 0),
+      padding: const EdgeInsets.fromLTRB(0, 4, 0, 0),
       child: SizedBox(
         height: 55,
         width: double.infinity,
@@ -665,21 +671,21 @@ class _MainPageState extends State<MainPage> {
           elevation: 15,
           color: ColorUtils.dynamicPrimaryForegroundColor,
           shadowColor: ColorUtils.defaultShadowColor,
-          borderRadius: BorderRadius.circular(Globals.borderRadius),
+          borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Icona
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Tooltip(
                   message: incompatibilityReason ?? "",
                   textStyle: WidgetUtils.customTextStyle(12, FontWeight.w500, ColorUtils.primaryFontColor),
                   decoration: BoxDecoration(
                     color: ColorUtils.dynamicBackgroundColor,
-                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                    borderRadius: const BorderRadius.all(Radius.circular(5)),
                   ),
-                  waitDuration: Duration(milliseconds: 500),
+                  waitDuration: const Duration(milliseconds: 500),
                   child: ColorFiltered(
                     colorFilter: compatible
                         ? const ColorFilter.mode(Colors.transparent, BlendMode.multiply)
@@ -955,12 +961,13 @@ class _MainPageState extends State<MainPage> {
 
   bool _isVisible(String label) {
     if (_selectedFilters.isEmpty) return true;
+
     return _selectedFilters.contains(label);
   }
 
   Widget _buildDivider(String label) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: TextDivider(
         color: ColorUtils.secondaryFontColor.withAlpha(80),
         thickness: 2,
@@ -983,10 +990,10 @@ class _MainPageState extends State<MainPage> {
     required int count,
   }) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
       decoration: BoxDecoration(
         color: ColorUtils.dynamicAcrylicColor,
-        borderRadius: BorderRadius.circular(Globals.borderRadius),
+        borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
         border: Border.all(
           color: ColorUtils.secondaryFontColor.withAlpha(50),
           width: 1,
@@ -998,7 +1005,7 @@ class _MainPageState extends State<MainPage> {
         children: [
           // Header
           Padding(
-            padding: EdgeInsets.fromLTRB(16, 10, 16, 4),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
             child: Row(
               children: [
                 Text(
@@ -1009,12 +1016,12 @@ class _MainPageState extends State<MainPage> {
                     ColorUtils.primaryFontColor,
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Container(
-                  padding: EdgeInsets.fromLTRB(8, 6, 8, 2),
+                  padding: const EdgeInsets.fromLTRB(8, 6, 8, 2),
                   decoration: BoxDecoration(
                     color: ColorUtils.dynamicAcrylicColor,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: const BorderRadius.all(Radius.circular(20)),
                   ),
                   child: Text(
                     "$count",
@@ -1030,7 +1037,7 @@ class _MainPageState extends State<MainPage> {
           ),
           // Children
           Padding(
-            padding: EdgeInsets.fromLTRB(8, 0, 8, 8),
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: children,
@@ -1050,8 +1057,8 @@ class _MainPageState extends State<MainPage> {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: Duration(milliseconds: 180),
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: ColorUtils.dynamicAcrylicColor,
           borderRadius: BorderRadius.circular(Globals.borderRadius - 2),
@@ -1068,7 +1075,7 @@ class _MainPageState extends State<MainPage> {
               size: 13,
               color: isActive ? ColorUtils.primaryFontColor.withAlpha(200) : ColorUtils.secondaryFontColor.withAlpha(80),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Text(
               label,
               style: WidgetUtils.customTextStyle(
@@ -1087,14 +1094,15 @@ class _MainPageState extends State<MainPage> {
     final filters = ["OptiFine", "OptiForge", "Forge", "Fabric"];
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
           children: filters.map((label) {
             final isActive = _selectedFilters.contains(label);
+
             return Padding(
-              padding: EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.only(right: 8),
               child: _buildQuickChip(
                 label: label,
                 icon: isActive ? Icons.visibility : Icons.visibility_off,
@@ -1120,6 +1128,7 @@ class _MainPageState extends State<MainPage> {
     final fabricFiltered = Globals.fabricGameVersionsResponse != null
         ? Globals.fabricGameVersionsResponse.where((v) {
             if (Globals.showOnlyReleases != true) return true;
+
             return v["stable"] == true || (v["type"] is String && v["type"].toString().toLowerCase() == "release");
           }).toList()
         : [];
@@ -1141,7 +1150,7 @@ class _MainPageState extends State<MainPage> {
                 elevation: 0,
                 color: ColorUtils.dynamicPrimaryForegroundColor,
                 shadowColor: ColorUtils.defaultShadowColor,
-                borderRadius: BorderRadius.circular(Globals.borderRadius),
+                borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
                 child: InkWell(
                   onTap: () {
                     Navigator.push(
@@ -1149,7 +1158,7 @@ class _MainPageState extends State<MainPage> {
                       MaterialPageRoute(builder: (context) => const ModrinthView()),
                     );
                   },
-                  borderRadius: BorderRadius.circular(Globals.borderRadius),
+                  borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
                   child: Row(
                     children: [
                       Padding(
@@ -1281,7 +1290,7 @@ class _MainPageState extends State<MainPage> {
           elevation: 15,
           color: ColorUtils.dynamicPrimaryForegroundColor,
           shadowColor: ColorUtils.defaultShadowColor,
-          borderRadius: BorderRadius.circular(Globals.borderRadius),
+          borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -1289,7 +1298,7 @@ class _MainPageState extends State<MainPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: const BorderRadius.all(Radius.circular(6)),
                   child: iconUrl.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: iconUrl,
@@ -1329,8 +1338,8 @@ class _MainPageState extends State<MainPage> {
               // Delete button
               WidgetUtils.buildButton(
                 Icons.delete_outline,
-                ColorUtils.dynamicSecondaryForegroundColor,
                 Colors.redAccent,
+                Colors.white,
                 () {
                   WidgetUtils.showPopup(
                     context,
@@ -1454,7 +1463,7 @@ class _MainPageState extends State<MainPage> {
       height: 30,
       decoration: BoxDecoration(
         color: ColorUtils.dynamicSecondaryForegroundColor,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
       ),
       child: Icon(Icons.extension_outlined, size: 16, color: ColorUtils.secondaryFontColor),
     );
@@ -1467,7 +1476,7 @@ class _MainPageState extends State<MainPage> {
       children: [
         /** Separatore */
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 5),
+          padding: const EdgeInsets.symmetric(vertical: 5),
           child: TextDivider(
             color: ColorUtils.secondaryFontColor.withAlpha(80),
             thickness: 2,
@@ -1520,7 +1529,7 @@ class _MainPageState extends State<MainPage> {
             children: [
               Row(
                 children: [
-                  Container(
+                  SizedBox(
                     height: 55,
                     width: 45,
                     child: Center(
@@ -1528,7 +1537,7 @@ class _MainPageState extends State<MainPage> {
                         elevation: 10,
                         color: Colors.transparent,
                         shadowColor: ColorUtils.defaultShadowColor,
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        borderRadius: const BorderRadius.all(Radius.circular(10)),
                         child: Icon(
                           Icons.color_lens,
                           color: ColorUtils.primaryFontColor,
@@ -1539,7 +1548,7 @@ class _MainPageState extends State<MainPage> {
                   ),
                   /** Nome del setting */
                   Padding(
-                    padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1560,13 +1569,13 @@ class _MainPageState extends State<MainPage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Padding(
-                    padding: EdgeInsets.fromLTRB(0, 18, 10, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 18, 10, 0),
                     child: Material(
                       elevation: 15,
                       color: Colors.transparent,
                       shadowColor: Colors.transparent,
                       // Globals.defaultShadowColor,
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                      borderRadius: const BorderRadius.all(Radius.circular(10)),
                       child: Row(
                         children: [
                           MouseRegion(
@@ -1600,7 +1609,7 @@ class _MainPageState extends State<MainPage> {
                                     distance: 3,
                                   ),
                                   Padding(
-                                    padding: EdgeInsets.fromLTRB(2, 4, 0, 0),
+                                    padding: const EdgeInsets.fromLTRB(2, 4, 0, 0),
                                     child: Text(
                                       "OS",
                                       style: WidgetUtils.customTextStyle(
@@ -1615,7 +1624,7 @@ class _MainPageState extends State<MainPage> {
                             ),
                           ),
                           for (int i = 1; i <= 7; i++) ...[
-                            SizedBox(
+                            const SizedBox(
                               width: 2,
                             ),
                             MouseRegion(
@@ -1672,7 +1681,7 @@ class _MainPageState extends State<MainPage> {
             children: [
               Row(
                 children: [
-                  Container(
+                  SizedBox(
                     height: 55,
                     width: 45,
                     child: Center(
@@ -1680,7 +1689,7 @@ class _MainPageState extends State<MainPage> {
                         elevation: 10,
                         color: Colors.transparent,
                         shadowColor: ColorUtils.defaultShadowColor,
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        borderRadius: const BorderRadius.all(Radius.circular(10)),
                         child: Icon(
                           Icons.brush,
                           color: ColorUtils.primaryFontColor,
@@ -1691,7 +1700,7 @@ class _MainPageState extends State<MainPage> {
                   ),
                   /** Nome del setting */
                   Padding(
-                    padding: EdgeInsets.fromLTRB(0, 2, 0, 2),
+                    padding: const EdgeInsets.fromLTRB(0, 2, 0, 2),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1712,12 +1721,12 @@ class _MainPageState extends State<MainPage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Padding(
-                    padding: EdgeInsets.symmetric(vertical: 7, horizontal: 7),
+                    padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 7),
                     child: Material(
                       elevation: 15,
                       color: Colors.transparent,
                       shadowColor: ColorUtils.defaultShadowColor,
-                      borderRadius: BorderRadius.circular(Globals.borderRadius),
+                      borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
                       child: MouseRegion(
                         onEnter: (e) => {},
                         child: DropdownButtonHideUnderline(
@@ -1732,7 +1741,7 @@ class _MainPageState extends State<MainPage> {
                               ),
                             ),
                             items: Globals.WindowThemes.map(
-                              (String item) => DropdownMenuItem<String>(
+                              (String item) => DropdownItem<String>(
                                 value: item,
                                 child: Text(
                                   item,
@@ -1744,8 +1753,9 @@ class _MainPageState extends State<MainPage> {
                                 ),
                               ),
                             ).toList(),
-                            value: Globals.selectedWindowTheme,
+                            valueListenable: _themeNotifier,
                             onChanged: (String? value) async {
+                              _themeNotifier.value = value;
                               Globals.selectedWindowTheme = value!;
                               ColorUtils.isMaterial = (Globals.selectedWindowTheme.contains('Material'));
 
@@ -1770,10 +1780,9 @@ class _MainPageState extends State<MainPage> {
                                 );
                               }
                               setState(() => effect = effect);
-                              ;
                             },
                             buttonStyleData: ButtonStyleData(
-                              padding: EdgeInsets.symmetric(horizontal: 16),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
                               height: 40,
                               width: 140,
                               decoration: BoxDecoration(
@@ -1783,9 +1792,7 @@ class _MainPageState extends State<MainPage> {
                                 color: ColorUtils.dynamicSecondaryForegroundColor,
                               ),
                             ),
-                            menuItemStyleData: MenuItemStyleData(
-                              height: 40,
-                            ),
+                            menuItemStyleData: const MenuItemStyleData(),
                             dropdownStyleData: DropdownStyleData(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(
@@ -1793,11 +1800,11 @@ class _MainPageState extends State<MainPage> {
                                 ),
                                 color: ColorUtils.dynamicPrimaryForegroundColor,
                               ),
-                              offset: Offset(0, -4),
+                              offset: const Offset(0, -4),
                               elevation: ColorUtils.isMaterial ? 9 : 0,
                             ),
                             iconStyleData: IconStyleData(
-                              icon: Icon(
+                              icon: const Icon(
                                 Icons.arrow_forward_ios,
                               ),
                               iconSize: 14,
@@ -1838,7 +1845,7 @@ class _MainPageState extends State<MainPage> {
 
         /** Separatore */
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 5),
+          padding: const EdgeInsets.symmetric(vertical: 5),
           child: TextDivider(
             color: ColorUtils.secondaryFontColor.withAlpha(80),
             thickness: 2,
@@ -1909,13 +1916,13 @@ class _MainPageState extends State<MainPage> {
               ),
               if (Globals.javaAdvSet) ...[
                 Padding(
-                  padding: EdgeInsets.fromLTRB(6, 0, 6, 4),
+                  padding: const EdgeInsets.fromLTRB(6, 0, 6, 4),
                   child: Column(
                     children: [
                       /** Java selection */
                       WidgetUtils.buildSettingTextItem(
                         Padding(
-                          padding: EdgeInsets.fromLTRB(0, 3, 3, 0),
+                          padding: const EdgeInsets.fromLTRB(0, 3, 3, 0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -1955,10 +1962,8 @@ class _MainPageState extends State<MainPage> {
                                     final lts = result['lts'] == 'true' ? 'LTS' : '';
 
                                     // Messaggio positivo + info JVM
-                                    message = AppLocalizations.of(context)!.settings_check_java_yes +
-                                        '\n\n→ JVM: $type\n→ Versione: $version' +
-                                        (date != null && date.isNotEmpty ? '\n→ Data rilascio: $date' : '') +
-                                        (lts.isNotEmpty ? '\n→ Tipo: $lts' : '');
+                                    message =
+                                        '${AppLocalizations.of(context)!.settings_check_java_yes}\n\n→ JVM: $type\n→ Versione: $version${date != null && date.isNotEmpty ? '\n→ Data rilascio: $date' : ''}${lts.isNotEmpty ? '\n→ Tipo: $lts' : ''}';
                                   } else {
                                     // Messaggio negativo
                                     message = AppLocalizations.of(context)!.settings_check_java_no;
@@ -1991,7 +1996,7 @@ class _MainPageState extends State<MainPage> {
                       /** Java ram */
                       WidgetUtils.buildSettingTextItem(
                         Padding(
-                          padding: EdgeInsets.fromLTRB(0, 3, 3, 0),
+                          padding: const EdgeInsets.fromLTRB(0, 3, 3, 0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -2019,7 +2024,7 @@ class _MainPageState extends State<MainPage> {
                       /** Java VM args */
                       WidgetUtils.buildSettingTextItem(
                         Padding(
-                          padding: EdgeInsets.fromLTRB(0, 3, 3, 0),
+                          padding: const EdgeInsets.fromLTRB(0, 3, 3, 0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -2047,7 +2052,7 @@ class _MainPageState extends State<MainPage> {
                       /** Launcher args */
                       WidgetUtils.buildSettingTextItem(
                         Padding(
-                          padding: EdgeInsets.fromLTRB(0, 3, 3, 0),
+                          padding: const EdgeInsets.fromLTRB(0, 3, 3, 0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -2126,10 +2131,10 @@ class _MainPageState extends State<MainPage> {
               ),
               if (Globals.customFolderSet) ...[
                 Padding(
-                  padding: EdgeInsets.fromLTRB(6, 0, 6, 4),
+                  padding: const EdgeInsets.fromLTRB(6, 0, 6, 4),
                   child: WidgetUtils.buildSettingTextItem(
                     Padding(
-                      padding: EdgeInsets.fromLTRB(0, 3, 3, 0),
+                      padding: const EdgeInsets.fromLTRB(0, 3, 3, 0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -2217,7 +2222,7 @@ class _MainPageState extends State<MainPage> {
 
         /** Separatore */
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 5),
+          padding: const EdgeInsets.symmetric(vertical: 5),
           child: TextDivider(
             color: ColorUtils.secondaryFontColor.withAlpha(80),
             thickness: 2,
@@ -2287,9 +2292,9 @@ class _MainPageState extends State<MainPage> {
 
         /** Separatore */
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 5),
+          padding: const EdgeInsets.symmetric(vertical: 5),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 15),
+            padding: const EdgeInsets.symmetric(horizontal: 15),
             child: Divider(
               color: ColorUtils.secondaryFontColor,
             ),
@@ -2320,7 +2325,7 @@ class _MainPageState extends State<MainPage> {
 
         /** Links vari */
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 5),
+          padding: const EdgeInsets.symmetric(vertical: 5),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -2344,7 +2349,7 @@ class _MainPageState extends State<MainPage> {
 
   Widget linkIcon(IconData icon, String url) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 5),
       child: HoverIcon(icon: icon, url: url),
     );
   }
@@ -2361,7 +2366,7 @@ class _MainPageState extends State<MainPage> {
   Widget _buildAccountsPage() {
     return Row(children: [
       buildNavbar(),
-      SizedBox(width: 8),
+      const SizedBox(width: 8),
       /** Lista account */
       Expanded(
         child: ScrollConfiguration(
@@ -2369,7 +2374,7 @@ class _MainPageState extends State<MainPage> {
           child: buildAccountList(),
         ),
       ),
-      SizedBox(width: 10),
+      const SizedBox(width: 10),
       Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -2377,7 +2382,7 @@ class _MainPageState extends State<MainPage> {
           if (Globals.getAccount() != null && ThreeDimensionalViewer.objs.isNotEmpty) ...[
             Sp3dRenderer(
               const Size(150, 280),
-              Sp3dV2D(75, 125),
+              const Sp3dV2D(75, 125),
               ThreeDimensionalViewer.world,
               Sp3dCamera(Sp3dV3D(0, 0, 3000), 1500),
               Sp3dLight(Sp3dV3D(0, 0, 0), syncCam: true),
@@ -2386,7 +2391,7 @@ class _MainPageState extends State<MainPage> {
               useClipping: true,
             ),
           ],
-          SizedBox(height: 5),
+          const SizedBox(height: 5),
 
           /** Pulsante Cambia Skin */
           WidgetUtils.buildButton(
@@ -2401,7 +2406,7 @@ class _MainPageState extends State<MainPage> {
                   <Widget>[
                     Text(
                       AppLocalizations.of(context)!.account_skin_uploader_msg,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         fontFamily: 'Comfortaa',
                         fontWeight: FontWeight.w500,
@@ -2427,7 +2432,7 @@ class _MainPageState extends State<MainPage> {
                           WidgetUtils.showMessageDialog(
                             context,
                             AppLocalizations.of(context)!.account_skin_uploader_title,
-                            "${await uploadSkin(context, "slim", Globals.getAccount()!, file.path.replaceAll("\\", "/"))}",
+                            await uploadSkin(context, "slim", Globals.getAccount()!, file.path.replaceAll("\\", "/")),
                             () => Navigator.pop(context),
                           );
                         }
@@ -2450,7 +2455,7 @@ class _MainPageState extends State<MainPage> {
                           WidgetUtils.showMessageDialog(
                             context,
                             AppLocalizations.of(context)!.account_skin_uploader_title,
-                            "${await uploadSkin(context, "classic", Globals.getAccount()!, file.path.replaceAll("\\", "/"))}",
+                            await uploadSkin(context, "classic", Globals.getAccount()!, file.path.replaceAll("\\", "/")),
                             () => Navigator.pop(context),
                           );
                         }
@@ -2459,7 +2464,7 @@ class _MainPageState extends State<MainPage> {
                     TextButton(
                       child: Text(
                         AppLocalizations.of(context)!.generic_cancel,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           fontFamily: 'Comfortaa',
                           fontWeight: FontWeight.w500,
@@ -2477,7 +2482,7 @@ class _MainPageState extends State<MainPage> {
                   [
                     Text(
                       AppLocalizations.of(context)!.account_skin_error_msg,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         fontFamily: 'Comfortaa',
                         fontWeight: FontWeight.w500,
@@ -2495,7 +2500,7 @@ class _MainPageState extends State<MainPage> {
                       },
                       child: Text(
                         AppLocalizations.of(context)!.account_skin_buy_game,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           fontFamily: 'Comfortaa',
                           fontWeight: FontWeight.w300,
@@ -2536,7 +2541,7 @@ class _MainPageState extends State<MainPage> {
                     <Widget>[
                       Text(
                         AppLocalizations.of(context)!.account_add_type,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           fontFamily: 'Comfortaa',
                           fontWeight: FontWeight.w500,
@@ -2559,9 +2564,9 @@ class _MainPageState extends State<MainPage> {
                             context,
                             () => {
                               setState(() {
-                                if (Globals.usernamecontroller.text.isNotEmpty)
+                                if (Globals.usernamecontroller.text.isNotEmpty) {
                                   Globals.accounts.add(
-                                    new Account(
+                                    Account(
                                       username: Globals.usernamecontroller.text,
                                       uuid: getOfflinePlayerUuid(
                                         Globals.usernamecontroller.text,
@@ -2573,6 +2578,7 @@ class _MainPageState extends State<MainPage> {
                                       isElyBy: false,
                                     ),
                                   );
+                                }
                                 saveAccounts();
                                 Globals.usernamecontroller.text = "";
                               }),
@@ -2604,7 +2610,7 @@ class _MainPageState extends State<MainPage> {
                               setState(
                                 () {
                                   Globals.accounts.add(
-                                    new Account(
+                                    Account(
                                       username: username,
                                       uuid: uuid,
                                       accessToken: accesstoken,
@@ -2646,7 +2652,7 @@ class _MainPageState extends State<MainPage> {
                               setState(
                                 () {
                                   Globals.accounts.add(
-                                    new Account(
+                                    Account(
                                       username: username,
                                       uuid: uuid,
                                       accessToken: accesstoken,
@@ -2694,7 +2700,7 @@ class _MainPageState extends State<MainPage> {
           ),
         ],
       ),
-      SizedBox(width: 10),
+      const SizedBox(width: 10),
     ]);
   }
 
@@ -2713,7 +2719,7 @@ class _MainPageState extends State<MainPage> {
         ] else ...[
           /** mostra il messaggio quando non ci sono account */
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
             child: Text(
               AppLocalizations.of(context)!.account_empty_msg,
               textAlign: TextAlign.center,
@@ -2731,7 +2737,7 @@ class _MainPageState extends State<MainPage> {
 
   Widget buildAccountEntry(String username, bool premium, bool elyby, int index) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: SizedBox(
         height: 55,
         width: double.infinity,
@@ -2739,12 +2745,12 @@ class _MainPageState extends State<MainPage> {
           elevation: 15,
           color: ColorUtils.dynamicPrimaryForegroundColor,
           shadowColor: ColorUtils.defaultShadowColor,
-          borderRadius: BorderRadius.circular(Globals.borderRadius),
+          borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Container(
                   height: 40,
                   width: 40,
@@ -2752,7 +2758,7 @@ class _MainPageState extends State<MainPage> {
                     shape: BoxShape.circle,
                     image: DecorationImage(
                       opacity: 0.8,
-                      image: CachedNetworkImageProvider("${Urls.skinURL}/head/${username}"),
+                      image: CachedNetworkImageProvider("${Urls.skinURL}/head/$username"),
                     ),
                   ),
                 ),
@@ -2798,7 +2804,7 @@ class HoverIcon extends StatefulWidget {
   final IconData icon;
   final String url;
 
-  const HoverIcon({Key? key, required this.icon, required this.url}) : super(key: key);
+  const HoverIcon({super.key, required this.icon, required this.url});
 
   @override
   _HoverIconState createState() => _HoverIconState();
@@ -2819,7 +2825,7 @@ class _HoverIconState extends State<HoverIcon> {
           }
         },
         child: TweenAnimationBuilder<Color?>(
-          duration: Duration(milliseconds: 100),
+          duration: const Duration(milliseconds: 100),
           tween: ColorTween(
             begin: _hovering ? ColorUtils.secondaryFontColor.withAlpha(128) : ColorUtils.secondaryFontColor.withAlpha(255),
             end: _hovering ? ColorUtils.secondaryFontColor.withAlpha(255) : ColorUtils.secondaryFontColor.withAlpha(128),
@@ -2852,7 +2858,7 @@ class AccountUtils {
           elevation: 10,
           color: Colors.transparent,
           shadowColor: ColorUtils.defaultShadowColor,
-          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
           child: WidgetUtils.buildSettingTextItem(
             null,
             Colors.white /* Sfondo della textbox */,
@@ -2892,9 +2898,9 @@ class AccountUtils {
       dynamic isSlimSkin,
     ) callback,
   ) async {
-    final clientID = "morpheus-launcher3";
-    final redirectUri = "${Urls.morpheusBaseURL}/elyby";
-    final authUrl = "${Urls.elybyBaseURL}/oauth2/v1?client_id=${clientID}"
+    const clientID = "morpheus-launcher3";
+    const redirectUri = "${Urls.morpheusBaseURL}/elyby";
+    final authUrl = "${Urls.elybyBaseURL}/oauth2/v1?client_id=$clientID"
         "&redirect_uri=${Uri.encodeComponent(redirectUri)}"
         "&response_type=code"
         "&scope=account_email account_info offline_access";
@@ -2986,7 +2992,7 @@ class AccountUtils {
             WidgetUtils.showMessageDialog(
               context,
               AppLocalizations.of(context)!.generic_error_msg,
-              "${minecraft}",
+              "$minecraft",
               () => Navigator.pop(context),
             );
           }
@@ -3027,7 +3033,7 @@ class AccountUtils {
         <Widget>[
           Text(
             "${AppLocalizations.of(context)!.account_add_link1}: $verificationUri\n\n${AppLocalizations.of(context)!.account_add_link2} $userCode",
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               fontFamily: 'Comfortaa',
               fontWeight: FontWeight.w500,
@@ -3039,7 +3045,7 @@ class AccountUtils {
           TextButton(
             child: Text(
               AppLocalizations.of(context)!.account_add_copy,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 fontFamily: 'Comfortaa',
                 fontWeight: FontWeight.w300,
@@ -3049,7 +3055,7 @@ class AccountUtils {
               await Clipboard.setData(ClipboardData(text: userCode));
               if (!await launchUrl(Uri.parse(verificationUri))) {
                 throw Exception(
-                  "${AppLocalizations.of(context)!.account_add_fail}: ${verificationUri}",
+                  "${AppLocalizations.of(context)!.account_add_fail}: $verificationUri",
                 );
               }
             },
@@ -3070,7 +3076,7 @@ class AccountUtils {
         ],
       );
 
-      Timer.periodic(Duration(seconds: 3), (timer) async {
+      Timer.periodic(const Duration(seconds: 3), (timer) async {
         var data = await getToken(
           context,
           'urn:ietf:params:oauth:grant-type:device_code',
@@ -3107,7 +3113,7 @@ class AccountUtils {
                 WidgetUtils.showMessageDialog(
                   context,
                   AppLocalizations.of(context)!.generic_error_msg,
-                  "${minecraft}",
+                  "$minecraft",
                   () => Navigator.pop(context),
                 );
               }
@@ -3115,7 +3121,7 @@ class AccountUtils {
               WidgetUtils.showMessageDialog(
                 context,
                 AppLocalizations.of(context)!.generic_error_msg,
-                "${minecraftAuth}",
+                "$minecraftAuth",
                 () => Navigator.pop(context),
               );
             }
@@ -3127,7 +3133,7 @@ class AccountUtils {
       WidgetUtils.showMessageDialog(
         context,
         AppLocalizations.of(context)!.generic_error_msg,
-        "$str",
+        str,
         () => Navigator.pop(context),
       );
     }

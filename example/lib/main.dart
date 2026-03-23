@@ -3,14 +3,16 @@ import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:morpheus_launcher_gui/globals.dart';
-import 'package:morpheus_launcher_gui/utils/launcher/version_utils.dart';
+import 'package:morpheus_launcher_gui/l10n/app_localizations.dart';
 import 'package:morpheus_launcher_gui/utils/launcher/news_utils.dart';
+import 'package:morpheus_launcher_gui/utils/launcher/version_utils.dart';
 import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
 import 'package:morpheus_launcher_gui/views/main_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:system_theme/system_theme.dart';
+
+import 'account/encryption.dart';
 
 Future<void> main() async {
   if (Platform.isWindows) {
@@ -39,8 +41,8 @@ Future<void> main() async {
     await Window.hideWindowControls();
     doWhenWindowReady(() {
       appWindow
-        ..minSize = Size(640, 480)
-        ..size = Size(640, 480)
+        ..minSize = const Size(640, 480)
+        ..size = const Size(640, 480)
         ..alignment = Alignment.center
         ..title = Globals.windowTitle
         ..show();
@@ -63,7 +65,7 @@ class MyApp extends StatelessWidget {
       localeResolutionCallback: (locale, supportedLocales) {
         return supportedLocales.firstWhere(
           (supportedLocale) => supportedLocale.languageCode == locale?.languageCode,
-          orElse: () => Locale('en'),
+          orElse: () => const Locale('en'),
         );
       },
       debugShowCheckedModeBanner: false,
@@ -124,6 +126,18 @@ class MyAppBodyState extends State<MyAppBody> {
     if (!prefs.containsKey('showConsole')) prefs.setBool('showConsole', Globals.showConsole);
     if (!prefs.containsKey('fullTransparent')) prefs.setBool('fullTransparent', Globals.fullTransparent);
     if (!prefs.containsKey('forceClasspath')) prefs.setBool('forceClasspath', Globals.forceClasspath);
+
+    bool accountLoadFailed = false;
+
+    final loadedAccounts = readAccountListFromJson(
+      "${LauncherUtils.getApplicationFolder("morpheus")}/accounts.json",
+    );
+    if (loadedAccounts != null) {
+      Globals.accounts = loadedAccounts;
+    } else {
+      Globals.accounts = [];
+      accountLoadFailed = true;
+    }
 
     Window.setEffect(
       effect: effect = getWindowEffect(),
@@ -203,6 +217,19 @@ class MyAppBodyState extends State<MyAppBody> {
     isLoading = false;
 
     setState(() => effect = effect);
+
+    if (accountLoadFailed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        WidgetUtils.showMessageDialog(
+          context,
+          "Account Error",
+          "Failed to decrypt saved accounts.\n\n"
+              "Your HWID may have changed (hardware replaced, OS reinstalled).\n"
+              "You will need to log in again.",
+          () => Navigator.pop(context),
+        );
+      });
+    }
   }
 
   @override
@@ -216,7 +243,7 @@ class MyAppBodyState extends State<MyAppBody> {
               ),
             ],
           )
-        : MainPage();
+        : const MainPage();
   }
 }
 

@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:http/http.dart' as http;
 import 'package:morpheus_launcher_gui/globals.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:morpheus_launcher_gui/l10n/app_localizations.dart';
 
 class VersionUtils {
   static Future<List<String>> getPinnedVersions() async {
@@ -49,14 +49,14 @@ class VersionUtils {
     profiles ??= {};
     List<String> keysToRemove = [];
 
-    versionIds.forEach((versionId) {
-      if (!profiles!.containsKey(versionId)) {
+    for (var versionId in versionIds) {
+      if (!profiles.containsKey(versionId)) {
         profiles[versionId] = {
           "name": versionId,
           "lastVersionId": versionId,
         };
       }
-    });
+    }
 
     profiles.forEach((key, value) {
       if (value is Map<String, dynamic>) {
@@ -66,9 +66,9 @@ class VersionUtils {
       }
     });
 
-    keysToRemove.forEach((key) {
-      profiles!.remove(key);
-    });
+    for (var key in keysToRemove) {
+      profiles.remove(key);
+    }
 
     jsonMap['profiles'] = profiles;
 
@@ -178,7 +178,7 @@ class VersionUtils {
     }
 
     List<Map<String, dynamic>> versions = [];
-    Set<String> addedVersions = Set<String>();
+    Set<String> addedVersions = <String>{};
 
     versions.addAll(getMinecraftVersions(true));
     versions.addAll(getMinecraftVersions(false));
@@ -205,7 +205,7 @@ class VersionUtils {
 
   static List<Map<String, dynamic>> getMinecraftVersions(bool onlyModded) {
     List<Map<String, dynamic>> versions = [];
-    Set<String> addedVersions = Set<String>();
+    Set<String> addedVersions = <String>{};
 
     versions.addAll(getMinecraftOfflineVersions(onlyModded));
     addedVersions.addAll(versions.map((version) => version["id"]));
@@ -242,7 +242,7 @@ class VersionUtils {
     directory.listSync().forEach((entity) {
       if (entity is Directory) {
         String version = entity.path.replaceAll("\\", "/").split('/').last;
-        String jsonPath = '${versionsFolder}/$version/$version.json';
+        String jsonPath = '$versionsFolder/$version/$version.json';
         File jsonFile = File(jsonPath);
 
         if (jsonFile.existsSync()) {
@@ -314,7 +314,7 @@ class VersionUtils {
   }
 
   static Future<void> fetchIncompatibleVersions() async {
-    final url = '${Urls.morpheusBaseURL}/downloads/known-incompatible.json';
+    const url = '${Urls.morpheusBaseURL}/downloads/known-incompatible.json';
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode != 200) {

@@ -4,31 +4,18 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:encrypt/encrypt.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:morpheus_launcher_gui/account/account_utils.dart';
 import 'package:morpheus_launcher_gui/globals.dart';
-
-final client_id = decrypt('xPeIONFluJktnyRqRW2qzlGSocmqb0z4ge9Uo1AF980q5FQNbG8hgtylIv24tgeP', 'FPzGDUVvU4L?*;j+x`XrGZUQJ)rr/M&#');
-
-String decrypt(String ciphertext, String keytext) {
-  final key = Key.fromUtf8(keytext);
-  final iv = IV.fromLength(16);
-
-  return Encrypter(AES(key)).decrypt64(
-    ciphertext,
-    iv: iv,
-  );
-}
+import 'package:morpheus_launcher_gui/l10n/app_localizations.dart';
 
 Future<String> doMicrosoftConsent(dynamic context) async {
   var response = await http.post(
     Uri.parse("${Urls.msAuthURL}/devicecode"),
     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
     body: {
-      'client_id': client_id,
+      'client_id': Globals.ms_client_id,
       'scope': 'XboxLive.signin offline_access',
     },
   );
@@ -75,18 +62,18 @@ Future<dynamic> doMicrosoftRefresh(dynamic context, String refresh_token, {int m
 }
 
 Future getToken(dynamic context, String grantType, var refreshToken, var deviceCode) async {
-  var body;
+  Map<String, dynamic> body;
   if (grantType == 'refresh_token') {
     body = {
       'grant_type': grantType,
-      'client_id': client_id,
+      'client_id': Globals.ms_client_id,
       'refresh_token': refreshToken,
       'scope': 'XboxLive.signin offline_access',
     };
   } else {
     body = {
       'grant_type': grantType,
-      'client_id': client_id,
+      'client_id': Globals.ms_client_id,
       'device_code': deviceCode,
     };
   }
@@ -101,7 +88,7 @@ Future getToken(dynamic context, String grantType, var refreshToken, var deviceC
     return data;
   }
 
-  return '[MS]: ${AppLocalizations.of(context)!.account_post_fail}: ${response.statusCode} ${data}';
+  return '[MS]: ${AppLocalizations.of(context)!.account_post_fail}: ${response.statusCode} $data';
 }
 
 Future<dynamic> doXboxLiveAuth(dynamic context, String token) async {
@@ -124,7 +111,7 @@ Future<dynamic> doXboxLiveAuth(dynamic context, String token) async {
     return await doXSTS(context, data['Token']);
   }
 
-  return '[XBL]: ${AppLocalizations.of(context)!.account_post_fail}: ${response.statusCode} ${data}';
+  return '[XBL]: ${AppLocalizations.of(context)!.account_post_fail}: ${response.statusCode} $data';
 }
 
 Future<dynamic> doXSTS(dynamic context, String token) async {
@@ -162,7 +149,7 @@ Future<dynamic> doXSTS(dynamic context, String token) async {
       case 2148916238:
         return "${AppLocalizations.of(context)!.account_xsts_2148916238_fail} ${data['Redirect']}";
       default:
-        return "${AppLocalizations.of(context)!.generic_error_msg}: ${xerr}";
+        return "${AppLocalizations.of(context)!.generic_error_msg}: $xerr";
     }
   }
 
@@ -215,9 +202,7 @@ Future<String> uploadSkin(dynamic context, String variant, Account account, Stri
 
   final stream = http.ByteStream(file.openRead());
   final length = await file.length();
-  final multipartFile = http.MultipartFile('file', stream, length, filename: filePath
-      .split("/")
-      .last, contentType: MediaType('image', 'png'));
+  final multipartFile = http.MultipartFile('file', stream, length, filename: filePath.split("/").last, contentType: MediaType('image', 'png'));
 
   // Add the file to the request
   request.files.add(multipartFile);

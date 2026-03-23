@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:archive/archive.dart';
 import 'package:http/http.dart' as http;
 import 'package:morpheus_launcher_gui/globals.dart';
@@ -64,6 +65,7 @@ class ModrinthUtils {
     try {
       final decoded = json.decode(file.readAsStringSync()) as Map<String, dynamic>;
       final packs = decoded['packs'] as List? ?? [];
+
       return packs.cast<Map<String, dynamic>>();
     } catch (_) {
       return [];
@@ -146,6 +148,7 @@ class ModrinthUtils {
     // Fallback: scan filesystem
     final root = Directory(packsRoot);
     if (!root.existsSync()) return [];
+
     return root
         .listSync()
         .whereType<Directory>()
@@ -329,6 +332,7 @@ class ModrinthUtils {
     if (deps.containsKey('forge')) return 'forge';
     if (deps.containsKey('quilt-loader')) return 'quilt';
     if (deps.containsKey('neoforge')) return 'neoforge';
+
     return 'unknown';
   }
 
@@ -350,6 +354,7 @@ class ModrinthUtils {
     if (meta == null) return {};
     final deps = meta['dependencies'];
     if (deps == null) return {};
+
     return Map<String, String>.from(deps as Map);
   }
 }

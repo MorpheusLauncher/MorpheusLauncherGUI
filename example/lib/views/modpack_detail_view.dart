@@ -1,17 +1,18 @@
 import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:morpheus_launcher_gui/globals.dart';
+import 'package:morpheus_launcher_gui/l10n/app_localizations.dart';
 import 'package:morpheus_launcher_gui/utils/launcher/modrinth_utils.dart';
 import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ModpackDetailView extends StatefulWidget {
   final dynamic modpack;
 
-  const ModpackDetailView({Key? key, required this.modpack}) : super(key: key);
+  const ModpackDetailView({super.key, required this.modpack});
 
   @override
   State<ModpackDetailView> createState() => _ModpackDetailViewState();
@@ -52,8 +53,8 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
       final versionsRes = await http.get(Uri.parse("${Urls.modrinthApiURL}/project/$projectId/version"));
 
       if (projectRes.statusCode == 200 && versionsRes.statusCode == 200) {
-        _projectData = json.decode(projectRes.body);
-        final versions = json.decode(versionsRes.body) as List;
+        _projectData = json.decode(utf8.decode(projectRes.bodyBytes));
+        final versions = json.decode(utf8.decode(versionsRes.bodyBytes)) as List;
         if (versions.isNotEmpty) {
           _latestVersion = versions.first;
           _dependencies = _latestVersion["dependencies"] ?? [];
@@ -251,7 +252,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(Globals.borderRadius),
+          borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
           child: CachedNetworkImage(
             imageUrl: widget.modpack["icon_url"] ?? "",
             width: 120,
@@ -283,7 +284,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: ColorUtils.dynamicAccentColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
                       border: Border.all(color: ColorUtils.dynamicAccentColor.withOpacity(0.3)),
                     ),
                     child: Text(cat.toString().toUpperCase(), style: WidgetUtils.customTextStyle(10, FontWeight.bold, ColorUtils.dynamicAccentColor)),
@@ -302,7 +303,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
       padding: const EdgeInsets.symmetric(vertical: 20),
       decoration: BoxDecoration(
         color: ColorUtils.dynamicPrimaryForegroundColor,
-        borderRadius: BorderRadius.circular(Globals.borderRadius),
+        borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Row(
@@ -336,7 +337,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: ColorUtils.dynamicPrimaryForegroundColor,
-          borderRadius: BorderRadius.circular(Globals.borderRadius),
+          borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,7 +362,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
             ),
             const SizedBox(height: 10),
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
               child: LinearProgressIndicator(
                 value: _installProgress,
                 minHeight: 8,
@@ -386,7 +387,13 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.redAccent,
             elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Globals.borderRadius)),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(
+                  Globals.borderRadius,
+                ),
+              ),
+            ),
           ),
         ),
       );
@@ -406,7 +413,13 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
         style: ElevatedButton.styleFrom(
           backgroundColor: ColorUtils.dynamicAccentColor,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Globals.borderRadius)),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(
+                Globals.borderRadius,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -414,6 +427,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
 
   Widget _buildDescription() {
     final description = _projectData?["body"] ?? widget.modpack["description"] ?? "";
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -423,7 +437,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: ColorUtils.dynamicPrimaryForegroundColor,
-            borderRadius: BorderRadius.circular(Globals.borderRadius),
+            borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
           ),
           child: MarkdownBody(
             data: description,
@@ -439,10 +453,27 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
               blockquotePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               blockquoteDecoration: BoxDecoration(
                 color: ColorUtils.dynamicSecondaryForegroundColor.withOpacity(0.25),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
                 border: Border(left: BorderSide(color: ColorUtils.dynamicAccentColor, width: 4)),
               ),
               a: WidgetUtils.customTextStyle(15, FontWeight.w500, ColorUtils.primaryFontColor.withOpacity(0.5)),
+              tableHead: WidgetUtils.customTextStyle(13, FontWeight.bold, ColorUtils.primaryFontColor),
+              tableBody: WidgetUtils.customTextStyle(13, FontWeight.w300, ColorUtils.secondaryFontColor),
+              tableHeadAlign: TextAlign.center,
+              tableBorder: TableBorder.all(color: Colors.white.withOpacity(0.1), width: 1),
+              tableColumnWidth: const FlexColumnWidth(),
+              tableCellsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              codeblockDecoration: BoxDecoration(
+                color: ColorUtils.dynamicSecondaryForegroundColor,
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
+              ),
+              codeblockPadding: const EdgeInsets.all(12),
+              tableCellsDecoration: BoxDecoration(
+                color: ColorUtils.dynamicSecondaryForegroundColor,
+              ),
+              tableHeadCellsDecoration: BoxDecoration(
+                color: ColorUtils.dynamicSecondaryForegroundColor.withOpacity(0.5),
+              ),
             ),
           ),
         ),
@@ -462,7 +493,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
                 color: ColorUtils.dynamicAccentColor.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: const BorderRadius.all(Radius.circular(12)),
               ),
               child: Text("${_dependencies.length}", style: WidgetUtils.customTextStyle(12, FontWeight.bold, ColorUtils.dynamicAccentColor)),
             ),
@@ -480,7 +511,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
         Container(
           decoration: BoxDecoration(
             color: ColorUtils.dynamicPrimaryForegroundColor,
-            borderRadius: BorderRadius.circular(Globals.borderRadius),
+            borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
           ),
           child: ListView.separated(
             shrinkWrap: true,
@@ -519,7 +550,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
     return ListTile(
       dense: true,
       leading: ClipRRect(
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: const BorderRadius.all(Radius.circular(6)),
         child: iconUrl != null && iconUrl.isNotEmpty
             ? CachedNetworkImage(
                 imageUrl: iconUrl,
@@ -558,6 +589,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
     if (_latestVersion != null && _latestVersion["files"] != null && (_latestVersion["files"] as List).isNotEmpty) {
       return _latestVersion["files"][0]["size"] ?? 0;
     }
+
     return 0;
   }
 
@@ -566,8 +598,10 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
     if (number is int) {
       if (number >= 1000000) return "${(number / 1000000).toStringAsFixed(1)}M";
       if (number >= 1000) return "${(number / 1000).toStringAsFixed(1)}K";
+
       return number.toString();
     }
+
     return number.toString();
   }
 
@@ -575,6 +609,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
     if (date == null) return "N/A";
     try {
       final dt = DateTime.parse(date.toString());
+
       return "${dt.day}/${dt.month}/${dt.year}";
     } catch (e) {
       return "N/A";
@@ -590,6 +625,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
       size /= 1024;
       idx++;
     }
+
     return "${size.toStringAsFixed(1)} ${units[idx]}";
   }
 }

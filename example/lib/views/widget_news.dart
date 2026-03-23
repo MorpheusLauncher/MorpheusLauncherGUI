@@ -9,11 +9,11 @@ class NewsScreen extends StatelessWidget {
   final String body;
   final String url;
 
-  NewsScreen({required this.title, required this.body, required this.url});
+  const NewsScreen({super.key, required this.title, required this.body, required this.url});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: (MediaQuery.of(context).size.width / 5) - 5,
       child: Material(
         elevation: 15,
@@ -32,7 +32,7 @@ class NewsScreen extends StatelessWidget {
                 alignment: Alignment.center,
                 children: [
                   Image.network(
-                    "${Urls.mojangContentURL}${url}",
+                    "${Urls.mojangContentURL}$url",
                     width: MediaQuery.of(context).size.width,
                     height: MediaQuery.of(context).size.height / 4,
                     fit: BoxFit.cover,
@@ -62,7 +62,7 @@ class NewsScreen extends StatelessWidget {
                 child: ListView(
                   children: [
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
                       child: Html(
                         style: {
                           "*": Style(

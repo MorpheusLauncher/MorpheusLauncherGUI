@@ -37,6 +37,7 @@ Color _colorForLine(String line, List<LogColorRule> rules, Color fallback) {
     final keyword = rule.caseSensitive ? rule.keyword : rule.keyword.toLowerCase();
     if (lower.contains(keyword)) return rule.color;
   }
+
   return fallback;
 }
 
@@ -247,9 +248,9 @@ class _VirtualizedLogViewState extends State<VirtualizedLogView> {
               child: Container(
                 width: 32,
                 height: 32,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.black54,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
                 ),
                 child: const Icon(Icons.arrow_downward, color: Colors.white, size: 18),
               ),
