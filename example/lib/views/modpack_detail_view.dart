@@ -427,6 +427,9 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
   // ──────────────────────────────────────────────
 
   Widget _buildDescription() {
+    final body = (_projectData?["body"] ?? '').toString().trim();
+    if (body.isEmpty) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -440,7 +443,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: _parseDescriptionSegments(widget.modpack["description"]),
+            children: _parseDescriptionSegments(body),
           ),
         ),
       ],
