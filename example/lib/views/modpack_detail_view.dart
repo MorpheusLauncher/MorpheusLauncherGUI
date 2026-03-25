@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import '../utils/markdown/flutter_markdown_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:morpheus_launcher_gui/globals.dart';
 import 'package:morpheus_launcher_gui/l10n/app_localizations.dart';
@@ -130,7 +130,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
           context,
           AppLocalizations.of(context)!.generic_error_msg,
           e.toString(),
-          () => Navigator.pop(context),
+              () => Navigator.pop(context),
         );
       }
     } finally {
@@ -238,8 +238,13 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
           _buildStats(),
           const SizedBox(height: 24),
           _buildDownloadButton(),
-          const SizedBox(height: 24),
-          _buildDescription(),
+          if ((_projectData?["body"] ?? '')
+              .toString()
+              .trim()
+              .isNotEmpty) ...[ // ← fix condizione
+            const SizedBox(height: 24),
+            _buildDescription(),
+          ],
           const SizedBox(height: 24),
           if (_dependencies.isNotEmpty) _buildModList(),
         ],
@@ -388,11 +393,7 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
             backgroundColor: Colors.redAccent,
             elevation: 0,
             shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(
-                  Globals.borderRadius,
-                ),
-              ),
+              borderRadius: BorderRadius.all(Radius.circular(Globals.borderRadius)),
             ),
           ),
         ),
@@ -414,20 +415,18 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
           backgroundColor: ColorUtils.dynamicAccentColor,
           elevation: 0,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(
-                Globals.borderRadius,
-              ),
-            ),
+            borderRadius: BorderRadius.all(Radius.circular(Globals.borderRadius)),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDescription() {
-    final description = _projectData?["body"] ?? widget.modpack["description"] ?? "";
+  // ──────────────────────────────────────────────
+  //  Description with collapsible <details> support
+  // ──────────────────────────────────────────────
 
+  Widget _buildDescription() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -439,45 +438,121 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
             color: ColorUtils.dynamicPrimaryForegroundColor,
             borderRadius: const BorderRadius.all(Radius.circular(Globals.borderRadius)),
           ),
-          child: MarkdownBody(
-            data: description,
-            selectable: true,
-            styleSheet: MarkdownStyleSheet(
-              p: WidgetUtils.customTextStyle(15, FontWeight.w300, ColorUtils.secondaryFontColor.withOpacity(0.9)),
-              h1: WidgetUtils.customTextStyle(22, FontWeight.bold, ColorUtils.primaryFontColor),
-              h2: WidgetUtils.customTextStyle(20, FontWeight.bold, ColorUtils.primaryFontColor),
-              h3: WidgetUtils.customTextStyle(18, FontWeight.bold, ColorUtils.primaryFontColor),
-              code: WidgetUtils.customTextStyle(14, FontWeight.w400, ColorUtils.primaryFontColor).copyWith(backgroundColor: Colors.black26),
-              listBullet: WidgetUtils.customTextStyle(15, FontWeight.w300, ColorUtils.secondaryFontColor),
-              blockquote: WidgetUtils.customTextStyle(14, FontWeight.w400, ColorUtils.primaryFontColor),
-              blockquotePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              blockquoteDecoration: BoxDecoration(
-                color: ColorUtils.dynamicSecondaryForegroundColor.withOpacity(0.25),
-                borderRadius: const BorderRadius.all(Radius.circular(8)),
-                border: Border(left: BorderSide(color: ColorUtils.dynamicAccentColor, width: 4)),
-              ),
-              a: WidgetUtils.customTextStyle(15, FontWeight.w500, ColorUtils.primaryFontColor.withOpacity(0.5)),
-              tableHead: WidgetUtils.customTextStyle(13, FontWeight.bold, ColorUtils.primaryFontColor),
-              tableBody: WidgetUtils.customTextStyle(13, FontWeight.w300, ColorUtils.secondaryFontColor),
-              tableHeadAlign: TextAlign.center,
-              tableBorder: TableBorder.all(color: Colors.white.withOpacity(0.1), width: 1),
-              tableColumnWidth: const FlexColumnWidth(),
-              tableCellsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              codeblockDecoration: BoxDecoration(
-                color: ColorUtils.dynamicSecondaryForegroundColor,
-                borderRadius: const BorderRadius.all(Radius.circular(8)),
-              ),
-              codeblockPadding: const EdgeInsets.all(12),
-              tableCellsDecoration: BoxDecoration(
-                color: ColorUtils.dynamicSecondaryForegroundColor,
-              ),
-              tableHeadCellsDecoration: BoxDecoration(
-                color: ColorUtils.dynamicSecondaryForegroundColor.withOpacity(0.5),
-              ),
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: _parseDescriptionSegments(widget.modpack["description"]),
           ),
         ),
       ],
+    );
+  }
+
+  /// Splits raw markdown/HTML into plain-markdown segments and `<details>` blocks,
+  /// returning a list of ready-to-render widgets.
+  List<Widget> _parseDescriptionSegments(String content) {
+    final widgets = <Widget>[];
+    final detailsRe = RegExp(r'<details>(.*?)</details>', dotAll: true);
+    final summaryRe = RegExp(r'<summary>(.*?)</summary>', dotAll: true);
+
+    int cursor = 0;
+    for (final match in detailsRe.allMatches(content)) {
+      if (match.start > cursor) {
+        final before = content.substring(cursor, match.start).trim();
+        if (before.isNotEmpty) widgets.add(_markdownWidget(before));
+      }
+
+      final inner = match.group(1)!;
+      final summaryMatch = summaryRe.firstMatch(inner);
+      final summaryTitle = summaryMatch?.group(1)?.trim() ?? '';
+      final body = inner.replaceFirst(summaryRe, '').trim();
+
+      widgets.add(_buildDetailsSection(summaryTitle, body));
+      cursor = match.end;
+    }
+
+    if (cursor < content.length) {
+      final tail = content.substring(cursor).trim();
+      if (tail.isNotEmpty) widgets.add(_markdownWidget(tail));
+    }
+
+    return widgets;
+  }
+
+  /// Renders a `<details>` block as a styled, collapsible [ExpansionTile].
+  Widget _buildDetailsSection(String title, String body) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, bottom: 6),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        child: Container(
+          decoration: BoxDecoration(
+            color: ColorUtils.dynamicSecondaryForegroundColor.withOpacity(0.25),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+            border: Border.all(color: ColorUtils.dynamicAccentColor.withOpacity(0.18), width: 1),
+          ),
+          child: Theme(
+            // Remove the default ExpansionTile divider lines.
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+              childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+              expandedCrossAxisAlignment: CrossAxisAlignment.start,
+              iconColor: ColorUtils.dynamicAccentColor,
+              collapsedIconColor: ColorUtils.secondaryFontColor.withOpacity(0.6),
+              // Custom leading chevron; suppress default trailing arrow.
+              leading: Icon(Icons.chevron_right, size: 18, color: ColorUtils.dynamicAccentColor.withOpacity(0.7)),
+              trailing: const SizedBox.shrink(),
+              title: Text(
+                title,
+                style: WidgetUtils.customTextStyle(14, FontWeight.w600, ColorUtils.dynamicAccentColor),
+              ),
+              children: [
+                Divider(color: ColorUtils.dynamicAccentColor.withOpacity(0.15), height: 1, thickness: 1),
+                const SizedBox(height: 10),
+                _markdownWidget(body),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Shared markdown renderer used for both plain content and details bodies.
+  Widget _markdownWidget(String data) {
+    return MarkdownBody(
+      data: data,
+      selectable: true,
+      styleSheet: MarkdownStyleSheet(
+        p: WidgetUtils.customTextStyle(15, FontWeight.w300, ColorUtils.secondaryFontColor.withOpacity(0.9)),
+        h1: WidgetUtils.customTextStyle(22, FontWeight.bold, ColorUtils.primaryFontColor),
+        h2: WidgetUtils.customTextStyle(20, FontWeight.bold, ColorUtils.primaryFontColor),
+        h3: WidgetUtils.customTextStyle(18, FontWeight.bold, ColorUtils.primaryFontColor),
+        h4: WidgetUtils.customTextStyle(16, FontWeight.w600, ColorUtils.primaryFontColor),
+        code: WidgetUtils.customTextStyle(14, FontWeight.w400, ColorUtils.primaryFontColor).copyWith(backgroundColor: Colors.black26),
+        listBullet: WidgetUtils.customTextStyle(15, FontWeight.w300, ColorUtils.secondaryFontColor),
+        blockquote: WidgetUtils.customTextStyle(14, FontWeight.w400, ColorUtils.primaryFontColor),
+        blockquotePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        blockquoteDecoration: BoxDecoration(
+          color: ColorUtils.dynamicSecondaryForegroundColor.withOpacity(0.25),
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
+          border: Border(left: BorderSide(color: ColorUtils.dynamicAccentColor, width: 4)),
+        ),
+        a: WidgetUtils.customTextStyle(15, FontWeight.w500, ColorUtils.primaryFontColor.withOpacity(0.5)),
+        tableHead: WidgetUtils.customTextStyle(13, FontWeight.bold, ColorUtils.primaryFontColor),
+        tableBody: WidgetUtils.customTextStyle(13, FontWeight.w300, ColorUtils.secondaryFontColor),
+        tableHeadAlign: TextAlign.center,
+        tableBorder: TableBorder.all(color: Colors.white.withOpacity(0.1), width: 1),
+        tableColumnWidth: const FlexColumnWidth(),
+        tableCellsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        codeblockDecoration: BoxDecoration(
+          color: ColorUtils.dynamicSecondaryForegroundColor,
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
+        ),
+        codeblockPadding: const EdgeInsets.all(12),
+        tableCellsDecoration: BoxDecoration(color: ColorUtils.dynamicSecondaryForegroundColor),
+        tableHeadCellsDecoration: BoxDecoration(color: ColorUtils.dynamicSecondaryForegroundColor.withOpacity(0.5)),
+      ),
     );
   }
 
@@ -553,13 +628,13 @@ class _ModpackDetailViewState extends State<ModpackDetailView> {
         borderRadius: const BorderRadius.all(Radius.circular(6)),
         child: iconUrl != null && iconUrl.isNotEmpty
             ? CachedNetworkImage(
-                imageUrl: iconUrl,
-                width: 36,
-                height: 36,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => _modIconPlaceholder(),
-                errorWidget: (context, url, error) => _modIconPlaceholder(),
-              )
+          imageUrl: iconUrl,
+          width: 36,
+          height: 36,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => _modIconPlaceholder(),
+          errorWidget: (context, url, error) => _modIconPlaceholder(),
+        )
             : _modIconPlaceholder(),
       ),
       title: Text(title, style: WidgetUtils.customTextStyle(14, FontWeight.w500, ColorUtils.primaryFontColor)),

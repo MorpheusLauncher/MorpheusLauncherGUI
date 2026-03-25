@@ -1741,7 +1741,7 @@ class _MainPageState extends State<MainPage> {
                               ),
                             ),
                             items: Globals.WindowThemes.map(
-                              (String item) => DropdownItem<String>(
+                              (String item) => DropdownMenuItem<String>(
                                 value: item,
                                 child: Text(
                                   item,
@@ -1753,7 +1753,7 @@ class _MainPageState extends State<MainPage> {
                                 ),
                               ),
                             ).toList(),
-                            valueListenable: _themeNotifier,
+                            value: _themeNotifier.value,
                             onChanged: (String? value) async {
                               _themeNotifier.value = value;
                               Globals.selectedWindowTheme = value!;
