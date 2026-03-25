@@ -15,7 +15,7 @@ import 'package:http/http.dart' as http;
 import 'package:morpheus_launcher_gui/account/account_utils.dart';
 import 'package:morpheus_launcher_gui/account/microsoft_auth.dart';
 import 'package:morpheus_launcher_gui/globals.dart';
-import 'package:morpheus_launcher_gui/l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:morpheus_launcher_gui/main.dart';
 import 'package:morpheus_launcher_gui/utils/circle_utils.dart';
 import 'package:morpheus_launcher_gui/utils/glass_morphism.dart';

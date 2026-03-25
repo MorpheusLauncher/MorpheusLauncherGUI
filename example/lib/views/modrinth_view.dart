@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:morpheus_launcher_gui/globals.dart';
-import 'package:morpheus_launcher_gui/l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
 import 'package:morpheus_launcher_gui/views/modpack_detail_view.dart';
 
@@ -128,12 +128,12 @@ class _ModrinthViewState extends State<ModrinthView> {
               icon: Icon(Icons.search, color: ColorUtils.secondaryFontColor),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.close, size: 20),
-                      onPressed: () {
-                        _searchController.clear();
-                        _searchModpacks("");
-                      },
-                    )
+                icon: const Icon(Icons.close, size: 20),
+                onPressed: () {
+                  _searchController.clear();
+                  _searchModpacks("");
+                },
+              )
                   : null,
             ),
           ),
@@ -192,12 +192,13 @@ class _ModrinthViewState extends State<ModrinthView> {
                     height: 100,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(color: Colors.white.withOpacity(0.05)),
-                    errorWidget: (context, url, error) => Container(
-                      width: 100,
-                      height: 100,
-                      color: Colors.white.withOpacity(0.05),
-                      child: Icon(Icons.apps, color: ColorUtils.secondaryFontColor),
-                    ),
+                    errorWidget: (context, url, error) =>
+                        Container(
+                          width: 100,
+                          height: 100,
+                          color: Colors.white.withOpacity(0.05),
+                          child: Icon(Icons.apps, color: ColorUtils.secondaryFontColor),
+                        ),
                   ),
                 ),
                 const SizedBox(width: 16),

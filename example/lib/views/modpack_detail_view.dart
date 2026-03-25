@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../utils/markdown/flutter_markdown_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:morpheus_launcher_gui/globals.dart';
-import 'package:morpheus_launcher_gui/l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:morpheus_launcher_gui/utils/launcher/modrinth_utils.dart';
 import 'package:morpheus_launcher_gui/utils/widget_utils.dart';
 
