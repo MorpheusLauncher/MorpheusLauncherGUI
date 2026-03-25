@@ -2,121 +2,124 @@ library account_file;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter/foundation.dart';
 import 'package:morpheus_launcher_gui/account/account_utils.dart';
+import 'package:morpheus_launcher_gui/account/account_key_manager.dart';
 
 // ---------------------------------------------------------------------------
-// Helpers cifratura token
+// AES-GCM con IV casuale per ogni operazione
 // ---------------------------------------------------------------------------
 
-enc.Encrypter _buildEncrypter() {
-  final hash = md5.convert(utf8.encode(getHWID()));
-  // md5 produce 32 caratteri hex → chiave AES-256 valida
-  final key = enc.Key.fromUtf8(hash.toString());
-
-  return enc.Encrypter(enc.AES(key));
+String _aesGcmEncrypt(String plaintext, Uint8List key) {
+  if (plaintext.isEmpty) return '';
+  final iv = enc.IV(Uint8List.fromList(
+    List.generate(12, (_) => Random.secure().nextInt(256)),
+  ));
+  final encrypter = enc.Encrypter(enc.AES(enc.Key(key), mode: enc.AESMode.gcm));
+  final encrypted = encrypter.encrypt(plaintext, iv: iv);
+  final out = Uint8List(12 + encrypted.bytes.length);
+  out.setRange(0, 12, iv.bytes);
+  out.setRange(12, out.length, encrypted.bytes);
+  return base64.encode(out);
 }
 
-// IV fisso e derivato dall'HWID (primi 16 byte dell'hash)
-enc.IV _buildIV() {
-  final hash = md5.convert(utf8.encode(getHWID()));
-
-  return enc.IV(Uint8List.fromList(hash.bytes));
-}
-
-String encryptToken(String token) {
-  if (token.isEmpty) return '';
-
-  return _buildEncrypter().encrypt(token, iv: _buildIV()).base64;
-}
-
-String decryptToken(String encryptedBase64) {
-  if (encryptedBase64.isEmpty) return '';
-
-  return _buildEncrypter().decrypt64(encryptedBase64, iv: _buildIV());
+String _aesGcmDecrypt(String b64, Uint8List key) {
+  if (b64.isEmpty) return '';
+  final combined = base64.decode(b64);
+  if (combined.length < 12) throw FormatException('Ciphertext too short');
+  final iv = enc.IV(combined.sublist(0, 12));
+  final encrypter = enc.Encrypter(enc.AES(enc.Key(key), mode: enc.AESMode.gcm));
+  return encrypter.decrypt(enc.Encrypted(combined.sublist(12)), iv: iv);
 }
 
 // ---------------------------------------------------------------------------
-// Serializzazione con token cifrati
+// Chiave token derivata dalla chiave file (separata)
 // ---------------------------------------------------------------------------
 
-Map<String, dynamic> _toJsonWithEncryptedTokens(Account account) {
-  final plain = account.toJson();
-  plain['accessToken'] = encryptToken(plain['accessToken'] as String);
-  plain['refreshToken'] = encryptToken(plain['refreshToken'] as String);
-
-  return plain;
-}
-
-Account _fromJsonWithEncryptedTokens(Map<String, dynamic> json) {
-  final copy = Map<String, dynamic>.from(json);
-  try {
-    copy['accessToken'] = decryptToken(copy['accessToken'] as String);
-    copy['refreshToken'] = decryptToken(copy['refreshToken'] as String);
-  } catch (e) {
-    debugPrint("Token decryption failed for '${copy['username']}': $e");
-    copy['accessToken'] = '';
-    copy['refreshToken'] = '';
-  }
-
-  return Account.fromJson(copy);
+Uint8List _deriveTokenKey(Uint8List fileKey) {
+  final input = [...fileKey, ...utf8.encode('morpheus-token-key-v1')];
+  return Uint8List.fromList(sha256
+      .convert(input)
+      .bytes);
 }
 
 // ---------------------------------------------------------------------------
-// I/O su disco
+// Cifratura file intero
 // ---------------------------------------------------------------------------
 
-void saveAccountListToJson(List<Account> accountList, String filePath) {
-  final jsonString = const JsonEncoder.withIndent('  ').convert(
-    accountList.map(_toJsonWithEncryptedTokens).toList(),
+void _writeEncryptedFile(File file, String jsonString, Uint8List fileKey) {
+  final iv = Uint8List.fromList(
+    List.generate(12, (_) => Random.secure().nextInt(256)),
+  );
+  final encrypter = enc.Encrypter(enc.AES(enc.Key(fileKey), mode: enc.AESMode.gcm));
+  final encrypted = encrypter.encrypt(jsonString, iv: enc.IV(iv));
+  final out = Uint8List(12 + encrypted.bytes.length);
+  out.setRange(0, 12, iv);
+  out.setRange(12, out.length, encrypted.bytes);
+  file.parent.createSync(recursive: true);
+  file.writeAsBytesSync(out);
+}
+
+String _readEncryptedFile(File file, Uint8List fileKey) {
+  final bytes = file.readAsBytesSync();
+  if (bytes.length < 12) throw FormatException('File too short');
+  final iv = enc.IV(bytes.sublist(0, 12));
+  final encrypter = enc.Encrypter(enc.AES(enc.Key(fileKey), mode: enc.AESMode.gcm));
+  return encrypter.decrypt(enc.Encrypted(bytes.sublist(12)), iv: iv);
+}
+
+// ---------------------------------------------------------------------------
+// API pubblica — ora async
+// ---------------------------------------------------------------------------
+
+Future<void> saveAccountListToJson(List<Account> accountList,
+    String filePath,) async {
+  final fileKey = await loadOrCreateFileKey();
+  final tokenKey = _deriveTokenKey(fileKey);
+
+  final json = const JsonEncoder.withIndent('  ').convert(
+    accountList.map((a) {
+      final plain = a.toJson();
+      plain['accessToken'] = _aesGcmEncrypt(plain['accessToken'] as String, tokenKey);
+      plain['refreshToken'] = _aesGcmEncrypt(plain['refreshToken'] as String, tokenKey);
+      return plain;
+    }).toList(),
   );
 
-  final file = File(filePath);
-  if (!file.existsSync()) file.createSync(recursive: true);
-  file.writeAsStringSync(jsonString);
+  _writeEncryptedFile(File(filePath), json, fileKey);
 }
 
-/// Restituisce null se la lettura/decifratura fallisce, [] se il file non esiste.
-List<Account>? readAccountListFromJson(String filePath) {
+/// Restituisce null se la decifratura fallisce, [] se il file non esiste.
+Future<List<Account>?> readAccountListFromJson(String filePath) async {
   final file = File(filePath);
   if (!file.existsSync()) return [];
 
   try {
-    final bytes = file.readAsBytesSync();
+    final fileKey = await loadOrCreateFileKey();
+    final tokenKey = _deriveTokenKey(fileKey);
 
-    // Prova a decodificare come UTF-8 — se fallisce è il vecchio formato binario
-    final String jsonString;
-    try {
-      jsonString = utf8.decode(bytes);
-    } catch (_) {
-      debugPrint("Account file is in old binary format, resetting.");
-      saveAccountListToJson([], filePath);
+    final jsonString = _readEncryptedFile(file, fileKey);
 
-      return null;
-    }
-
-    return (json.decode(jsonString) as List).map((j) => _fromJsonWithEncryptedTokens(j as Map<String, dynamic>)).toList();
+    return (jsonDecode(jsonString) as List).map((j) {
+      final copy = Map<String, dynamic>.from(j as Map<String, dynamic>);
+      try {
+        copy['accessToken'] = _aesGcmDecrypt(copy['accessToken'] as String, tokenKey);
+        copy['refreshToken'] = _aesGcmDecrypt(copy['refreshToken'] as String, tokenKey);
+      } catch (e) {
+        debugPrint("Token decrypt failed for '${copy['username']}': $e");
+        copy['accessToken'] = '';
+        copy['refreshToken'] = '';
+      }
+      return Account.fromJson(copy);
+    }).toList();
   } catch (e) {
-    debugPrint("Account file read failed: $e");
-    saveAccountListToJson([], filePath);
-
+    debugPrint('Account file read failed: $e');
+    await saveAccountListToJson([], filePath);
     return null;
   }
-}
-
-// ---------------------------------------------------------------------------
-
-String getHWID() {
-  return '${Platform.environment['USERNAME']}'
-      '${Platform.environment['SystemRoot']}'
-      '${Platform.environment['HOMEDRIVE']}'
-      '${Platform.environment['PROCESSOR_LEVEL']}'
-      '${Platform.environment['PROCESSOR_REVISION']}'
-      '${Platform.environment['PROCESSOR_IDENTIFIER']}'
-      '${Platform.environment['PROCESSOR_ARCHITECTURE']}'
-      '${Platform.environment['PROCESSOR_ARCHITEW6432']}'
-      '${Platform.numberOfProcessors}';
 }

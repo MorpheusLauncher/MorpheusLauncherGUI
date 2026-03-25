@@ -129,7 +129,7 @@ class MyAppBodyState extends State<MyAppBody> {
 
     bool accountLoadFailed = false;
 
-    final loadedAccounts = readAccountListFromJson(
+    final loadedAccounts = await readAccountListFromJson(
       "${LauncherUtils.getApplicationFolder("morpheus")}/accounts.json",
     );
     if (loadedAccounts != null) {
