@@ -233,30 +233,32 @@ class _VirtualizedLogViewState extends State<VirtualizedLogView> {
       }
     }
 
-    return Stack(
-      children: [
-        Container(color: widget.backgroundColor, child: content),
-        if (!_autoScroll)
-          Positioned(
-            bottom: 8,
-            right: 8,
-            child: GestureDetector(
-              onTap: () {
-                setState(() => _autoScroll = true);
-                _scrollToBottom();
-              },
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: const BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.all(Radius.circular(16)),
+    return SelectionArea(
+      child: Stack(
+        children: [
+          Container(color: widget.backgroundColor, child: content),
+          if (!_autoScroll)
+            Positioned(
+              bottom: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() => _autoScroll = true);
+                  _scrollToBottom();
+                },
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                  ),
+                  child: const Icon(Icons.arrow_downward, color: Colors.white, size: 18),
                 ),
-                child: const Icon(Icons.arrow_downward, color: Colors.white, size: 18),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
