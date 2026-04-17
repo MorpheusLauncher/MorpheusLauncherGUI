@@ -379,7 +379,7 @@ class WidgetUtils {
           icon: const Icon(Icons.cleaning_services, color: Colors.blueAccent),
           onPressed: () async {
             Globals.consolecontroller.clear();
-            Globals.consolecontroller.appendLine("[LAUNCHER]: ${AppLocalizations.of(context)!.console_clear_msg}");
+            Globals.consolecontroller.appendLine("[LAUNCHER]: ${AppLocalizations.of(context)!.console_clear_msg}\n");
           },
         ),
         IconButton(
