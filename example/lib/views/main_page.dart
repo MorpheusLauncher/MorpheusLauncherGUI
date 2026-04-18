@@ -2737,7 +2737,7 @@ class _MainPageState extends State<MainPage> {
 
   Widget buildAccountEntry(String username, bool premium, bool elyby, int index) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.fromLTRB(0, 4, 0, 0),
       child: SizedBox(
         height: 55,
         width: double.infinity,
