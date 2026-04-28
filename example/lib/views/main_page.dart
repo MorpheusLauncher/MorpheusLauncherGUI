@@ -2305,7 +2305,7 @@ class _MainPageState extends State<MainPage> {
         Center(
           child: GestureDetector(
             child: Text(
-              "build: ${Globals.buildVersion} on ${extractPlatformInfo(Platform.version)} - morpheuslauncher.it (cc by-nc-sa) 2023-2026",
+              "build: ${Globals.buildVersion} on ${extractPlatformInfo(Platform.version)} - morpheuslauncher.it (cc by-nc-sa) 2023-${DateTime.now().year}",
               style: WidgetUtils.customTextStyle(
                 12,
                 FontWeight.w500,
